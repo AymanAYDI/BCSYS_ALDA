@@ -1,0 +1,24 @@
+OBJECT Codeunit 50032 Run Import Taxe
+{
+  OBJECT-PROPERTIES
+  {
+    Date=27/07/16;
+    Time=18:27:41;
+    Modified=Yes;
+    Version List=;
+  }
+  PROPERTIES
+  {
+    OnRun=BEGIN
+            REPORT.RUN(REPORT::"Import Taxe");
+          END;
+
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

@@ -4,7 +4,8 @@ OBJECT Table 122 Purch. Inv. Header
   {
     Date=15/09/15;
     Time=12:00:00;
-    Version List=NAVW19.00;
+    Modified=Yes;
+    Version List=NAVW19.00,AC1.00;
   }
   PROPERTIES
   {
@@ -382,6 +383,32 @@ OBJECT Table 122 Purch. Inv. Header
     { 5700;   ;Responsibility Center;Code10       ;TableRelation="Responsibility Center";
                                                    CaptionML=[ENU=Responsibility Center;
                                                               FRA=Centre de gestion] }
+    { 50002;  ;Order Reference Customer;Text35    ;CaptionML=[ENU=Order Reference Customer;
+                                                              FRA=R‚f‚rence commande client];
+                                                   Description=AC1.00 }
+    { 50007;  ;Gross Weight        ;Decimal       ;CaptionML=[ENU=Gross Weight;
+                                                              FRA=Poids brut];
+                                                   DecimalPlaces=0:5;
+                                                   Description=AC1.00 }
+    { 50008;  ;Net Weight          ;Decimal       ;CaptionML=[ENU=Net Weight;
+                                                              FRA=Poids net];
+                                                   DecimalPlaces=0:5;
+                                                   Description=AC1.00 }
+    { 50009;  ;Volume              ;Decimal       ;CaptionML=[ENU=Volume;
+                                                              FRA=Volume];
+                                                   Description=AC1.00 }
+    { 50010;  ;Nbr. of Pallet      ;Integer       ;CaptionML=[ENU=Nbr. of Pallet;
+                                                              FRA=Nb. de palette];
+                                                   Description=AC1.00 }
+    { 50011;  ;Nbr. of Package     ;Integer       ;CaptionML=[ENU=Nbr. of Package;
+                                                              FRA=Nb. de colis];
+                                                   Description=AC1.00 }
+    { 50012;  ;Nbr. of Package per Pallet;Integer ;CaptionML=[ENU=Nbr. of Package per Pallet;
+                                                              FRA=Nb. de colis par palette];
+                                                   Description=AC1.00 }
+    { 50033;  ;Micro Order No.     ;Code20        ;CaptionML=[ENU=Micro Order No.;
+                                                              FRA=Nø commande micro];
+                                                   Description=ALDA 061015D }
   }
   KEYS
   {
@@ -447,6 +474,9 @@ OBJECT Table 122 Purch. Inv. Header
     END;
 
     BEGIN
+    {
+      AC1.00 Ajout Field "Order Reference Customer"
+    }
     END.
   }
 }

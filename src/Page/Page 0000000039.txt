@@ -2,9 +2,10 @@ OBJECT Page 39 General Journal
 {
   OBJECT-PROPERTIES
   {
-    Date=23/10/15;
-    Time=12:00:00;
-    Version List=NAVW19.00.00.43402,NAVFR9.00.00.43402;
+    Date=10/03/16;
+    Time=14:52:14;
+    Modified=Yes;
+    Version List=NAVW19.00.00.43402,NAVFR9.00.00.43402,ALDA;
   }
   PROPERTIES
   {
@@ -189,6 +190,21 @@ OBJECT Page 39 General Journal
                                    EXIT;
 
                                  MESSAGE(Text001,StdGenJnl.Code);
+                               END;
+                                }
+      { 1180250005;2 ;Separator  }
+      { 1180250006;2 ;Action    ;
+                      Name=<Action1180250004>;
+                      Ellipsis=Yes;
+                      CaptionML=[ENU=Imp./Exp. Lines;
+                                 FRA=Imp./exp. lignes];
+                      Description=ACBDU 130614D;
+                      Promoted=Yes;
+                      PromotedIsBig=Yes;
+                      Image=Excel;
+                      PromotedCategory=Process;
+                      OnAction=BEGIN
+                                 ImpExpLines;
                                END;
                                 }
       { 49      ;2   ;Action    ;
@@ -574,6 +590,9 @@ OBJECT Page 39 General Journal
     { 1   ;1   ;Group     ;
                 GroupType=Repeater }
 
+    { 1180250002;2;Field  ;
+                SourceExpr="Source Code" }
+
     { 2   ;2   ;Field     ;
                 SourceExpr="Posting Date";
                 StyleExpr=StyleTxt }
@@ -699,6 +718,9 @@ OBJECT Page 39 General Journal
     { 1001;2   ;Field     ;
                 SourceExpr="Credit Amount" }
 
+    { 1180250001;2;Field  ;
+                SourceExpr="VAT Base Amount" }
+
     { 101 ;2   ;Field     ;
                 SourceExpr="VAT Amount";
                 Visible=FALSE }
@@ -717,10 +739,12 @@ OBJECT Page 39 General Journal
 
     { 53  ;2   ;Field     ;
                 SourceExpr="Bal. Account Type";
+                Visible=FALSE;
                 StyleExpr=StyleTxt }
 
     { 55  ;2   ;Field     ;
                 SourceExpr="Bal. Account No.";
+                Visible=FALSE;
                 StyleExpr=StyleTxt;
                 OnValidate=BEGIN
                              GenJnlManagement.GetAccounts(Rec,AccName,BalAccName);
@@ -729,13 +753,16 @@ OBJECT Page 39 General Journal
                             }
 
     { 57  ;2   ;Field     ;
-                SourceExpr="Bal. Gen. Posting Type" }
+                SourceExpr="Bal. Gen. Posting Type";
+                Visible=FALSE }
 
     { 79  ;2   ;Field     ;
-                SourceExpr="Bal. Gen. Bus. Posting Group" }
+                SourceExpr="Bal. Gen. Bus. Posting Group";
+                Visible=FALSE }
 
     { 59  ;2   ;Field     ;
-                SourceExpr="Bal. Gen. Prod. Posting Group" }
+                SourceExpr="Bal. Gen. Prod. Posting Group";
+                Visible=FALSE }
 
     { 80  ;2   ;Field     ;
                 SourceExpr="Deferral Code" }
@@ -836,6 +863,9 @@ OBJECT Page 39 General Journal
                            END;
                             }
 
+    { 1180250004;2;Field  ;
+                SourceExpr="Country Dimension Code" }
+
     { 69  ;2   ;Field     ;
                 SourceExpr="Payment Terms Code";
                 Visible=FALSE }
@@ -882,6 +912,9 @@ OBJECT Page 39 General Journal
     { 38  ;2   ;Field     ;
                 SourceExpr="Direct Debit Mandate ID";
                 Visible=FALSE }
+
+    { 1180250003;2;Field  ;
+                SourceExpr="Entry No." }
 
     { 30  ;1   ;Group      }
 
@@ -1026,6 +1059,20 @@ OBJECT Page 39 General Journal
     PROCEDURE SetUserInteractions@2();
     BEGIN
       StyleTxt := GetStyle;
+    END;
+
+    PROCEDURE ImpExpLines@1180250001();
+    VAR
+      GenJnlBatch@1180250002 : Record 232;
+      ImpExpGenJnlExcel@1180250001 : Report 50057;
+    BEGIN
+      // ALDA 140915D.Begin
+      GenJnlBatch.SETRANGE("Journal Template Name","Journal Template Name");
+      GenJnlBatch.SETRANGE(Name,"Journal Batch Name");
+      ImpExpGenJnlExcel.SETTABLEVIEW(GenJnlBatch);
+      ImpExpGenJnlExcel.RUNMODAL;
+      CLEAR(ImpExpGenJnlExcel);
+      // ALDA 140915D.End
     END;
 
     LOCAL PROCEDURE GetCurrentlySelectedLines@3(VAR GenJournalLine@1000 : Record 81) : Boolean;

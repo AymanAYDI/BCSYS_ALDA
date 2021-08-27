@@ -2,14 +2,17 @@ OBJECT Codeunit 80 Sales-Post
 {
   OBJECT-PROPERTIES
   {
-    Date=22/12/15;
-    Time=12:00:00;
-    Version List=NAVW19.00.00.44365,NAVFR9.00.00.44365;
+    Date=21/01/20;
+    Time=16:13:17;
+    Modified=Yes;
+    Version List=NAVW19.00.00.44365,NAVFR9.00.00.44365,AC1.00,TAH.,AB6.JME.001,TAH.001,ALDA;
   }
   PROPERTIES
   {
     TableNo=36;
-    Permissions=TableData 37=imd,
+    Permissions=TableData 17=r,
+                TableData 21=r,
+                TableData 37=imd,
                 TableData 38=m,
                 TableData 39=m,
                 TableData 49=imd,
@@ -23,11 +26,13 @@ OBJECT Codeunit 80 Sales-Post
                 TableData 121=imd,
                 TableData 223=imd,
                 TableData 252=imd,
+                TableData 379=r,
                 TableData 914=i,
                 TableData 6507=ri,
                 TableData 6508=rid,
                 TableData 6660=imd,
-                TableData 6661=imd;
+                TableData 6661=imd,
+                TableData 10825=rim;
     OnRun=VAR
             ItemEntryRelation@1010 : Record 6507;
             TempInvoicingSpecification@1011 : TEMPORARY Record 336;
@@ -81,6 +86,12 @@ OBJECT Codeunit 80 Sales-Post
             RemQtyToInvoiceCurrLine@1052 : Decimal;
             RemQtyToInvoiceCurrLineBase@1053 : Decimal;
             SavedStatus@1054 : Option;
+            "---TAH-----"@1180250001 : Integer;
+            QuantiteALivrer@1180250002 : Decimal;
+            QuantiteAFacturer@1180250003 : Decimal;
+            ExpedPartiell@1180250004 : Boolean;
+            Text50000@1180250005 : TextConst 'FRA=La commande n''est pas totalement livr‚e \ voulez vous la facturer';
+            Text50001@1180250006 : TextConst 'FRA=Le traitement est interrompu';
           BEGIN
             OnBeforePostSalesDoc(Rec);
 
@@ -108,6 +119,41 @@ OBJECT Codeunit 80 Sales-Post
                 FIELDERROR("Posting Date",Text045);
 
               SetShipInvoiceReceiveFlags(SalesHeader);
+              //BC6>>
+              CheckEDIFlags(SalesHeader);
+              //BC6<<
+                  //AB6.TAH.001 <<
+                  IF (Invoice) AND (NOT NOTCheckPartielShip) THEN
+                  BEGIN
+                    SalesLine.RESET;
+                    SalesLine.SETRANGE("Document Type","Document Type");
+                    SalesLine.SETRANGE("Document No.","No.");
+                    SalesLine.SETRANGE(Type,SalesLine.Type::Item);
+                    //SalesLine.SETFILTER(SalesLine."Qty. to Ship",'<>0');
+                    QuantiteALivrer := 0;
+                    ExpedPartiell := FALSE;
+                    IF SalesLine.FINDFIRST THEN
+                    BEGIN
+                      REPEAT
+                        IF Ship THEN
+                            QuantiteALivrer :=  SalesLine."Qty. to Ship" +
+                                                SalesLine."Quantity Shipped"
+                        ELSE
+                            QuantiteALivrer :=  SalesLine."Quantity Shipped";
+
+                       IF  (QuantiteALivrer < SalesLine.Quantity) THEN
+                           ExpedPartiell := TRUE;
+
+                      UNTIL (SalesLine.NEXT = 0) OR (ExpedPartiell);
+                      IF ExpedPartiell THEN
+                        IF NOT CONFIRM(Text50000) THEN
+                           ERROR(Text50001);
+                    END;
+
+                  END;
+                //END;
+
+                //AB6.TAH.001 >>
 
               IF NOT (Ship OR Invoice OR Receive) THEN
                 ERROR(
@@ -168,7 +214,9 @@ OBJECT Codeunit 80 Sales-Post
               IF ("Shipping Advice" = "Shipping Advice"::Complete) AND Ship THEN
                 CheckShippingAdvice;
 
-              InitProgressWindow(SalesHeader);
+                //AC 1.00
+                IF GUIALLOWED THEN
+                  InitProgressWindow(SalesHeader);
 
               GetGLSetup;
               GetCurrency;
@@ -372,7 +420,9 @@ OBJECT Codeunit 80 Sales-Post
                       SalesLine."Qty. to Ship (Base)",SalesLine."Qty. to Invoice (Base)",Ship,Invoice);
                   ItemJnlRollRndg := FALSE;
                   LineCount := LineCount + 1;
-                  Window.UPDATE(2,LineCount);
+                  //AC 1.00
+                  IF GUIALLOWED THEN
+                    Window.UPDATE(2,LineCount);
                   IF SalesLine.Type = SalesLine.Type::"Charge (Item)" THEN BEGIN
                     SalesLine.TESTFIELD(Amount);
                     SalesLine.TESTFIELD("Job No.",'');
@@ -802,6 +852,9 @@ OBJECT Codeunit 80 Sales-Post
                   THEN BEGIN
                     // Insert shipment line
                     SalesShptLine.InitFromSalesLine(SalesShptHeader,TempSalesLine);
+                    //AB6.JME.001--<<
+                    SalesShptLine."Reste … livrer" := TempSalesLine."Outstanding Quantity";
+                    //AB6.JME.001-->>
                     IF (SalesLine.Type = SalesLine.Type::Item) AND (TempSalesLine."Qty. to Ship" <> 0) THEN BEGIN
                       IF WhseShip THEN BEGIN
                         WhseShptLine.GetWhseShptLine(
@@ -981,7 +1034,9 @@ OBJECT Codeunit 80 Sales-Post
                 IF InvPostingBuffer[1].FIND('+') THEN
                   REPEAT
                     LineCount := LineCount + 1;
-                    Window.UPDATE(3,LineCount);
+                    //AC 1.00
+                    IF GUIALLOWED THEN
+                      Window.UPDATE(3,LineCount);
 
                     GenJnlLine.INIT;
                     GenJnlLine."Posting Date" := "Posting Date";
@@ -1030,6 +1085,17 @@ OBJECT Codeunit 80 Sales-Post
                     GenJnlLine."Source No." := "Bill-to Customer No.";
                     GenJnlLine."Posting No. Series" := "Posting No. Series";
                     GenJnlLine."Ship-to/Order Address Code" := "Ship-to Code";
+                    //AC1.00
+                    GenJnlLine."Order Reference Customer" := "Order Reference Customer";
+                    //AC2.00
+                    GenJnlLine."Cost Center Code" := "Cost Center Code";
+                    //AB6.TAH.001 <<
+                    //GenJnlLine."Montant Ecotaxe" := "Montant Ecotaxe";
+                    //AB6.TAH.001 >>
+
+                    // ALDA 171214D
+                    GenJnlLine."Country Dimension Code" := "Country Dimension Code";
+
                     IF InvPostingBuffer[1].Type = InvPostingBuffer[1].Type::"Fixed Asset" THEN BEGIN
                       GenJnlLine."Account Type" := GenJnlLine."Account Type"::"Fixed Asset";
                       GenJnlLine."FA Posting Type" := GenJnlLine."FA Posting Type"::Disposal;
@@ -1056,16 +1122,25 @@ OBJECT Codeunit 80 Sales-Post
                 InvPostingBuffer[1].DELETEALL;
 
                 // Post customer entry
-                Window.UPDATE(4,1);
+                //AC 1.00
+                IF GUIALLOWED THEN
+                  Window.UPDATE(4,1);
                 PostCustomerEntry(
                   SalesHeader,TotalSalesLine,TotalSalesLineLCY,
                   GenJnlLineDocType,GenJnlLineDocNo,GenJnlLineExtDocNo,SrcCode);
 
                 UpdateSalesHeader(CustLedgEntry);
+                //AC1.00
+                GenJnlLine."Order Reference Customer" := "Order Reference Customer";
+
+                // ALDA 171214D
+                GenJnlLine."Country Dimension Code" := "Country Dimension Code";
 
                 // Balancing account
                 IF "Bal. Account No." <> '' THEN BEGIN
-                  Window.UPDATE(5,1);
+                  //AC 1.00
+                  IF GUIALLOWED THEN
+                    Window.UPDATE(5,1);
                   IF NOT IsOnlinePayment(SalesHeader) THEN
                     PostBalanceEntry(
                       0,SalesHeader,TotalSalesLine,TotalSalesLineLCY,
@@ -1173,8 +1248,13 @@ OBJECT Codeunit 80 Sales-Post
                       END ELSE BEGIN
                         IF "Document Type" = "Document Type"::"Return Order" THEN
                           SalesLine.InitQtyToReceive
-                        ELSE
+                        ELSE BEGIN
                           SalesLine.InitQtyToShip2;
+                          //ACBDU 160513.Begin
+                          IF Ship OR Invoice THEN
+                            SalesLine.VALIDATE("Qty. to Ship",0);
+                          //ACBDU 160513.End
+                        END;
                       END;
 
                       IF (SalesLine."Purch. Order Line No." <> 0) AND
@@ -1341,7 +1421,9 @@ OBJECT Codeunit 80 Sales-Post
               IF NOT InvtPickPutaway THEN
                 COMMIT;
               ClearPostBuffers;
-              Window.CLOSE;
+              //AC 1.00
+              IF GUIALLOWED THEN
+                Window.CLOSE;
               IF Invoice AND ("Bill-to IC Partner Code" <> '') THEN
                 IF "Document Type" IN ["Document Type"::Order,"Document Type"::Invoice] THEN
                   ICInOutBoxMgt.CreateOutboxSalesInvTrans(SalesInvHeader)
@@ -1349,7 +1431,7 @@ OBJECT Codeunit 80 Sales-Post
                   ICInOutBoxMgt.CreateOutboxSalesCrMemoTrans(SalesCrMemoHeader);
             END;
 
-            TransactionLogEntryNo := CaptureOrRefundCreditCardPmnt(CustLedgEntry);
+            //TransactionLogEntryNo := CaptureOrRefundCreditCardPmnt(CustLedgEntry);
 
             Rec := SalesHeader;
             SynchBOMSerialNo(TempServiceItem2,TempServiceItemComp2);
@@ -1534,6 +1616,9 @@ OBJECT Codeunit 80 Sales-Post
       NoDeferralScheduleErr@1064 : TextConst '@@@="%1=The item number of the sales transaction line, %2=The Deferral Template Code";ENU=You must create a deferral schedule because you have specified the deferral code %2 in line %1.;FRA=Vous devez cr‚er un tableau ‚chelonnement car vous avez sp‚cifi‚ le code ‚chelonnement %2 … la ligne %1.';
       ZeroDeferralAmtErr@1060 : TextConst '@@@="%1=The item number of the sales transaction line, %2=The Deferral Template Code";ENU=Deferral amounts cannot be 0. Line: %1, Deferral Template: %2.;FRA=Les montants ‚chelonnement doivent ˆtre diff‚rents de 0. Ligneÿ: %1, ModŠle ‚chelonnementÿ: %2.';
       FakeDocNoTxt@1071 : TextConst 'ENU=***;FRA=***';
+      "--TAH----"@1180250001 : Integer;
+      NOTCheckPartielShip@1180250002 : Boolean;
+      ErrApplToDocNo@1000000000 : TextConst 'ENU=%1 ''%2'' must be applied to a valid %3.;FRA=%1 ''%2'' doit ˆtre lettr‚ avec une %3 valide.';
 
     PROCEDURE SetPostingDate@1(NewReplacePostingDate@1000 : Boolean;NewReplaceDocumentDate@1001 : Boolean;NewPostingDate@1002 : Date);
     BEGIN
@@ -1566,6 +1651,15 @@ OBJECT Codeunit 80 Sales-Post
         ItemJnlLine."Salespers./Purch. Code" := SalesHeader."Salesperson Code";
         ItemJnlLine."Country/Region Code" := GetCountryCode(SalesLine,SalesHeader);
         ItemJnlLine."Reason Code" := SalesHeader."Reason Code";
+        //AC1.00
+        ItemJnlLine."Order Reference Customer" := SalesHeader."Order Reference Customer";
+        //AB6.TAH.001 <<
+        ItemJnlLine."Montant Ecotaxe" := SalesLine."Montant Ecotaxe";
+        //AB6.TAH.001 >>
+
+        // ALDA 171214D
+        ItemJnlLine."Country Dimension Code" := SalesLine."Country Dimension Code";
+
         ItemJnlLine."Item No." := "No.";
         ItemJnlLine.Description := Description;
         ItemJnlLine."Shortcut Dimension 1 Code" := "Shortcut Dimension 1 Code";
@@ -2115,6 +2209,11 @@ OBJECT Codeunit 80 Sales-Post
       ItemJnlLine."Qty. per Unit of Measure" := PurchOrderLine."Qty. per Unit of Measure";
       ItemJnlLine."Applies-to Entry" := 0;
       ItemJnlLine."Shipment Method Code" := PurchOrderHeader."Shipment Method Code";
+      //AC1.00
+      ItemJnlLine."Order Reference Customer" := PurchOrderHeader."Order Reference Customer";
+      // ALDA 171214D
+      ItemJnlLine."Country Dimension Code" := PurchOrderLine."Country Dimension Code";
+
 
       IF PurchOrderLine."Job No." = '' THEN BEGIN
         TransferReservFromPurchLine(PurchOrderLine,ItemJnlLine,QtyToBeShippedBase);
@@ -5129,6 +5228,11 @@ OBJECT Codeunit 80 Sales-Post
         GenJnlLine2."Source Code" := SourceCode;
         GenJnlLine2."Posting No. Series" := "Posting No. Series";
         GenJnlLine2."IC Partner Code" := "Sell-to IC Partner Code";
+        //AC1.00
+        GenJnlLine2."Order Reference Customer" := "Order Reference Customer";
+        // ALDA 171214D
+        GenJnlLine2."Country Dimension Code" := "Country Dimension Code";
+
         GenJnlPostLine.RunWithCheck(GenJnlLine2);
       END;
     END;
@@ -5248,6 +5352,10 @@ OBJECT Codeunit 80 Sales-Post
         GenJnlLine."IC Partner Code" := "Sell-to IC Partner Code";
         GenJnlLine."Salespers./Purch. Code" := "Salesperson Code";
         GenJnlLine."Allow Zero-Amount Posting" := TRUE;
+
+        // ALDA 171214D
+        GenJnlLine."Country Dimension Code" := "Country Dimension Code";
+
         GenJnlPostLine.RunWithCheck(GenJnlLine);
 
         IF TransactionLogEntryNo <> 0 THEN BEGIN
@@ -6488,7 +6596,54 @@ OBJECT Codeunit 80 Sales-Post
       END;
     END;
 
+    PROCEDURE "---TAH----"@1180250001();
     BEGIN
+    END;
+
+    PROCEDURE SetPartielShipping@1180250002();
+    BEGIN
+      NOTCheckPartielShip := TRUE;
+    END;
+
+    LOCAL PROCEDURE CheckEDIFlags@1000000000(VAR SalesHeader@1000000000 : Record 36);
+    VAR
+      EDISetup@1000000001 : Record 50000;
+      Cust@1000000002 : Record 18;
+      SalesInvoiceHeader@1000000003 : Record 112;
+      tested@1000000004 : Boolean;
+    BEGIN
+      WITH SalesHeader DO BEGIN
+        IF NOT ("Document Type" IN ["Document Type"::"Credit Memo", "Document Type"::"Return Order"]) THEN
+          EXIT;
+        IF ("Document Type" = "Document Type"::"Return Order") AND NOT Invoice THEN
+          EXIT;
+
+        Cust.FILTERGROUP(2);
+        Cust.SETRANGE("No.", "Bill-to Customer No.");
+        Cust.FILTERGROUP(0);
+        EDISetup.SETRANGE("Object Type to Run", EDISetup."Object Type to Run"::Codeunit);
+        EDISetup.SETRANGE("Object ID to Run", CODEUNIT::"CEA Invoice & Cr.Memo");
+        IF EDISetup.FINDSET THEN
+        REPEAT
+          Cust.SETFILTER("No.", EDISetup."Bill-to Customer Filter");
+          IF NOT Cust.ISEMPTY THEN BEGIN
+            tested := TRUE;
+            IF ("Applies-to Doc. Type" <> "Applies-to Doc. Type"::Invoice)
+              OR ("Applies-to Doc. No." = '')
+              OR NOT SalesInvoiceHeader.GET("Applies-to Doc. No.") THEN
+                ERROR(ErrApplToDocNo, "Document Type", "No.", SalesInvoiceHeader.TABLECAPTION);
+          END;
+        UNTIL (EDISetup.NEXT = 0) OR tested;
+      END;
+    END;
+
+    BEGIN
+    {
+      AC1.00 Ajout C/AL onRun() PostItemJnlLine()
+      AB6.TAH.001 05/09/2012
+       -Maj du champ 50011
+      //AB6.JME.001   10/09/12  Ajout du champ reste … livrer
+    }
     END.
   }
 }

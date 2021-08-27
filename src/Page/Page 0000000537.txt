@@ -4,7 +4,8 @@ OBJECT Page 537 Dimension Values
   {
     Date=15/09/15;
     Time=12:00:00;
-    Version List=NAVW19.00;
+    Modified=Yes;
+    Version List=NAVW19.00,AC1.00;
   }
   PROPERTIES
   {
@@ -67,6 +68,9 @@ OBJECT Page 537 Dimension Values
                 Style=Strong;
                 StyleExpr=Emphasize }
 
+    { 1180250001;2;Field  ;
+                SourceExpr="Nature Type" }
+
     { 8   ;2   ;Field     ;
                 SourceExpr="Dimension Value Type" }
 
@@ -127,6 +131,9 @@ OBJECT Page 537 Dimension Values
     END;
 
     BEGIN
+    {
+      AC1.00 Ajout field "Nature Type"
+    }
     END.
   }
 }

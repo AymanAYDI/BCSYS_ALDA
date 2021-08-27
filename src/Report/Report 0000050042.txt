@@ -1,0 +1,345 @@
+OBJECT Report 50042 Imp/Exp HS Code from Excel
+{
+  OBJECT-PROPERTIES
+  {
+    Date=07/03/16;
+    Time=09:57:33;
+    Modified=Yes;
+    Version List=ALDA,2016;
+  }
+  PROPERTIES
+  {
+    CaptionML=[ENU=Imp/Exp HS Code from Excel;
+               FRA=Imp./exp. code HS depuis Excel];
+    ShowPrintStatus=No;
+    ProcessingOnly=Yes;
+    OnInitReport=BEGIN
+                   FirstRow := 2;
+                   FirstCol := 1;
+                 END;
+
+    OnPreReport=BEGIN
+                  PrintToExcel := NOT Import;
+                END;
+
+  }
+  DATASET
+  {
+    { 5290;    ;DataItem;                    ;
+               DataItemTable=Table50007;
+               DataItemTableView=SORTING(Table No.,Field No.,Code)
+                                 ORDER(Ascending)
+                                 WHERE(Table No.=CONST(27),
+                                       Field No.=CONST(50017));
+               OnPreDataItem=BEGIN
+                               IF Import THEN
+                                 CurrReport.BREAK;
+
+                               IF PrintToExcel THEN
+                                 MakeExcelInfo;
+                             END;
+
+               OnAfterGetRecord=BEGIN
+
+                                  IF PrintToExcel THEN
+                                    MakeExcelDataBody;
+                                END;
+
+               OnPostDataItem=BEGIN
+                                IF PrintToExcel THEN
+                                  CreateExcelbook;
+                              END;
+                               }
+
+    { 5291;    ;DataItem;                    ;
+               DataItemTable=Table2000000026;
+               DataItemTableView=SORTING(Number)
+                                 WHERE(Number=CONST(1));
+               OnPreDataItem=BEGIN
+                               IF NOT Import THEN
+                                 CurrReport.BREAK;
+                             END;
+
+               OnAfterGetRecord=BEGIN
+                                  TempExcelBuff.LOCKTABLE;
+
+                                  ReadExcelSheet;
+                                  AnalyzeData;
+                                END;
+
+               OnPostDataItem=BEGIN
+                                TempExcelBuff.DELETEALL;
+                              END;
+                               }
+
+  }
+  REQUESTPAGE
+  {
+    PROPERTIES
+    {
+      OnOpenPage=BEGIN
+                   ActivateFields;
+                 END;
+
+    }
+    CONTROLS
+    {
+      { 1180250002;0;Container;
+                  ContainerType=ContentArea }
+
+      { 1180250001;1;Group  ;
+                  CaptionML=[ENU=Options;
+                             FRA=Options] }
+
+      { 1180250003;2;Field  ;
+                  Name=Import;
+                  CaptionML=[ENU=Import;
+                             FRA=Import];
+                  SourceExpr=Import;
+                  OnValidate=BEGIN
+                               ActivateFields;
+                             END;
+                              }
+
+      { 1180250006;2;Group  ;
+                  CaptionML=[ENU=Import from;
+                             FRA=Importer de] }
+
+      { 1180250005;3;Field  ;
+                  CaptionML=[ENU=Workbook File Name;
+                             FRA=Nom du classeur];
+                  SourceExpr=FileName;
+                  Enabled=FileNameEnable;
+                  OnValidate=BEGIN
+                               FileNameOnAfterValidate;
+                             END;
+
+                  OnAssistEdit=BEGIN
+                                 UploadFile;
+                               END;
+                                }
+
+      { 1180250004;3;Field  ;
+                  CaptionML=[ENU=Worksheet Name;
+                             FRA=Nom de la feuille];
+                  SourceExpr=SheetName;
+                  Enabled=SheetNameEnable;
+                  OnAssistEdit=VAR
+                                 ExcelBuf@1001 : Record 370;
+                               BEGIN
+                                 IF ISSERVICETIER THEN
+                                   SheetName := ExcelBuf.SelectSheetsName(UploadedFileName)
+                                 ELSE
+                                   SheetName := ExcelBuf.SelectSheetsName(FileName);
+                               END;
+                                }
+
+    }
+  }
+  LABELS
+  {
+  }
+  CODE
+  {
+    VAR
+      TempExcelBuff@1180250015 : TEMPORARY Record 370;
+      TempExcelBuff2@1180250014 : TEMPORARY Record 370;
+      ComDialogMng@1180250013 : Codeunit 412;
+      Window@1180250012 : Dialog;
+      TotalRecNo@1180250011 : Integer;
+      FirstCol@1180250010 : Integer;
+      FirstRow@1180250009 : Integer;
+      LastRow@1180250008 : Integer;
+      TotalCol@1180250007 : Integer;
+      TotalRow@1180250006 : Integer;
+      RecNo@1180250005 : Integer;
+      FileName@1180250004 : Text[250];
+      SheetName@1180250003 : Text[80];
+      Text001@1180250023 : TextConst 'FRA=Importation du fichier Microsoft© Excel©...';
+      Text002@1180250022 : TextConst 'FRA=@1@@@@@@@@@@@@@@@';
+      Text003@1180250021 : TextConst 'FRA=Importer fichier Excel';
+      Text004@1180250020 : TextConst 'FRA=Analyse des donn‚es...\\';
+      Text005@1000000006 : TextConst 'ENU="Imp./Exp. Phys. Inventory Jnl.;";FRA=Imp./exp. Code';
+      Text006@1000000005 : TextConst 'ENU=Data;FRA=Donn‚es';
+      Text007@1000000004 : TextConst 'ENU=Company Name;FRA=Nom de la soci‚t‚';
+      Text008@1000000003 : TextConst 'ENU=User ID;FRA=Code utilisateur';
+      Text009@1000000002 : TextConst 'ENU=Report Name;FRA=Nom ‚tat';
+      Text010@1180250019 : TextConst 'FRA=Vous devez sp‚cifier le nom du classeur.';
+      Text011@1180250018 : TextConst 'FRA=Vous devez sp‚cifier le nom de la feuille (du classeur).';
+      Text012@1180250017 : TextConst 'FRA=Vous devez sp‚cifier la premiŠre ligne.';
+      Text013@1180250016 : TextConst 'FRA=Vous devez sp‚cifier la premiŠre colonne.';
+      Import@1180250001 : Boolean;
+      PrintToExcel@1000000000 : Boolean;
+      Text014@1000000001 : TextConst 'ENU=Date;FRA=Date';
+      Text015@1000000007 : TextConst 'ENU=Filters;FRA=Filtres';
+      FileNameEnable@1180250026 : Boolean INDATASET;
+      SheetNameEnable@1180250002 : Boolean INDATASET;
+      UploadedFileName@1180250027 : Text[1024];
+      FileMgt@1000000008 : Codeunit 419;
+      ExcelFileType@1000000009 : TextConst '@@@="{Split=r''\|''}{Locked=s''1''}";ENU=Excel Files (*.xls)|*.xls;FRA=Fichiers Excel (*.xls)|*.xls';
+
+    PROCEDURE MakeExcelInfo@3();
+    BEGIN
+      TempExcelBuff.SetUseInfoSheet;
+      TempExcelBuff.AddInfoColumn(FORMAT(Text007),FALSE,'',TRUE,FALSE,FALSE,'',0);
+      TempExcelBuff.AddInfoColumn(COMPANYNAME,FALSE,'',FALSE,FALSE,FALSE,'',0);
+      TempExcelBuff.NewRow;
+      TempExcelBuff.AddInfoColumn(FORMAT(Text009),FALSE,'',TRUE,FALSE,FALSE,'',0);
+      TempExcelBuff.AddInfoColumn(FORMAT(Text005),FALSE,'',FALSE,FALSE,FALSE,'',0);
+      TempExcelBuff.NewRow;
+      TempExcelBuff.AddInfoColumn(FORMAT(Text008),FALSE,'',TRUE,FALSE,FALSE,'',0);
+      TempExcelBuff.AddInfoColumn(USERID,FALSE,'',FALSE,FALSE,FALSE,'',0);
+      TempExcelBuff.NewRow;
+      TempExcelBuff.AddInfoColumn(FORMAT(Text014),FALSE,'',TRUE,FALSE,FALSE,'',0);
+      TempExcelBuff.AddInfoColumn(TODAY,FALSE,'',FALSE,FALSE,FALSE,'',0);
+      TempExcelBuff.NewRow;
+      TempExcelBuff.AddInfoColumn(FORMAT(Text015),FALSE,'',TRUE,FALSE,FALSE,'',0);
+      TempExcelBuff.AddInfoColumn("Dynamic Field".GETFILTERS,FALSE,'',FALSE,FALSE,FALSE,'',0);
+      TempExcelBuff.ClearNewRow;
+      MakeExcelDataHeader;
+    END;
+
+    LOCAL PROCEDURE MakeExcelDataHeader@2();
+    BEGIN
+      WITH "Dynamic Field" DO BEGIN
+        TempExcelBuff.AddColumn(FIELDCAPTION(Code),FALSE,'',TRUE,FALSE,TRUE,'',0);
+        TempExcelBuff.AddColumn(FIELDCAPTION(Description),FALSE,'',TRUE,FALSE,TRUE,'',0);
+      END;//DO
+    END;
+
+    PROCEDURE MakeExcelDataBody@4();
+    VAR
+      BlankFiller@1000 : Text[250];
+    BEGIN
+      TempExcelBuff.NewRow;
+      WITH "Dynamic Field" DO BEGIN
+        TempExcelBuff.AddColumn(FORMAT(Code),FALSE,'',FALSE,FALSE,FALSE,'',0);
+        TempExcelBuff.AddColumn(Description,FALSE,'',FALSE,FALSE,FALSE,'',0);
+      END;
+    END;
+
+    PROCEDURE CreateExcelbook@1();
+    BEGIN
+      TempExcelBuff.CreateBook(FileName, Text006);
+      TempExcelBuff.GiveUserControl;
+      ERROR('');
+    END;
+
+    PROCEDURE MakeExcelSomme@1180250038();
+    BEGIN
+      {
+      TempExcelBuff.NewRow;
+      TempExcelBuff.AddColumn('TOTAUX',FALSE,'',TRUE,FALSE,TRUE,'',0);
+      TempExcelBuff.AddColumn('',FALSE,'',FALSE,FALSE,TRUE,'',0);
+
+      IF SoldeDebDPer <>0  THEN
+        TempExcelBuff.AddColumn(SoldeDebDPer,FALSE,'',TRUE,FALSE,TRUE,'')
+      ELSE
+        TempExcelBuff.AddColumn('',FALSE,'',FALSE,FALSE,TRUE,'',0);
+      }
+    END;
+
+    PROCEDURE ReadExcelSheet@1180250001();
+    BEGIN
+      IF ISSERVICETIER THEN
+        IF UploadedFileName = '' THEN
+          UploadFile
+        ELSE
+          FileName := UploadedFileName;
+
+      TempExcelBuff.OpenBook(FileName,SheetName);
+      TempExcelBuff.ReadSheet;
+
+      IF TempExcelBuff.FINDLAST THEN
+        LastRow := TempExcelBuff."Row No.";
+
+      IF TempExcelBuff.FINDFIRST THEN BEGIN
+        TempExcelBuff.SETRANGE("Row No.",1);
+        TotalCol := TempExcelBuff.COUNT - (FirstCol - 1);
+        TempExcelBuff.SETRANGE("Row No.");
+        TempExcelBuff.SETFILTER("Row No.",'>=%1',FirstRow);
+        TempExcelBuff.SETFILTER("Column No.",'>=%1',FirstCol);
+        TotalRow := LastRow - (FirstRow - 1);
+      END;
+    END;
+
+    PROCEDURE AnalyzeData@1180250003();
+    VAR
+      Code2@1180250002 : Record 50007;
+      Cde@1180250001 : Code[20];
+      Descrip@1180250005 : Text[30];
+    BEGIN
+      Window.OPEN(
+        Text004 +
+        '@1@@@@@@@@@@@@@@@@@@@@@@@@@\');
+      Window.UPDATE(1,0);
+      TotalRecNo := TempExcelBuff.COUNT;
+      RecNo := 0;
+
+
+      TempExcelBuff.RESET;
+      IF TempExcelBuff.FINDFIRST THEN
+        REPEAT
+          TempExcelBuff2 := TempExcelBuff;
+          TempExcelBuff2.INSERT;
+        UNTIL TempExcelBuff.NEXT = 0;
+
+      TempExcelBuff.RESET;
+      IF TempExcelBuff.FINDSET(FALSE,FALSE) THEN BEGIN
+        FOR RecNo := FirstRow TO TotalRecNo - 1 DO BEGIN
+          Window.UPDATE(1,ROUND(RecNo / TotalRecNo * 10000,1));
+          TempExcelBuff.SETRANGE("Row No.",RecNo);
+          IF TempExcelBuff.FINDSET(FALSE,FALSE) THEN BEGIN
+            TempExcelBuff2.RESET;
+            TempExcelBuff2.SETRANGE("Row No.",TempExcelBuff."Row No.");
+            IF TempExcelBuff2.FIND('-') THEN
+              REPEAT
+                CASE TempExcelBuff2."Column No." OF
+                  1:Cde := TempExcelBuff2."Cell Value as Text";
+                  2:Descrip := TempExcelBuff2."Cell Value as Text";
+                END;//CASE
+              UNTIL TempExcelBuff2.NEXT = 0;
+            IF Code2.GET(27,50017,Cde) THEN BEGIN
+              Code2.Description := Descrip;
+              Code2.MODIFY;
+            END ELSE BEGIN
+              Code2.INIT;
+              Code2."Table No." := 27;
+              Code2."Field No." := 50017;
+              Code2.Code := Cde;
+              Code2.Description := Descrip;
+              Code2.INSERT;
+            END;
+          END;
+        END;//FOR
+      END;
+      Window.CLOSE;
+    END;
+
+    PROCEDURE ActivateFields@1180250002();
+    BEGIN
+        FileNameEnable := Import;
+        SheetNameEnable := Import;
+    END;
+
+    LOCAL PROCEDURE FileNameOnAfterValidate@19040090();
+    BEGIN
+      UploadFile;
+    END;
+
+    PROCEDURE UploadFile@6();
+    VAR
+      CommonDialogMgt@1000 : Codeunit 412;
+    BEGIN
+      UploadedFileName := FileMgt.UploadFileWithFilter(Text003, '*.xlsx', ExcelFileType, 'xlsx');
+      FileName := UploadedFileName;
+    END;
+
+    BEGIN
+    END.
+  }
+  RDLDATA
+  {
+  }
+}
+

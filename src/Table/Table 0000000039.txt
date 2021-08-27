@@ -4,7 +4,8 @@ OBJECT Table 39 Purchase Line
   {
     Date=26/11/15;
     Time=12:00:00;
-    Version List=NAVW19.00.00.43897;
+    Modified=Yes;
+    Version List=NAVW19.00.00.43897,AC1.00,ALDA;
   }
   PROPERTIES
   {
@@ -138,7 +139,7 @@ OBJECT Table 39 Purchase Line
              END;
 
     OnRename=BEGIN
-               ERROR(Text000,TABLECAPTION);
+               //ERROR(Text000,TABLECAPTION);
              END;
 
     CaptionML=[ENU=Purchase Line;
@@ -325,6 +326,10 @@ OBJECT Table 39 Purchase Line
                                                                 "Promised Receipt Date" := PurchHeader."Promised Receipt Date";
                                                                 "Inbound Whse. Handling Time" := PurchHeader."Inbound Whse. Handling Time";
                                                                 "Order Date" := PurchHeader."Order Date";
+                                                                //AC1.00
+                                                                "Order Reference Customer" := PurchHeader."Order Reference Customer";
+                                                                // ALDA 121015D
+                                                                "Micro Order No." := PurchHeader."Micro Order No.";
                                                                 UpdateLeadTimeFields;
                                                                 UpdateDates;
 
@@ -459,6 +464,8 @@ OBJECT Table 39 Purchase Line
                                                                   DATABASE::Job,"Job No.",
                                                                   DATABASE::"Responsibility Center","Responsibility Center",
                                                                   DATABASE::"Work Center","Work Center No.");
+                                                                //AC1.00
+                                                                DistIntegration.GetPurchItemCrossRefFromPurch(Rec);
 
                                                                 PurchHeader.GET("Document Type","Document No.");
                                                                 UpdateItemCrossRef;
@@ -2466,9 +2473,12 @@ OBJECT Table 39 Purchase Line
                                                                    ("Order Date" < WORKDATE) AND
                                                                    ("Order Date" <> 0D)
                                                                 THEN
-                                                                  MESSAGE(
-                                                                    Text018,
-                                                                    FIELDCAPTION("Order Date"),"Order Date",WORKDATE);
+                                                                  //AC1.00 BEGIN
+                                                                  //MESSAGE(
+                                                                  //  Text018,
+                                                                  //  FIELDCAPTION("Order Date"),"Order Date",WORKDATE);
+                                                                  "Order Date" := WORKDATE;
+                                                                  //AC1.00 END
 
                                                                 IF "Order Date" <> 0D THEN
                                                                   "Planned Receipt Date" :=
@@ -2621,6 +2631,41 @@ OBJECT Table 39 Purchase Line
 
                                                    CaptionML=[ENU=Return Reason Code;
                                                               FRA=Code motif retour] }
+    { 50000;  ;Exported Line       ;Boolean       ;CaptionML=[ENU=Exported Line;
+                                                              FRA=Ligne export‚e];
+                                                   Description=AC1.00 }
+    { 50001;  ;Date Exported       ;DateTime      ;CaptionML=[ENU=Date Exported;
+                                                              FRA=Date export‚];
+                                                   Description=AC1.00;
+                                                   Editable=No }
+    { 50002;  ;EDI Code            ;Code10        ;TableRelation="E.D.I. Setup";
+                                                   CaptionML=[ENU=E.D.I. Code;
+                                                              FRA=Code E.D.I.];
+                                                   Description=AC1.00;
+                                                   Editable=No }
+    { 50003;  ;EDI No.             ;Code20        ;CaptionML=[ENU=EDI No.;
+                                                              FRA=Nø EDI];
+                                                   Description=AC1.00;
+                                                   Editable=No }
+    { 50006;  ;Order Reference Customer;Text35    ;CaptionML=[ENU=Order Reference Customer;
+                                                              FRA=R‚f‚rence commande client];
+                                                   Description=AC1.00;
+                                                   Editable=No }
+    { 50013;  ;Line No. Reference Customer;Integer;CaptionML=[ENU=Line No. Reference Customer;
+                                                              FRA=Nø ligne r‚f‚rence commande client];
+                                                   Description=AC1.00 }
+    { 50014;  ;Anomaly Code        ;Code10        ;CaptionML=[ENU=Anomaly Code;
+                                                              FRA=Code anomalie];
+                                                   Description=AC1.00 }
+    { 50015;  ;Reliquat            ;Decimal       ;CaptionML=FRA=Reliquat;
+                                                   Description=AB6.JME.001 }
+    { 50019;  ;Country Dimension Code;Code20      ;TableRelation=Country/Region;
+                                                   CaptionML=[ENU=Country Dimension Code;
+                                                              FRA=Code axe pays];
+                                                   Description=ALDA 171214D }
+    { 50033;  ;Micro Order No.     ;Code20        ;CaptionML=[ENU=Micro Order No.;
+                                                              FRA=Nø commande micro];
+                                                   Description=ALDA 061015D }
     { 99000750;;Routing No.        ;Code20        ;TableRelation="Routing Header";
                                                    CaptionML=[ENU=Routing No.;
                                                               FRA=Nø gamme] }
@@ -2906,6 +2951,8 @@ OBJECT Table 39 Purchase Line
     END;
 
     PROCEDURE InitQtyToReceive@15();
+    VAR
+      SalesHeader2@1180250001 : Record 36;
     BEGIN
       GetPurchSetup;
       IF (PurchSetup."Default Qty. to Receive" = PurchSetup."Default Qty. to Receive"::Remainder) OR
@@ -2916,6 +2963,9 @@ OBJECT Table 39 Purchase Line
       END ELSE
         IF "Qty. to Receive" <> 0 THEN
           "Qty. to Receive (Base)" := CalcBaseQty("Qty. to Receive");
+      //AB6.JME.001--<<
+      //Reliquat := Quantity - "Quantity Received";
+      //AB6.JME.001-->>
 
       InitQtyToInvoice;
     END;
@@ -4718,12 +4768,19 @@ OBJECT Table 39 Purchase Line
     END;
 
     PROCEDURE InitQtyToReceive2@57();
+    VAR
+      SalesHeader2@1180250001 : Record 36;
     BEGIN
       "Qty. to Receive" := "Outstanding Quantity";
       "Qty. to Receive (Base)" := "Outstanding Qty. (Base)";
 
+      //AB6.JME.001--<<
+      //Reliquat := Quantity - "Quantity Received";
+      //AB6.JME.001-->>
+
       "Qty. to Invoice" := MaxQtyToInvoice;
       "Qty. to Invoice (Base)" := MaxQtyToInvoiceBase;
+
       "VAT Difference" := 0;
 
       CalcInvDiscToInvoice;
@@ -5175,6 +5232,14 @@ OBJECT Table 39 Purchase Line
     END;
 
     BEGIN
+    {
+      AC1.00 Ajout Champ "Order Reference Customer"
+                   C/AL "No." onValidate();
+
+      //22/10/12  Ajout du Correctif MS
+
+      //AB6.JME.001 22/10/12  Ajout du reliquat
+    }
     END.
   }
 }

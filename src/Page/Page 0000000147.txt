@@ -4,6 +4,7 @@ OBJECT Page 147 Posted Purchase Credit Memos
   {
     Date=15/09/15;
     Time=12:00:00;
+    Modified=Yes;
     Version List=NAVW19.00;
   }
   PROPERTIES
@@ -104,6 +105,10 @@ OBJECT Page 147 Posted Purchase Credit Memos
 
     { 6   ;2   ;Field     ;
                 SourceExpr="Buy-from Vendor Name" }
+
+    { 1000000001;2;Field  ;
+                SourceExpr="Vendor Cr. Memo No.";
+                Editable=FALSE }
 
     { 35  ;2   ;Field     ;
                 SourceExpr="Currency Code" }

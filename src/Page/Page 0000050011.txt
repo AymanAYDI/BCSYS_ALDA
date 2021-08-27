@@ -1,0 +1,70 @@
+OBJECT Page 50011 Tableau de bord commercial
+{
+  OBJECT-PROPERTIES
+  {
+    Date=01/03/16;
+    Time=12:17:07;
+    Modified=Yes;
+    Version List=AB6.JME.001,J;
+  }
+  PROPERTIES
+  {
+    CaptionML=[ENU=Role Center;
+               FRA=Tableau de bord commercial];
+    PageType=RoleCenter;
+    ActionList=ACTIONS
+    {
+      { 1900000011;0 ;ActionContainer;
+                      ActionContainerType=HomeItems }
+      { 1900000012;0 ;ActionContainer;
+                      ActionContainerType=ActivityButtons }
+      { 39      ;1   ;ActionGroup;
+                      CaptionML=[ENU=Posted Documents;
+                                 FRA=Documents valid‚s];
+                      Image=FiledPosted }
+      { 11      ;2   ;Action    ;
+                      CaptionML=[ENU=Posted Sales Shipments;
+                                 FRA=Exp‚ditions vente enregistr‚es];
+                      RunObject=Page 142 }
+      { 25      ;2   ;Action    ;
+                      CaptionML=[ENU=Posted Sales Invoices;
+                                 FRA=Factures vente enregistr‚es];
+                      RunObject=Page 143 }
+      { 26      ;2   ;Action    ;
+                      CaptionML=[ENU=Posted Sales Credit Memos;
+                                 FRA=Avoirs vente enregistr‚s];
+                      RunObject=Page 144 }
+    }
+  }
+  CONTROLS
+  {
+    { 1900000008;0;Container;
+                ContainerType=RoleCenterArea }
+
+    { 1900724808;1;Group   }
+
+    { 1902899408;2;Part   ;
+                PagePartID=Page50012;
+                PartType=Page }
+
+    { 1900724708;1;Group   }
+
+    { 1901377608;2;Part   ;
+                Visible=FALSE;
+                PartType=System;
+                SystemPartID=MyNotes }
+
+    { 1180250001;2;Part   ;
+                Visible=FALSE;
+                PartType=System;
+                SystemPartID=Outlook }
+
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

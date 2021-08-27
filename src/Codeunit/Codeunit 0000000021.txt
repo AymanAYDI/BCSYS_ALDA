@@ -2,8 +2,9 @@ OBJECT Codeunit 21 Item Jnl.-Check Line
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
+    Date=08/12/16;
+    Time=16:51:12;
+    Modified=Yes;
     Version List=NAVW19.00;
   }
   PROPERTIES
@@ -325,8 +326,10 @@ OBJECT Codeunit 21 Item Jnl.-Check Line
           IF AllowPostingTo = 0D THEN
             AllowPostingTo := 31129999D;
         END;
-        IF ("Posting Date" < AllowPostingFrom) OR ("Posting Date" > AllowPostingTo) THEN
-          FIELDERROR("Posting Date",Text001)
+        IF ("Posting Date" < AllowPostingFrom) OR ("Posting Date" > AllowPostingTo) THEN  // BEGIN
+         // MESSAGE('%1 %2 %3 %4',"Item No.","Posting Date","Document No.", "Item Shpt. Entry No.");
+          FIELDERROR("Posting Date",Text001);
+        //END;
       END;
     END;
 
@@ -435,6 +438,9 @@ OBJECT Codeunit 21 Item Jnl.-Check Line
     END;
 
     BEGIN
+    {
+      //pas de modification : affichage d'un message pour prob ajsutement
+    }
     END.
   }
 }

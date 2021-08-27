@@ -1,0 +1,217 @@
+OBJECT Report 50041 Batch Import Deskom
+{
+  OBJECT-PROPERTIES
+  {
+    Date=03/05/16;
+    Time=16:27:47;
+    Modified=Yes;
+    Version List=ALDA1.00,2016;
+  }
+  PROPERTIES
+  {
+    Permissions=TableData 112=rm;
+    CaptionML=[ENU=Batch Import Deskom;
+               FRA=TPL Import Deskom];
+    ShowPrintStatus=No;
+    ProcessingOnly=Yes;
+    OnPreReport=VAR
+                  ImportDeskom@1000000000 : XMLport 50002;
+                BEGIN
+                END;
+
+    UseRequestPage=No;
+  }
+  DATASET
+  {
+    { 5290;    ;DataItem;                    ;
+               DataItemTable=Table50001;
+               DataItemTableView=SORTING(EDI Code,Direction,Filename,Treatment Date);
+               MaxIteration=1;
+               OnAfterGetRecord=BEGIN
+                                  EDISEtup.GET("EDI Code");
+                                  FileName2 := EDISEtup."File Imp. Path (Err.)" + '\' + Filename;
+
+                                  IF (FileName2 = '') AND GUIALLOWED THEN
+                                    GetFileName();
+                                  IF FileName2 = '' THEN
+                                    ERROR(errFileMissing);
+
+                                  IF NOT EXISTS(FileName2) THEN
+                                    ERROR(errFileNotFound);
+
+                                  CLEAR(CurrFile);
+                                  CLEAR(CurrInStream);
+                                  CLEAR(ImportDeskom);
+
+                                  CurrFile.OPEN(FileName2);
+                                  CurrFile.CREATEINSTREAM(CurrInStream);
+                                  ImpDeskom.SETSOURCE(CurrInStream);
+                                  ImpDeskom.IMPORT;
+                                  COMMIT;
+                                  CLEAR(ImportDeskom);
+                                  CurrFile.CLOSE;
+                                  CLEAR(CurrInStream);
+                                END;
+                                 }
+
+    { 5291;1   ;DataItem;                    ;
+               DataItemTable=Table2000000026;
+               DataItemTableView=SORTING(Number)
+                                 WHERE(Number=CONST(1));
+               OnAfterGetRecord=BEGIN
+
+                                  IF GUIALLOWED THEN BEGIN
+                                    Window.OPEN(
+                                      Text000 + '\' +
+                                      '@1@@@@@@@@@@@@@@@@@@@@@');
+                                    Window.UPDATE(1,0);
+                                  END;
+
+
+                                  EDIEntry.RESET;
+                                  EDIEntry.SETRANGE("EDI Code",'DESKOM');
+                                  IF EDIEntry.FINDSET(TRUE,FALSE) THEN BEGIN
+                                    CurrRec := 0;
+                                    RecCount := EDIEntry.COUNT;
+                                    IF GUIALLOWED THEN
+                                      Window.UPDATE(1,0);
+                                    REPEAT
+                                      CurrRec += 1;
+                                      IF GUIALLOWED THEN
+                                      Window.UPDATE(1,ROUND(CurrRec / RecCount * 10000,1));
+                                      EVALUATE(DocNo,EDIEntry."Field 1");
+                                      IF SalesInvHeader.GET(DocNo) THEN BEGIN
+                                        SalesInvHeader."Exist Deskom File" := TRUE;
+                                        SalesInvHeader.MODIFY;
+                                        SalesCommentLine.RESET;
+                                        SalesCommentLine.SETRANGE("Document Type",SalesCommentLine."Document Type"::"Posted Invoice");
+                                        SalesCommentLine.SETRANGE("No.",SalesInvHeader."No.");
+                                        SalesCommentLine.SETRANGE("Document Line No.",0);
+                                        IF SalesCommentLine.FINDLAST THEN
+                                          NextLineNo := SalesCommentLine."Line No.";
+
+                                        NextLineNo += 10000;
+                                        SalesCommentLine.INIT;
+                                        SalesCommentLine."Document Type" := SalesCommentLine."Document Type"::"Posted Invoice";
+                                        SalesCommentLine."No." := SalesInvHeader."No.";
+                                        SalesCommentLine."Document Line No." := 0;
+                                        SalesCommentLine."Line No." := NextLineNo;
+                                        SalesCommentLine.Date := TODAY;
+                                        SalesCommentLine.Comment := FORMAT(EDIEntry."EDI Code");
+                                        SalesCommentLine.INSERT;
+
+                                        NextLineNo += 10000;
+                                        SalesCommentLine.INIT;
+                                        SalesCommentLine."Document Type" := SalesCommentLine."Document Type"::"Posted Invoice";
+                                        SalesCommentLine."No." := SalesInvHeader."No.";
+                                        SalesCommentLine."Document Line No." := 0;
+                                        SalesCommentLine."Line No." := NextLineNo;
+                                        SalesCommentLine.Date := TODAY;
+                                        IF STRLEN(FileName2) > MAXSTRLEN(SalesCommentLine.Comment) THEN BEGIN
+                                          SalesCommentLine.Comment := COPYSTR(FileName2, 1 , MAXSTRLEN(SalesCommentLine.Comment)) ;
+                                          SalesCommentLine.INSERT;
+                                          NextLineNo += 10000;
+                                          SalesCommentLine."Line No." := NextLineNo;
+                                          SalesCommentLine.Comment := COPYSTR(FileName2, MAXSTRLEN(SalesCommentLine.Comment) + 1  , MAXSTRLEN(SalesCommentLine.Comment)) ;
+                                          SalesCommentLine.INSERT;
+                                        END ELSE BEGIN
+                                          SalesCommentLine.Comment := FileName2;
+                                          SalesCommentLine.INSERT;
+                                        END;
+                                      END;
+                                    UNTIL EDIEntry.NEXT = 0;
+                                  END;
+
+                                  EDIEntry.DELETEALL;
+
+                                  IF GUIALLOWED THEN
+                                    Window.CLOSE;
+                                END;
+                                 }
+
+  }
+  REQUESTPAGE
+  {
+    PROPERTIES
+    {
+    }
+    CONTROLS
+    {
+      { 1180250008;0;Container;
+                  ContainerType=ContentArea }
+
+      { 1180250007;1;Group  ;
+                  CaptionML=[ENU=Options;
+                             FRA=Options] }
+
+      { 1180250002;2;Field  ;
+                  CaptionML=[ENU=Open;
+                             FRA=Ouvrir];
+                  SourceExpr=FileName2;
+                  OnValidate=BEGIN
+                               FileNameAfterValidate;
+                             END;
+
+                  OnAssistEdit=BEGIN
+                                 FileNameAssistEdit;
+                               END;
+                                }
+
+    }
+  }
+  LABELS
+  {
+  }
+  CODE
+  {
+    VAR
+      Text000@1180250010 : TextConst 'ENU=Batch in process...;FRA=Traitement en cours...';
+      Text003@1180250001 : TextConst 'ENU=Import Excel File;FRA=Importer fichier csv';
+      SalesInvHeader@1180250002 : Record 112;
+      SalesCommentLine@1180250013 : Record 44;
+      EDISEtup@1180250015 : Record 50000;
+      EDIEntry@1180250009 : Record 50002;
+      CurrInStream@1180250006 : InStream;
+      CurrFile@1180250005 : File;
+      FileName2@1180250004 : Text[1024];
+      Window@1180250008 : Dialog;
+      RecCount@1180250007 : Integer;
+      CurrRec@1180250003 : Integer;
+      NextLineNo@1180250014 : Integer;
+      ImpDeskom@1180250011 : XMLport 50002;
+      DocNo@1180250012 : Code[20];
+      EDICode@1180250016 : Code[20];
+      FileMgt@1000000000 : Codeunit 419;
+      ImportDeskom@1000000001 : XMLport 50002;
+      errFileMissing@1000000002 : TextConst 'ENU=Filename required;FRA=Nom de fichier requis';
+      errFileNotFound@1000000003 : TextConst 'ENU=Filename ''%1'' not found.;FRA=Nom de fichier ''%1'' introuvalble.';
+
+    PROCEDURE FileNameAfterValidate@1180250007();
+    BEGIN
+      GetFileName;
+    END;
+
+    PROCEDURE FileNameAssistEdit@1180250010();
+    BEGIN
+      GetFileName;
+    END;
+
+    PROCEDURE GetFileName@1180250006();
+    VAR
+      ClientFileName@1180250001 : Text[1024];
+    BEGIN
+      FileName2 := FileMgt.UploadFileWithFilter(Text003,'*.txt','(*.txt)|*.txt','txt');
+    END;
+
+    PROCEDURE InitReport@1180250001();
+    BEGIN
+    END;
+
+    BEGIN
+    END.
+  }
+  RDLDATA
+  {
+  }
+}
+

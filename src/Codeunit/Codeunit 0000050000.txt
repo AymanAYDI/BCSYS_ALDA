@@ -1,0 +1,209 @@
+OBJECT Codeunit 50000 Import/Export File
+{
+  OBJECT-PROPERTIES
+  {
+    Date=08/01/19;
+    Time=15:53:59;
+    Modified=Yes;
+    Version List=AC1.00;
+  }
+  PROPERTIES
+  {
+    TableNo=472;
+    OnRun=VAR
+            EDICode@1180250001 : Code[10];
+          BEGIN
+            //"Parameter String" := EDISetup.Code;
+            //"Parameter String" := 'CEA';
+            TESTFIELD("Parameter String");
+
+            EDICode := FORMAT("Parameter String");
+            EDISetup.GET(EDICode);
+
+            CASE EDISetup.Direction OF
+              EDISetup.Direction::Import:RunImpEDIObject();
+              EDISetup.Direction::Export:RunExpEDIObject();
+            END;
+          END;
+
+  }
+  CODE
+  {
+    VAR
+      EDISetup@1180210000 : Record 50000;
+      Text001@1180250001 : TextConst 'ENU=File Not Found;FRA=Pas de fichiers trouv‚s';
+
+    PROCEDURE RunImpEDIObject@1180250001();
+    VAR
+      EDILog@1180250005 : Record 50001;
+      EDILog2@1180250006 : Record 50001;
+      EDILogErr@1180250004 : Record 50001;
+      PathNameFile@1180250002 : Text[250];
+      ImpPRO2@1180250001 : Codeunit 50001;
+      DotDirInfo@1000000000 : DotNet "'mscorlib'.System.IO.DirectoryInfo";
+      DotEnum@1000000001 : DotNet "'mscorlib'.System.Collections.IEnumerator";
+      nbRec@1000000002 : Integer;
+      DotFileInfo@1000000003 : DotNet "'mscorlib'.System.IO.FileInfo";
+    BEGIN
+      EDISetup.TESTFIELD("Files Imp. Path");
+      EDISetup.TESTFIELD("File Imp. Path (Err.)");
+      EDISetup.TESTFIELD("File Imp. Path (Saved)");
+
+      CLEAR(PathNameFile);
+      //CLEAR(FileList);
+      CLEAR(EDILog);
+
+      DotDirInfo := DotDirInfo.DirectoryInfo(EDISetup."Files Imp. Path");
+      DotEnum := DotDirInfo.EnumerateFiles(EDISetup."Filename Filter").GetEnumerator();
+
+      WHILE(DotEnum.MoveNext) DO BEGIN
+        DotFileInfo := DotEnum.Current;
+        nbRec := nbRec + 1;
+      //FileList.RESET;
+      //FileList.SETFILTER(Path,EDISetup."Files Imp. Path");
+      //FileList.SETFILTER(Name,EDISetup."Filename Filter");
+      //FileList.SETRANGE("Is a file", TRUE);
+      //IF FileList.FINDSET THEN BEGIN
+      //  REPEAT
+          PathNameFile := STRSUBSTNO('%1\%2',EDISetup."Files Imp. Path", DotFileInfo.Name);//FileList.Name);
+          IF EXISTS(PathNameFile) THEN BEGIN
+            EDILog.INIT;
+            EDILog."EDI Code" := EDISetup.Code;
+            EDILog.Direction := EDISetup.Direction;
+            EDILog.Filename := COPYSTR(DotFileInfo.Name, 1, STRLEN(DotFileInfo.Name)-4)//COPYSTR(FileList.Name, 1, STRLEN(FileList.Name)-4)
+                                     + '_'
+                                     + FORMAT(TODAY,0,'<Year,2><Month,2><Day,2>')
+                                     + FORMAT(TIME,0,'<Hour,2><Minute,2><Second,2>')
+                                     + '.txt';
+            EDILog."Treatment Date" := CURRENTDATETIME;
+            EDILog.Status := EDILog.Status::Error;
+            EDILog.Mode := EDILog.Mode::Normal;
+            EDILog."Batch ID" := CREATEGUID;
+            EDILog.INSERT;
+            COMMIT;
+
+            //FILE.RENAME(PathNameFile,EDISetup."File Imp. Path (Err.)" + '\' + EDILog.Filename);
+            DotFileInfo.MoveTo(EDISetup."File Imp. Path (Err.)" + '\' + EDILog.Filename);
+            SLEEP(100);
+            CASE EDISetup."Object Type to Run" OF
+              EDISetup."Object Type to Run"::Codeunit:BEGIN
+                IF CODEUNIT.RUN(EDISetup."Object ID to Run",EDILog) THEN BEGIN
+                  EDILog.CALCFIELDS("E.D.I. Log Entry Exist");
+                  IF EDILog."E.D.I. Log Entry Exist" THEN BEGIN
+                    EDILog.Status := EDILog.Status::Error;
+                    EDILog.Corrected := FALSE;
+                  END ELSE BEGIN
+                    EDILog.Status := EDILog.Status::OK;
+                    EDILog.Corrected := TRUE;
+                  END;
+                  EDILog."Error Text":= '';
+                  EDILog.MODIFY;
+                  COMMIT;
+                  FILE.RENAME(EDISetup."File Imp. Path (Err.)" + '\' + EDILog.Filename,
+                              EDISetup."File Imp. Path (Saved)" + '\' + EDILog.Filename);
+
+                END ELSE BEGIN
+                  EDILog.Status := EDILog.Status::Error;
+                  EDILog.Corrected := FALSE;
+                  EDILog."Error Text":= COPYSTR(GETLASTERRORTEXT, 1, MAXSTRLEN(EDILog."Error Text"));
+                  EDILog.MODIFY;
+                  COMMIT;
+                  EDILog.CheckDataError();
+                  IF EDILog."Data Error" THEN
+                    FILE.RENAME(EDISetup."File Imp. Path (Err.)" + '\' + EDILog.Filename,
+                      EDISetup."File Imp. Path (Saved)" + '\' + EDILog.Filename);
+                  CLEARLASTERROR;
+                END;
+              END;
+              EDISetup."Object Type to Run"::Report:BEGIN
+                //ALDA 240914D.Begin
+                EDILog2.RESET;
+                EDILog2.FILTERGROUP(0);
+                EDILog2.SETRANGE("EDI Code",EDILog."EDI Code");
+                EDILog2.SETRANGE(Direction,EDILog.Direction);
+                EDILog2.SETRANGE("Treatment Date",EDILog."Treatment Date");
+                EDILog2.FILTERGROUP(2);
+                REPORT.RUNMODAL(EDISetup."Object ID to Run",FALSE,FALSE,EDILog2);
+                FILE.RENAME(EDISetup."File Imp. Path (Err.)" + '\' + EDILog.Filename,
+                            EDISetup."File Imp. Path (Saved)" + '\' + EDILog.Filename);
+                EDILog.Status := EDILog.Status::OK;
+                EDILog.Corrected := TRUE;
+                EDILog."Error Text":= '';
+                EDILog.MODIFY;
+                COMMIT;
+                //ALDA 240914D.End
+              END;
+              EDISetup."Object Type to Run"::Dataport:BEGIN
+              END;
+              EDISetup."Object Type to Run"::XMLport:BEGIN
+              END;
+            END;//CASE
+          END;
+        END;//While
+      //  UNTIL FileList.NEXT = 0;
+
+      IF nbRec = 0 THEN BEGIN
+        EDILog.INIT;
+        EDILog."EDI Code" := EDISetup.Code;
+        EDILog.Direction := EDISetup.Direction;
+        EDILog."Treatment Date" := CURRENTDATETIME;
+        EDILog.Status := EDILog.Status::" ";
+        EDILog."Error Text" := Text001;
+        EDILog.INSERT;
+        COMMIT;
+      END;
+    END;
+
+    PROCEDURE RunExpEDIObject@1180250002();
+    VAR
+      EDILog@1180250005 : Record 50001;
+      EDILogErr@1180250004 : Record 50001;
+      FileList@1180250003 : Record 2000000022;
+      PathNameFile@1180250002 : Text[250];
+      ImpPRO2@1180250001 : Codeunit 50001;
+    BEGIN
+      EDISetup.TESTFIELD("Files Exp. Path");
+
+      CLEAR(EDILog);
+
+      EDILog.INIT;
+      EDILog."EDI Code" := EDISetup.Code;
+      EDILog.Direction := EDISetup.Direction;
+      EDILog.Filename := '';
+      EDILog."Treatment Date" := CURRENTDATETIME;
+      EDILog.Status := EDILog.Status::Error;
+      EDILog.Mode := EDILog.Mode::Normal;
+      EDILog.INSERT;
+      COMMIT;
+
+      CASE EDISetup."Object Type to Run" OF
+        EDISetup."Object Type to Run"::Codeunit:BEGIN
+          IF CODEUNIT.RUN(EDISetup."Object ID to Run",EDILog) THEN BEGIN
+            EDILog.Status := EDILog.Status::OK;
+            EDILog.Corrected := TRUE;
+            EDILog."Error Text":= '';
+            EDILog.MODIFY;
+            COMMIT;
+          END ELSE BEGIN
+            EDILog.Status := EDILog.Status::Error;
+            EDILog.Corrected := FALSE;
+            EDILog."Error Text":= COPYSTR(GETLASTERRORTEXT, 1, MAXSTRLEN(EDILog."Error Text"));
+            EDILog.MODIFY;
+            CLEARLASTERROR;
+            COMMIT;
+          END;
+        END;
+        EDISetup."Object Type to Run"::Report:BEGIN
+        END;
+        EDISetup."Object Type to Run"::Dataport:BEGIN
+        END;
+        EDISetup."Object Type to Run"::XMLport:BEGIN
+        END;
+      END;//CASE
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

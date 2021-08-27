@@ -2,9 +2,10 @@ OBJECT Codeunit 64 Sales-Get Shipment
 {
   OBJECT-PROPERTIES
   {
-    Date=09/09/14;
-    Time=12:00:00;
-    Version List=NAVW18.00;
+    Date=24/03/16;
+    Time=11:05:56;
+    Modified=Yes;
+    Version List=NAVW18.00,AC1.00;
   }
   PROPERTIES
   {
@@ -14,9 +15,14 @@ OBJECT Codeunit 64 Sales-Get Shipment
             SalesHeader.TESTFIELD("Document Type",SalesHeader."Document Type"::Invoice);
             SalesHeader.TESTFIELD(Status,SalesHeader.Status::Open);
 
-            SalesShptLine.SETCURRENTKEY("Bill-to Customer No.");
+            // ACBDU 160414D.Begin
+            //SalesShptLine.SETCURRENTKEY("Bill-to Customer No.");
+            SalesShptLine.SETCURRENTKEY("Bill-to Customer No.","Order No.","Document No.");
+            // ACBDU 160414D.End
             SalesShptLine.SETRANGE("Bill-to Customer No.",SalesHeader."Bill-to Customer No.");
-            SalesShptLine.SETRANGE("Sell-to Customer No.",SalesHeader."Sell-to Customer No.");
+            //BC6>>
+            //SalesShptLine.SETRANGE("Sell-to Customer No.",SalesHeader."Sell-to Customer No.");
+            //BC6<<
             SalesShptLine.SETFILTER("Qty. Shipped Not Invoiced",'<>0');
             SalesShptLine.SETRANGE("Currency Code",SalesHeader."Currency Code");
             SalesShptLine.SETRANGE("Authorized for Credit Card",FALSE);

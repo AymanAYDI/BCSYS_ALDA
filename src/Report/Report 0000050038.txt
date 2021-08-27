@@ -1,0 +1,379 @@
+OBJECT Report 50038 Item Last Cost and Price List
+{
+  OBJECT-PROPERTIES
+  {
+    Date=08/03/16;
+    Time=12:06:21;
+    Modified=Yes;
+    Version List=AC;
+  }
+  PROPERTIES
+  {
+    CaptionML=[ENU=Item Last Cost and Price List;
+               FRA=Liste article dernier coñt et prix];
+    ShowPrintStatus=No;
+    ProcessingOnly=Yes;
+    OnInitReport=BEGIN
+                   StartingDate := CALCDATE('<-1M-CM>',WORKDATE);
+                   EndingDate := CALCDATE('<-1M+CM>',WORKDATE);
+                 END;
+
+    OnPreReport=BEGIN
+                  CASE TRUE OF
+                    (StartingDate <> 0D) AND (EndingDate <> 0D):DateFilter := STRSUBSTNO('%1..%2',StartingDate,EndingDate);
+                    (StartingDate <> 0D) AND (EndingDate = 0D):DateFilter := STRSUBSTNO('%1..',StartingDate);
+                    (StartingDate = 0D) AND (EndingDate <> 0D):DateFilter := STRSUBSTNO('..%1',EndingDate);
+                    (StartingDate = 0D) AND (EndingDate  = 0D):DateFilter := '';
+                  END;
+                    //CASE
+                        FileName := FileMgt.ServerTempFileName('xlsx');
+                        ServerFileName := '';
+                        ClientFileName :=  'NAV' + FORMAT(TODAY,0,'<Year><Month,2><Day,2>'+ '.xlsx');
+
+                        window.OPEN(Text000);
+                  TempExcelBuf.RESET;
+                  TempExcelBuf.DELETEALL;
+                END;
+
+    OnPostReport=BEGIN
+                   window.CLOSE;
+                   //TempExcelBuf.CreateBook;
+                   //TempExcelBuf.CreateRangeName(TempExcelBuf.GetExcelReference(8),1,1);
+                   //TempExcelBuf.CreateSheet('NAV','',COMPANYNAME,USERID);
+                   //TempExcelBuf.GiveUserControl;
+
+                       ServerFileName := FileMgt.ServerTempFileName('xlsx');
+                       TempExcelBuf.CreateBookAndOpenExcel(ServerFileName, 'NAV','',COMPANYNAME, USERID);
+                        IF EXISTS(ServerFileName) THEN BEGIN
+                       //FileMgt.DownloadHandler(ServerFileName,'','','',ClientFileName);
+                       ERASE(ServerFileName);
+                     END;
+                 END;
+
+  }
+  DATASET
+  {
+    { 5200;    ;DataItem;                    ;
+               DataItemTable=Table27;
+               DataItemTableView=SORTING(No.);
+               OnPreDataItem=BEGIN
+                               CLEAR(ColValue);
+                               ColValue[1] := FIELDCAPTION("No.");
+                               ColValue[2] := FIELDCAPTION(Description);
+                               ColValue[3] := FIELDCAPTION("Cross-Reference No. of Vendor");
+                               ColValue[4] := FIELDCAPTION("Vendor No.");
+                               ColValue[5] := STRSUBSTNO('%1 %2',Text001,Text007);
+                               ColValue[6] := STRSUBSTNO('%1 %2',ItemLdgEntry.FIELDCAPTION("Posting Date"),Text007);
+                               ColValue[7] := STRSUBSTNO('%1 %2',Text002,Text008);
+                               ColValue[8] := STRSUBSTNO('%1 %2',ItemLdgEntry.FIELDCAPTION("Posting Date"),Text008);
+                               ColValue[9] := FIELDCAPTION("Unit Cost");
+                               ColValue[10] := FIELDCAPTION("Last Direct Cost");
+                               ColValue[11] := FIELDCAPTION(Inventory);
+                               ColValue[12] := Text003;
+                               ColValue[13] := Text004;
+                               ColValue[14] := Text005;
+                               ColValue[15] := Text006;
+
+
+
+                               RowNo := 1;
+                               FOR i := 1 TO 15 DO
+                                 EnterCell(RowNo,i,ColValue[i],TRUE,TRUE,'@',TempExcelBuf."Cell Type"::Text);
+                             END;
+
+               OnAfterGetRecord=BEGIN
+                                  ValueEntry.RESET;
+                                  ValueEntry.SETCURRENTKEY("Item No.","Posting Date","Item Ledger Entry Type","Entry Type","Variance Type","Item Charge No.",
+                                    "Location Code","Variant Code");
+                                  ValueEntry.ASCENDING(TRUE);
+                                  ValueEntry.SETRANGE("Item No.","No.");
+                                  ValueEntry.SETRANGE("Entry Type",ValueEntry."Entry Type"::"Direct Cost");
+
+                                  ValueEntry.SETRANGE("Document Type",ValueEntry."Document Type"::"Purchase Invoice");
+                                  IF ValueEntry.FINDLAST THEN BEGIN
+                                    LastPostDate[1] := ValueEntry."Posting Date";
+                                    ItemLdgEntry.GET(ValueEntry."Item Ledger Entry No.");
+                                    IF ItemLdgEntry.Quantity <> 0 THEN BEGIN
+                                      LastUnitCost := ValueEntry."Purchase Amount (Actual)" / ABS(ItemLdgEntry.Quantity)
+                                    END ELSE BEGIN
+                                      LastUnitCost := 0;
+                                    END;
+                                  END ELSE BEGIN
+                                    LastPostDate[1] := 0D;
+                                    LastUnitCost := 0;
+                                  END;
+
+                                  ValueEntry.SETRANGE("Document Type",ValueEntry."Document Type"::"Sales Invoice");
+                                  IF ValueEntry.FINDLAST THEN BEGIN
+                                    LastPostDate[2] := ValueEntry."Posting Date";
+                                    ItemLdgEntry.GET(ValueEntry."Item Ledger Entry No.");
+                                    IF ItemLdgEntry.Quantity <> 0 THEN BEGIN
+                                      LastUnitPrice := ValueEntry."Sales Amount (Actual)" / ABS(ItemLdgEntry.Quantity)
+                                    END ELSE BEGIN
+                                      LastUnitPrice := 0;
+                                    END;
+                                  END ELSE BEGIN
+                                    LastPostDate[2] := 0D;
+                                    LastUnitPrice := 0;
+                                  END;
+
+                                  SalesQty := 0;
+                                  PurchQty := 0;
+
+                                  SalesAmt := 0;
+                                  PurchAmt := 0;
+                                END;
+
+               ReqFilterFields=No.,Item Category Code;
+               CalcFields=Cross-Reference No. of Vendor,Inventory }
+
+    { 5201;1   ;DataItem;                    ;
+               DataItemTable=Table32;
+               DataItemTableView=SORTING(Item No.,Entry Type,Variant Code,Drop Shipment,Location Code,Posting Date)
+                                 WHERE(Entry Type=FILTER(Sale|Purchase));
+               OnPreDataItem=BEGIN
+                               IF DateFilter <> '' THEN
+                                 SETFILTER("Posting Date",DateFilter);
+                             END;
+
+               OnAfterGetRecord=BEGIN
+                                  CASE "Entry Type" OF
+                                    "Entry Type"::Sale:BEGIN
+                                      SalesQty += Quantity;
+                                      SalesAmt += "Sales Amount (Actual)";
+                                    END;
+                                    "Entry Type"::Purchase:BEGIN
+                                      PurchQty += Quantity;
+                                      PurchAmt += "Purchase Amount (Actual)";
+                                    END;
+                                  END;//CASE
+                                END;
+
+               CalcFields=Sales Amount (Actual),Purchase Amount (Actual);
+               DataItemLink=Item No.=FIELD(No.) }
+
+    { 5203;1   ;DataItem;Integer             ;
+               DataItemTable=Table2000000026;
+               DataItemTableView=SORTING(Number)
+                                 ORDER(Ascending)
+                                 WHERE(Number=CONST(1));
+               MaxIteration=1;
+               OnAfterGetRecord=BEGIN
+                                  CLEAR(ColValue);
+                                  ColValue[1] := FORMAT(Item."No.");
+                                  ColValue[2] := Item.Description;
+                                  ColValue[3] := FORMAT(Item."Cross-Reference No. of Vendor");
+                                  ColValue[4] := FORMAT(Item."Vendor No.");
+                                  ColValue[5] := FORMAT(LastUnitCost);
+                                  ColValue[6] := FORMAT(LastPostDate[1]);
+                                  ColValue[7] := FORMAT(LastUnitPrice);
+                                  ColValue[8] := FORMAT(LastPostDate[2]);
+                                  ColValue[9] := FORMAT(Item."Unit Cost");
+                                  ColValue[10] := FORMAT(Item."Last Direct Cost");
+                                  ColValue[11] := FORMAT(Item.Inventory);
+                                  ColValue[12] := FORMAT(ABS(SalesQty));
+                                  ColValue[13] := FORMAT(ABS(PurchQty));
+                                  ColValue[14] := FORMAT(SalesAmt);
+                                  ColValue[15] := FORMAT(PurchAmt);
+
+
+                                  RowNo += 1;
+                                  FOR i := 1 TO 15 DO
+                                    CASE TRUE OF
+                                      i IN [1,2,3,4]:EnterCell(RowNo,i,ColValue[i],FALSE,FALSE,'@',TempExcelBuf."Cell Type"::Text);
+                                      i IN [5,7,9..15]:EnterCell(RowNo,i,ConvChar160To32(ColValue[i]),FALSE,FALSE,'',TempExcelBuf."Cell Type"::Number);
+                                      i IN [6,8]:EnterCell(RowNo,i,ConvChar160To32(ColValue[i]),FALSE,FALSE,'',TempExcelBuf."Cell Type"::Date);
+
+
+                                    END;//CASE
+                                END;
+                                 }
+
+  }
+  REQUESTPAGE
+  {
+    PROPERTIES
+    {
+    }
+    CONTROLS
+    {
+      { 1000000003;0;Container;
+                  ContainerType=ContentArea }
+
+      { 1000000002;1;Group  ;
+                  CaptionML=[ENU=Options;
+                             FRA=Options] }
+
+      { 1000000001;2;Field  ;
+                  CaptionML=[ENU=Starting Date;
+                             FRA=Date dÇbut];
+                  SourceExpr=StartingDate }
+
+      { 1000000000;2;Field  ;
+                  CaptionML=[ENU=Ending Date;
+                             FRA=Date fin];
+                  SourceExpr=EndingDate }
+
+    }
+  }
+  LABELS
+  {
+  }
+  CODE
+  {
+    VAR
+      ItemLdgEntry@1180250016 : Record 32;
+      ItemLdgEntry2@1180250017 : Record 32;
+      ValueEntry@1180250015 : Record 5802;
+      TempExcelBuf@1180250007 : TEMPORARY Record 370;
+      LastUnitCost@1180250002 : Decimal;
+      LastUnitPrice@1180250003 : Decimal;
+      Text000@1180250009 : TextConst 'ENU=Counting records...;FRA=Comptage des enregistrements...';
+      Text001@1180250004 : TextConst 'FRA=Dernier coñt facturÇ';
+      Text002@1180250005 : TextConst 'FRA=Dernier prix facturÇ';
+      window@1180250006 : Dialog;
+      ColValue@1180250008 : ARRAY [15] OF Text[250];
+      i@1180250010 : Integer;
+      AsciiStr@1180250013 : Text[250];
+      AnsiStr@1180250012 : Text[250];
+      CharVar@1180250011 : ARRAY [32] OF Char;
+      RowNo@1180250014 : Integer;
+      LastPostDate@1180250001 : ARRAY [2] OF Date;
+      StartingDate@1000000000 : Date;
+      EndingDate@1000000001 : Date;
+      DateFilter@1000000003 : Text[30];
+      SalesQty@1000000002 : Decimal;
+      PurchQty@1000000004 : Decimal;
+      Text003@1000000005 : TextConst 'ENU=Shipped Qty.;FRA=QtÇ livrÇe';
+      Text004@1000000006 : TextConst 'ENU=Received Qty.;FRA=QtÇ reáue';
+      PurchAmt@1000000007 : Decimal;
+      SalesAmt@1000000008 : Decimal;
+      Text005@1000000010 : TextConst 'ENU=Sales Amt.;FRA=Mtt. vente';
+      Text006@1000000009 : TextConst 'ENU=Purchase Amt.;FRA=Mtt. achat';
+      Text007@1000000011 : TextConst 'FRA=achat';
+      Text008@1000000012 : TextConst 'FRA=vente';
+      FileMgt@1000000030 : Codeunit 419;
+      ClientFileName@1000000031 : Text;
+      ServerFileName@1000000013 : Text[1024];
+      Text50001@1000000014 : TextConst 'ENU=Save As;FRA=Enregistrer sous';
+      FileName@1000000015 : Text[1024];
+
+    LOCAL PROCEDURE EnterCell@1180250001(RowNo@1000 : Integer;ColumnNo@1001 : Integer;CellValue@1002 : Text[250];Bold@1003 : Boolean;UnderLine@1004 : Boolean;NumberFormat@1005 : Text[30];CellType@1000000000 : Option);
+    BEGIN
+
+      TempExcelBuf.INIT;
+      TempExcelBuf.VALIDATE("Row No.",RowNo);
+      TempExcelBuf.VALIDATE("Column No.",ColumnNo);
+      TempExcelBuf."Cell Value as Text" := CellValue;
+      TempExcelBuf.Formula := '';
+      TempExcelBuf.Bold := Bold;
+      TempExcelBuf.Underline := UnderLine;
+      TempExcelBuf.NumberFormat := NumberFormat;
+      TempExcelBuf."Cell Type" := CellType;
+      TempExcelBuf.INSERT;
+    END;
+
+    PROCEDURE ConvColNo2XlColID@1000000001(ColumnNo@1000000000 : Integer) xlColID : Text[10];
+    VAR
+      x@1000000003 : Integer;
+      i@1000000002 : Integer;
+      c@1000000001 : Char;
+    BEGIN
+      xlColID := '';
+      IF ColumnNo <> 0 THEN BEGIN
+        x := ColumnNo - 1;
+        c := 65 + x MOD 26;
+        xlColID[10] := c;
+        i := 10;
+        WHILE x > 25 DO BEGIN
+          x := x DIV 26;
+          i := i - 1;
+          c := 64 + x MOD 26;
+          xlColID[i] := c;
+        END;
+        FOR x := i TO 10 DO
+          xlColID[1+x-i] := xlColID[x];
+      END;
+    END;
+
+    PROCEDURE ConvChar160To32@1180250005(Text@1180250001 : Text[256]) : Text[256];
+    BEGIN
+      EXIT(CONVERTSTR(Text,'ˇ',' '));
+    END;
+
+    PROCEDURE GetFileName@1180250006();
+    VAR
+      CommonDialogMgt@1180250002 : Codeunit 412;
+      ClientFileName@1180250001 : Text[1024];
+    BEGIN
+      ServerFileName := FileMgt.UploadFileWithFilter(Text50001,'*.txt','(*.txt)|*.txt','txt');
+    END;
+
+    PROCEDURE Ansi2Ascii@1180250011(_Text@1180250001 : Text[250]) : Text[250];
+    BEGIN
+      MakeVars;
+      EXIT(CONVERTSTR(_Text,AnsiStr,AsciiStr));
+    END;
+
+    PROCEDURE Ascii2Ansi@1180250002(_Text@1180250001 : Text[250]) : Text[250];
+    BEGIN
+      MakeVars;
+      EXIT(CONVERTSTR(_Text,AsciiStr,AnsiStr));
+    END;
+
+    PROCEDURE MakeVars@1180250004();
+    BEGIN
+      AsciiStr := 'ÄÅÇÉÑÖÜáàâäãåçéèêëíìîïñóòôöõúùûü†°¢£§•¶ß®©™´¨≠ÆØ›››››µ∂∑∏››++Ωæ++--+-+∆«++--›-+';
+      AsciiStr := AsciiStr +'œ–—“”‘i÷◊ÿ++›_›ﬁÓ‡·‚„‰ÂÊÁËÈÍÎÏÌÓÔÒ=ÛÙıˆ˜¯˘˙˚¸˝›ˇ';
+      CharVar[1] := 196;
+      CharVar[2] := 197;
+      CharVar[3] := 201;
+      CharVar[4] := 242;
+      CharVar[5] := 220;
+      CharVar[6] := 186;
+      CharVar[7] := 191;
+      CharVar[8] := 188;
+      CharVar[9] := 187;
+      CharVar[10] := 193;
+      CharVar[11] := 194;
+      CharVar[12] := 192;
+      CharVar[13] := 195;
+      CharVar[14] := 202;
+      CharVar[15] := 203;
+      CharVar[16] := 200;
+      CharVar[17] := 205;
+      CharVar[18] := 206;
+      CharVar[19] := 204;
+      CharVar[20] := 175;
+      CharVar[21] := 223;
+      CharVar[22] := 213;
+      CharVar[23] := 254;
+      CharVar[24] := 218;
+      CharVar[25] := 219;
+      CharVar[26] := 217;
+      CharVar[27] := 180;
+      CharVar[28] := 177;
+      CharVar[29] := 176;
+      CharVar[30] := 185;
+      CharVar[31] := 179;
+      CharVar[32] := 178;
+      AnsiStr  := '«¸È‚‰‡ÂÁÍÎËÔÓÏ'+FORMAT(CharVar[1])+FORMAT(CharVar[2])+FORMAT(CharVar[3])+ 'Ê∆Ùˆ'+FORMAT(CharVar[4]);
+      AnsiStr := AnsiStr + '˚˘ˇ÷'+FORMAT(CharVar[5])+'¯£ÿ◊É·ÌÛ˙Ò—™'+FORMAT(CharVar[6])+FORMAT(CharVar[7]);
+      AnsiStr := AnsiStr + 'Æ¨Ω'+FORMAT(CharVar[8])+'°´'+FORMAT(CharVar[9])+'___¶¶' + FORMAT(CharVar[10])+FORMAT(CharVar[11]);
+      AnsiStr := AnsiStr + FORMAT(CharVar[12]) + '©¶¶++¢•++--+-+„' + FORMAT(CharVar[13]) + '++--¶-+§–';
+      AnsiStr  :=  AnsiStr +FORMAT(CharVar[14])+FORMAT(CharVar[15])+FORMAT(CharVar[16])+'i'+FORMAT(CharVar[17])+FORMAT(CharVar[18]);
+      AnsiStr  :=  AnsiStr + 'œ++__¶' + FORMAT(CharVar[19])+FORMAT(CharVar[20])+'”'+FORMAT(CharVar[21])+'‘“ı';
+      AnsiStr  :=  AnsiStr + FORMAT(CharVar[22]) + 'µ' + FORMAT(CharVar[23]) + 'ﬁ' + FORMAT(CharVar[24])+ FORMAT(CharVar[25]);
+      AnsiStr  :=  AnsiStr + FORMAT(CharVar[26]) + '˝›Ø' + FORMAT(CharVar[27]) + '≠' + FORMAT(CharVar[28]) +'=æ∂ß˜∏'+ FORMAT(CharVar[29]
+      );
+      AnsiStr  :=  AnsiStr + '®∑' + FORMAT(CharVar[30]) +FORMAT(CharVar[31]) +FORMAT(CharVar[32]) +'_ ';
+    END;
+
+    BEGIN
+    END.
+  }
+  RDLDATA
+  {
+  }
+}
+

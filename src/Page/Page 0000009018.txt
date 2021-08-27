@@ -2,8 +2,9 @@ OBJECT Page 9018 Administrator Role Center
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
+    Date=12/06/18;
+    Time=10:36:13;
+    Modified=Yes;
     Version List=NAVW19.00;
   }
   PROPERTIES
@@ -15,6 +16,11 @@ OBJECT Page 9018 Administrator Role Center
     {
       { 1900000006;0 ;ActionContainer;
                       ActionContainerType=Reports }
+      { 1000000016;1 ;Action    ;
+                      CaptionML=[DEU=EDI Stapelverarbeitung;
+                                 ENU=EDI Batch Processing];
+                      RunObject=Report 5327310;
+                      Image=Report }
       { 33      ;1   ;Action    ;
                       CaptionML=[ENU=Check on Ne&gative Inventory;
                                  FRA=VÇrifiez l'inventaire nÇ&gatif];
@@ -71,6 +77,52 @@ OBJECT Page 9018 Administrator Role Center
                       CaptionML=[ENU=Extended Text;
                                  FRA=Texte Çtendu];
                       RunObject=Page 391 }
+      { 1000000015;1 ;Action    ;
+                      CaptionML=[DEU=EDI Verarbeitungswarteschlange;
+                                 ENU=EDI Processing Queue];
+                      RunObject=Page 5327329 }
+      { 1000000014;1 ;Action    ;
+                      CaptionML=[DEU=EDI Dokumente;
+                                 ENU=EDI Documents];
+                      RunObject=Page 5327372 }
+      { 1000000013;1 ;Action    ;
+                      CaptionML=[DEU=AuftrÑge;
+                                 ENU=Orders];
+                      RunObject=Page 5327372;
+                      RunPageView=WHERE(Document Type=CONST(Order)) }
+      { 1000000012;1 ;Action    ;
+                      CaptionML=[DEU=AuftragsbestÑtigungen;
+                                 ENU=Order Responses];
+                      RunObject=Page 5327372;
+                      RunPageLink=Document Type=CONST(Order Response) }
+      { 1000000011;1 ;Action    ;
+                      CaptionML=[DEU=Lieferungen;
+                                 ENU=Shipments];
+                      RunObject=Page 5327372;
+                      RunPageLink=Document Type=CONST(Shipment) }
+      { 1000000010;1 ;Action    ;
+                      CaptionML=[DEU=Rechnungen;
+                                 ENU=Invoices];
+                      RunObject=Page 5327372;
+                      RunPageView=WHERE(Document Type=CONST(Invoice)) }
+      { 1000000009;1 ;Action    ;
+                      CaptionML=[DEU=EDI öbertragungen;
+                                 ENU=EDI Transmissions];
+                      RunObject=Page 5327367 }
+      { 1000000008;1 ;Action    ;
+                      CaptionML=[DEU=Eingehend;
+                                 ENU=Incoming];
+                      RunObject=Page 5327367;
+                      RunPageView=WHERE(Direction=CONST(Incoming)) }
+      { 1000000007;1 ;Action    ;
+                      CaptionML=[DEU=Ausgehend;
+                                 ENU=Outgoing];
+                      RunObject=Page 5327367;
+                      RunPageView=WHERE(Direction=CONST(Outgoing)) }
+      { 1000000006;1 ;Action    ;
+                      CaptionML=[DEU=EDI öbertragungsordner;
+                                 ENU=EDI Transmission Folders];
+                      RunObject=Page 5327366 }
       { 1900000012;0 ;ActionContainer;
                       ActionContainerType=ActivityButtons }
       { 53      ;1   ;ActionGroup;
@@ -91,6 +143,31 @@ OBJECT Page 9018 Administrator Role Center
                       CaptionML=[ENU=Job Queue Log Entries;
                                  FRA=êcritures journal file d'attente des travaux];
                       RunObject=Page 674 }
+      { 1000000005;1 ;ActionGroup;
+                      Name=<Action5326114>;
+                      CaptionML=[DEU=EDI Einrichtung;
+                                 ENU=EDI Setup];
+                      Image=Administration }
+      { 1000000004;2 ;Action    ;
+                      CaptionML=[DEU=EDI Mappings;
+                                 ENU=EDI Mappings];
+                      RunObject=Page 5327317 }
+      { 1000000003;2 ;Action    ;
+                      CaptionML=[DEU=EDI Projekte;
+                                 ENU=EDI Projects];
+                      RunObject=Page 5327304 }
+      { 1000000002;2 ;Action    ;
+                      CaptionML=[DEU=EDI WerteÅbersetzungen;
+                                 ENU=EDI Value Translations];
+                      RunObject=Page 5327374 }
+      { 1000000001;2 ;Action    ;
+                      CaptionML=[DEU=EDI VerknÅpfunstypen;
+                                 ENU=EDI Cross-Reference Types];
+                      RunObject=Page 5327348 }
+      { 1000000000;2 ;Action    ;
+                      CaptionML=[DEU=EDI KommunikationskanÑle;
+                                 ENU=EDI Communication Channels];
+                      RunObject=Page 5327365 }
       { 59      ;1   ;ActionGroup;
                       CaptionML=[ENU=Workflow;
                                  FRA=Flux de travail];
@@ -541,6 +618,10 @@ OBJECT Page 9018 Administrator Role Center
 
     { 1900724808;1;Group   }
 
+    { 1000000017;2;Part   ;
+                PagePartID=Page5327361;
+                PartType=Page }
+
     { 1904484608;2;Part   ;
                 PagePartID=Page9072;
                 PartType=Page }
@@ -556,6 +637,10 @@ OBJECT Page 9018 Administrator Role Center
                 PartType=Page }
 
     { 1900724708;1;Group   }
+
+    { 1000000018;2;Part   ;
+                PagePartID=Page5327362;
+                PartType=Page }
 
     { 36  ;2   ;Part      ;
                 PagePartID=Page681;

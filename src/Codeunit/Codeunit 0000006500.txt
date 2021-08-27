@@ -4,6 +4,7 @@ OBJECT Codeunit 6500 Item Tracking Management
   {
     Date=15/09/15;
     Time=12:00:00;
+    Modified=Yes;
     Version List=NAVW19.00;
   }
   PROPERTIES
@@ -286,7 +287,7 @@ OBJECT Codeunit 6500 Item Tracking Management
           ReservEntry.DELETEALL;
         EXIT(TRUE);
       END;
-      EXIT(FALSE);
+      //PERF.NIW EXIT(FALSE);
     END;
 
     LOCAL PROCEDURE RetrieveSubcontrItemTracking@46(ItemJnlLine@1002 : Record 83;VAR TempHandlingSpecification@1007 : TEMPORARY Record 336) : Boolean;

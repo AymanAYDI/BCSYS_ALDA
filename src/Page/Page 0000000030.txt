@@ -2,9 +2,10 @@ OBJECT Page 30 Item Card
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
-    Version List=NAVW19.00;
+    Date=21/02/19;
+    Time=18:01:49;
+    Modified=Yes;
+    Version List=NAVW19.00,AC3.00,ALDA;
   }
   PROPERTIES
   {
@@ -822,6 +823,21 @@ OBJECT Page 30 Item Card
                       Promoted=Yes;
                       Image=ItemTracing;
                       PromotedCategory=Process }
+      { 1000000019;1 ;Action    ;
+                      Name=Duplicate;
+                      CaptionML=[ENU=Duplicate...;
+                                 FRA=Dupliquer...];
+                      Promoted=Yes;
+                      PromotedIsBig=Yes;
+                      Image=Copy;
+                      PromotedCategory=Process;
+                      OnAction=VAR
+                                 BCSystools@1000000000 : Codeunit 50015;
+                               BEGIN
+                                 //BC6>>
+                                 BCSystools.DuplicateItem(Rec);
+                               END;
+                                }
     }
   }
   CONTROLS
@@ -845,6 +861,9 @@ OBJECT Page 30 Item Card
     { 4   ;2   ;Field     ;
                 SourceExpr=Description;
                 ShowMandatory=TRUE }
+
+    { 1000000000;2;Field  ;
+                SourceExpr="Description 2" }
 
     { 6   ;2   ;Field     ;
                 SourceExpr="Base Unit of Measure";
@@ -872,6 +891,9 @@ OBJECT Page 30 Item Card
 
     { 168 ;2   ;Field     ;
                 SourceExpr="Product Group Code" }
+
+    { 1000000001;2;Field  ;
+                SourceExpr="Segment Code" }
 
     { 180 ;2   ;Field     ;
                 SourceExpr="Service Item Group" }
@@ -951,6 +973,32 @@ OBJECT Page 30 Item Card
                 SourceExpr="Prevent Negative Inventory";
                 Visible=ShowPreventNegInventoryDefaultNo }
 
+    { 1000000005;2;Group  ;
+                CaptionML=[ENU=DPAM;
+                           FRA=DPAM];
+                GroupType=Group }
+
+    { 1000000004;3;Field  ;
+                CaptionML=[ENU=Account No. (DPAM);
+                           FRA=Nø compte];
+                SourceExpr="Account No. (DPAM)" }
+
+    { 1000000003;3;Field  ;
+                CaptionML=[ENU=Typology (DPAM);
+                           FRA=Typologie];
+                SourceExpr="Typology Code (DPAM)";
+                OnValidate=BEGIN
+                             // ACBDU 130614D
+                             TypologyDescrDPAM := GetTypologyDescrDPAM("Typology Code (DPAM)");
+                           END;
+                            }
+
+    { 1000000002;3;Field  ;
+                CaptionML=[ENU=Typology Description;
+                           FRA=Description typologie];
+                SourceExpr=TypologyDescrDPAM;
+                Editable=FALSE }
+
     { 1905885101;1;Group  ;
                 CaptionML=[ENU=Invoicing;
                            FRA=Facturation] }
@@ -994,6 +1042,9 @@ OBJECT Page 30 Item Card
 
     { 155 ;2   ;Field     ;
                 SourceExpr="Indirect Cost %" }
+
+    { 1000000006;2;Field  ;
+                SourceExpr=Ecotaxe }
 
     { 32  ;2   ;Field     ;
                 SourceExpr="Last Direct Cost" }
@@ -1039,6 +1090,15 @@ OBJECT Page 30 Item Card
     { 73  ;2   ;Field     ;
                 SourceExpr="Sales Unit of Measure" }
 
+    { 1000000009;2;Field  ;
+                SourceExpr="Price List Type" }
+
+    { 1000000008;2;Field  ;
+                SourceExpr="Discount Type" }
+
+    { 1000000007;2;Field  ;
+                SourceExpr="Sending of EDI Sales OrderType" }
+
     { 19  ;2   ;Field     ;
                 SourceExpr="Application Wksh. User ID";
                 Visible=false }
@@ -1063,6 +1123,26 @@ OBJECT Page 30 Item Card
 
     { 52  ;3   ;Field     ;
                 SourceExpr="Vendor Item No." }
+
+    { 1000000010;3;Field  ;
+                SourceExpr="Cross-Reference No. of Vendor";
+                Importance=Promoted }
+
+    { 1000000021;3;Field  ;
+                SourceExpr="Transfer Price (LCY)" }
+
+    { 1000000018;3;Field  ;
+                CaptionML=[ENU=Manufacturer Code;
+                           FRA=Code Marque];
+                ToolTipML=[ENU=(ex. Manufacturer Code);
+                           FRA=" (ex. Code fabricant)"];
+                SourceExpr="Manufacturer Code" }
+
+    { 1000000017;3;Field  ;
+                SourceExpr="Item Management" }
+
+    { 1000000016;3;Field  ;
+                SourceExpr="Update Circulation Date" }
 
     { 99  ;3   ;Field     ;
                 SourceExpr="Purch. Unit of Measure" }
@@ -1099,6 +1179,9 @@ OBJECT Page 30 Item Card
 
     { 15  ;3   ;Field     ;
                 SourceExpr="Assembly Policy" }
+
+    { 1000000020;3;Field  ;
+                SourceExpr="Bar Code" }
 
     { 1901343701;1;Group  ;
                 CaptionML=[ENU=Planning;
@@ -1239,6 +1322,21 @@ OBJECT Page 30 Item Card
     { 235 ;2   ;Field     ;
                 SourceExpr="Gross Weight" }
 
+    { 1000000015;2;Field  ;
+                SourceExpr="HS Code" }
+
+    { 1000000014;2;Field  ;
+                SourceExpr="Length (meter)" }
+
+    { 1000000013;2;Field  ;
+                SourceExpr="Width (meter)" }
+
+    { 1000000012;2;Field  ;
+                SourceExpr="Height (meter)" }
+
+    { 1000000011;2;Field  ;
+                SourceExpr="Volume (m3)" }
+
     { 1904830201;1;Group  ;
                 CaptionML=[ENU=Item Tracking;
                            FRA=Tra‡abilit‚] }
@@ -1365,6 +1463,7 @@ OBJECT Page 30 Item Card
       OpenApprovalEntriesExistCurrUser@1012 : Boolean;
       OpenApprovalEntriesExist@1011 : Boolean;
       ShowWorkflowStatus@1014 : Boolean;
+      TypologyDescrDPAM@1000000000 : Text[50];
 
     LOCAL PROCEDURE EnableShowStockOutWarning@4();
     VAR

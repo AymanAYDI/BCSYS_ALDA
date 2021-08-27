@@ -1,0 +1,274 @@
+OBJECT Page 50024 GIM Purchase Invoice Subform
+{
+  OBJECT-PROPERTIES
+  {
+    Date=14/10/15;
+    Time=11:25:47;
+    Modified=Yes;
+    Version List=GIM;
+  }
+  PROPERTIES
+  {
+    Editable=Yes;
+    CaptionML=[ENU=Lines;
+               FRA=Lignes];
+    MultipleNewLines=Yes;
+    InsertAllowed=No;
+    ModifyAllowed=No;
+    LinksAllowed=No;
+    SourceTable=Table50009;
+    DelayedInsert=Yes;
+    SourceTableView=WHERE(Document Type=FILTER(Invoice|Credit Memo));
+    PageType=ListPart;
+    AutoSplitKey=Yes;
+    RefreshOnActivate=Yes;
+    OnAfterGetRecord=BEGIN
+                       ShowShortcutDimCode(ShortcutDimCode);
+                       SETRANGE("Allowance Charge Reason Filter", 'ECOTAXE');
+                       CALCFIELDS("Allowance Amount");
+                       EcoTaxeAmount := "Allowance Amount";
+                     END;
+
+    OnDeleteRecord=VAR
+                     ReservePurchLine@1000 : Codeunit 99000834;
+                   BEGIN
+                   END;
+
+    ActionList=ACTIONS
+    {
+      { 1900000004;0 ;ActionContainer;
+                      ActionContainerType=ActionItems }
+      { 1907935204;1 ;ActionGroup;
+                      CaptionML=[ENU=&Line;
+                                 FRA=&Ligne] }
+      { 1000000010;2 ;Action    ;
+                      Name=SelectReceipt;
+                      CaptionML=[ENU=Select Receipt Line;
+                                 FRA=SÇlectionner ligne rÇception];
+                      Promoted=Yes;
+                      OnAction=BEGIN
+                                 GetPurchReceipt();
+                               END;
+                                }
+    }
+  }
+  CONTROLS
+  {
+    { 1900000001;0;Container;
+                ContainerType=ContentArea }
+
+    { 1   ;1   ;Group     ;
+                GroupType=Repeater }
+
+    { 1000000014;2;Field  ;
+                SourceExpr="Line No.";
+                Editable=FALSE }
+
+    { 2   ;2   ;Field     ;
+                SourceExpr=Type }
+
+    { 4   ;2   ;Field     ;
+                SourceExpr="No." }
+
+    { 1000000000;2;Field  ;
+                SourceExpr=Quantity }
+
+    { 1000000001;2;Field  ;
+                SourceExpr=Amount }
+
+    { 1000000006;2;Field  ;
+                SourceExpr="VAT Amount" }
+
+    { 1000000002;2;Field  ;
+                SourceExpr="Amount Including VAT" }
+
+    { 1180250001;2;Field  ;
+                Name=EcoTaxe;
+                SourceExpr=EcoTaxeAmount;
+                Editable=FALSE }
+
+    { 1000000003;2;Field  ;
+                SourceExpr="Receipt No." }
+
+    { 1000000013;2;Field  ;
+                SourceExpr="Receipt Line No." }
+
+    { 1000000015;2;Field  ;
+                SourceExpr="Micro Order No." }
+
+    { 1000000009;2;Field  ;
+                SourceExpr="Vendor Shipment No." }
+
+    { 1000000004;2;Field  ;
+                SourceExpr="Vendor Item No." }
+
+    { 1000000005;2;Field  ;
+                SourceExpr="ID Line" }
+
+    { 1000000011;2;Field  ;
+                SourceExpr=IsError }
+
+    { 1000000012;2;Field  ;
+                SourceExpr="Error log" }
+
+    { 1000000016;2;Field  ;
+                SourceExpr=Duplicate }
+
+    { 1000000018;2;Field  ;
+                SourceExpr="Vend. Sales Order ID" }
+
+    { 1000000017;2;Field  ;
+                SourceExpr="Vend. Sales Order Line ID" }
+
+  }
+  CODE
+  {
+    VAR
+      TransferExtendedText@1002 : Codeunit 378;
+      ShortcutDimCode@1003 : ARRAY [8] OF Code[20];
+      UpdateAllowedVar@1000 : Boolean;
+      Text000@1001 : TextConst 'ENU=Unable to execute this function while in view only mode.;FRA=Impossible d''exÇcuter cette fonction quand vous àtes en mode visualisation seule.';
+      PurchInfoPaneMgt@1006 : Codeunit 7181;
+      PurchHeader@1005 : Record 38;
+      PurchPriceCalcMgt@1004 : Codeunit 7010;
+      Text001@1007 : TextConst 'ENU=You can not use the Explode BOM function because a prepayment of the purchase order has been invoiced.;FRA=Vous ne pouvez pas utiliser la fonction êclater nomenclature car un acompte de la commande achat a ÇtÇ facturÇ.';
+      PurchRcptLineBuffer@1000000000 : TEMPORARY Record 121;
+      Text050@1000000001 : TextConst 'ENU=There is more than one receiving line selected for item %1.;FRA=Il y a plus d''une ligne de rÇception sÇlectionnÇe pour l''article %1.';
+      EcoTaxeAmount@1180250001 : Decimal;
+
+    PROCEDURE ApproveCalcInvDisc@7();
+    BEGIN
+    END;
+
+    PROCEDURE CalcInvDisc@1();
+    BEGIN
+    END;
+
+    PROCEDURE ExplodeBOM@3();
+    BEGIN
+    END;
+
+    PROCEDURE OpenSalesOrderForm@5();
+    VAR
+      SalesHeader@1000 : Record 36;
+    BEGIN
+    END;
+
+    PROCEDURE _InsertExtendedText@19065029(Unconditionally@1000 : Boolean);
+    BEGIN
+    END;
+
+    PROCEDURE InsertExtendedText@6(Unconditionally@1000 : Boolean);
+    BEGIN
+    END;
+
+    PROCEDURE _ShowReservation@19004172();
+    BEGIN
+    END;
+
+    PROCEDURE ShowReservation@2();
+    BEGIN
+    END;
+
+    PROCEDURE _ItemAvailability@19008035(AvailabilityType@1000 : 'Date,Variant,Location,Bin');
+    BEGIN
+    END;
+
+    PROCEDURE ItemAvailability@8(AvailabilityType@1000 : 'Date,Variant,Location,Bin');
+    BEGIN
+    END;
+
+    PROCEDURE _ShowReservationEntries@19040018();
+    BEGIN
+    END;
+
+    PROCEDURE ShowReservationEntries@9();
+    BEGIN
+    END;
+
+    PROCEDURE ShowTracking@10();
+    BEGIN
+    END;
+
+    PROCEDURE _ShowDimensions@19020529();
+    BEGIN
+    END;
+
+    PROCEDURE ShowDimensions@11();
+    BEGIN
+    END;
+
+    PROCEDURE ItemChargeAssgnt@5800();
+    BEGIN
+    END;
+
+    PROCEDURE _OpenItemTrackingLines@19054693();
+    BEGIN
+    END;
+
+    PROCEDURE OpenItemTrackingLines@6500();
+    BEGIN
+    END;
+
+    PROCEDURE OpenSpecOrderSalesOrderForm@12();
+    VAR
+      SalesHeader@1000 : Record 36;
+    BEGIN
+    END;
+
+    PROCEDURE UpdateForm@13(SetSaveRecord@1000 : Boolean);
+    BEGIN
+    END;
+
+    PROCEDURE SetUpdateAllowed@14(UpdateAllowed@1000 : Boolean);
+    BEGIN
+    END;
+
+    PROCEDURE UpdateAllowed@4() : Boolean;
+    BEGIN
+    END;
+
+    PROCEDURE ShowPrices@17();
+    VAR
+      Filter@1000000000 : Text[250];
+    BEGIN
+    END;
+
+    PROCEDURE ShowLineDisc@16();
+    BEGIN
+    END;
+
+    PROCEDURE _ShowLineComments@19074756();
+    BEGIN
+    END;
+
+    PROCEDURE ShowLineComments@15();
+    BEGIN
+    END;
+
+    LOCAL PROCEDURE NoOnAfterValidate@19066594();
+    BEGIN
+    END;
+
+    LOCAL PROCEDURE CrossReferenceNoOnAfterValidat@19048248();
+    BEGIN
+    END;
+
+    PROCEDURE FilterErrorOnly@1000000001();
+    VAR
+      Filter@1000000000 : Text[250];
+      FilterBoolean@1000000001 : Boolean;
+    BEGIN
+      Filter := GETFILTER(IsError);
+      IF Filter = '' THEN
+        SETRANGE(IsError,TRUE)
+      ELSE
+        SETRANGE(IsError);
+      CurrPage.UPDATE(FALSE);
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

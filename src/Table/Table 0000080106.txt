@@ -1,0 +1,35 @@
+OBJECT Table 80106 Comp. Selection
+{
+  OBJECT-PROPERTIES
+  {
+    Date=12/08/06;
+    Time=12:00:00;
+    Version List=Data Transfer Wizard;
+  }
+  PROPERTIES
+  {
+  }
+  FIELDS
+  {
+    { 1   ;   ;Company             ;Text30         }
+    { 4   ;   ;Selected            ;Boolean        }
+  }
+  KEYS
+  {
+    {    ;Company                                 ;Clustered=Yes }
+    {    ;Selected                                 }
+  }
+  FIELDGROUPS
+  {
+  }
+  CODE
+  {
+
+    BEGIN
+    {
+      Data Transfer Wizard 4.0 (Navision) Eduard Sanosian, The Netherlands, 08-2006
+    }
+    END.
+  }
+}
+

@@ -4,6 +4,7 @@ OBJECT Table 289 Payment Method
   {
     Date=15/09/15;
     Time=12:00:00;
+    Modified=Yes;
     Version List=NAVW19.00;
   }
   PROPERTIES
@@ -95,6 +96,11 @@ OBJECT Table 289 Payment Method
                                                    TableRelation="Bank Data Conversion Pmt. Type";
                                                    CaptionML=[ENU=Bank Data Conversion Pmt. Type;
                                                               FRA=Type paiem. conversion donn‚es bancaires] }
+    { 50000;  ;Code for EDI (EDICOT);Code10       ;CaptionML=[ENU=Code for EDI (EDICOT);
+                                                              FRA=Code pour EDI (EDICOT)] }
+    { 50001;  ;UN/ECE 4461 Code    ;Code10        ;CaptionML=[ENU=UN/ECE 4461 Code;
+                                                              FRA=Code UN/ECE 4461];
+                                                   Description=ALDA 270715D }
   }
   KEYS
   {

@@ -1,0 +1,47 @@
+OBJECT Codeunit 50030 SalesInvoiceHeader-Edit
+{
+  OBJECT-PROPERTIES
+  {
+    Date=22/03/19;
+    Time=15:16:01;
+    Modified=Yes;
+    Version List=;
+  }
+  PROPERTIES
+  {
+    TableNo=112;
+    Permissions=TableData 112=imd;
+    OnRun=BEGIN
+            SalesInvoiceHeader := Rec;
+            SalesInvoiceHeader.LOCKTABLE;
+            SalesInvoiceHeader.FIND;
+
+            SalesInvoiceHeader."External Document No." := "External Document No.";
+            SalesInvoiceHeader."Order Reference Customer" := "Order Reference Customer";
+
+            SalesInvoiceHeader."Bill-to Address" := "Bill-to Address";
+            SalesInvoiceHeader."Bill-to Address 2" := "Bill-to Address 2";
+
+            SalesInvoiceHeader."Bill-to Post Code" :=  "Bill-to Post Code";
+            SalesInvoiceHeader."Bill-to City" := "Bill-to City";
+
+            SalesInvoiceHeader."Registration No." := "Registration No." ;
+
+
+            SalesInvoiceHeader.MODIFY;
+            Rec := SalesInvoiceHeader;
+          END;
+
+  }
+  CODE
+  {
+    VAR
+      SalesInvoiceHeader@1000000000 : Record 112;
+      PostCode@1000000001 : Record 225;
+      SalesInvoiceLine@1000000002 : Record 113;
+
+    BEGIN
+    END.
+  }
+}
+

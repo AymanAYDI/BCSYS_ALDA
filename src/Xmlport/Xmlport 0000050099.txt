@@ -1,0 +1,85 @@
+OBJECT XMLport 50099 Export Security
+{
+  OBJECT-PROPERTIES
+  {
+    Date=21/03/16;
+    Time=18:07:25;
+    Modified=Yes;
+    Version List=;
+  }
+  PROPERTIES
+  {
+  }
+  ELEMENTS
+  {
+    { [{DEB58D06-AE3D-4328-84E3-EDA6FFF93D37}];  ;Root                ;Element ;Text     }
+
+    { [{E23430F9-E984-4946-9F2A-BBF533F8C591}];1 ;PermissionSets      ;Element ;Text     }
+
+    { [{EFD589C6-DCF8-4367-B4F8-C3D88378E504}];2 ;PermissionSet       ;Element ;Table   ;
+                                                  SourceTable=Table2000000004 }
+
+    { [{F8A3A441-90BD-426D-ACBD-58250A2B7EBA}];3 ;Role                ;Element ;Field   ;
+                                                  DataType=Code;
+                                                  SourceField=Permission Set::Role ID }
+
+    { [{8CBAD1AD-783D-42A9-8223-00B442D1FE0A}];3 ;Name                ;Element ;Field   ;
+                                                  DataType=Text;
+                                                  SourceField=Permission Set::Name }
+
+    { [{84B1A4CA-6F33-4078-907F-BE7EEC419C2D}];2 ;Permissions         ;Element ;Table   ;
+                                                  SourceTable=Table2000000005 }
+
+    { [{B0A54540-7834-497A-AA96-0AB3A22D0400}];3 ;Role                ;Element ;Field   ;
+                                                  DataType=Code;
+                                                  SourceField=Permission::Role ID }
+
+    { [{5B558A17-4E46-45EE-8DCB-A27D329C168B}];3 ;Type                ;Element ;Field   ;
+                                                  DataType=Option;
+                                                  SourceField=Permission::Object Type }
+
+    { [{EDB717E5-22D9-4788-88C4-09CEF017D550}];3 ;ID                  ;Element ;Field   ;
+                                                  DataType=Integer;
+                                                  SourceField=Permission::Object ID }
+
+    { [{0C5F8022-121B-4D97-9CBF-50E112DDE209}];3 ;R                   ;Element ;Field   ;
+                                                  DataType=Option;
+                                                  SourceField=Permission::Read Permission }
+
+    { [{0E070F4E-CAB0-4F49-BFD8-13C85ADFEBBD}];3 ;I                   ;Element ;Field   ;
+                                                  DataType=Option;
+                                                  SourceField=Permission::Insert Permission }
+
+    { [{7F33E948-D1D9-4EAC-A1DB-B57DF11290F8}];3 ;M                   ;Element ;Field   ;
+                                                  DataType=Option;
+                                                  SourceField=Permission::Modify Permission }
+
+    { [{963FEA31-8DF1-4163-9934-58465B67E416}];3 ;D                   ;Element ;Field   ;
+                                                  DataType=Option;
+                                                  SourceField=Permission::Delete Permission }
+
+    { [{22F2CC29-3BDA-42A9-8337-C00FC7CFF14B}];3 ;E                   ;Element ;Field   ;
+                                                  DataType=Option;
+                                                  SourceField=Permission::Execute Permission }
+
+  }
+  EVENTS
+  {
+  }
+  REQUESTPAGE
+  {
+    PROPERTIES
+    {
+    }
+    CONTROLS
+    {
+    }
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

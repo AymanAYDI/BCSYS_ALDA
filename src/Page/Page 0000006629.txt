@@ -2,8 +2,9 @@ OBJECT Page 6629 Sales Return List Archive
 {
   OBJECT-PROPERTIES
   {
-    Date=09/09/14;
-    Time=12:00:00;
+    Date=22/02/17;
+    Time=13:09:12;
+    Modified=Yes;
     Version List=NAVW18.00;
   }
   PROPERTIES
@@ -147,6 +148,15 @@ OBJECT Page 6629 Sales Return List Archive
     { 11  ;2   ;Field     ;
                 SourceExpr="Currency Code";
                 Visible=FALSE }
+
+    { 1000000000;2;Field  ;
+                SourceExpr=Amount }
+
+    { 1000000001;2;Field  ;
+                SourceExpr="Amount Including VAT" }
+
+    { 1000000002;2;Field  ;
+                SourceExpr=Invoice }
 
   }
   CODE

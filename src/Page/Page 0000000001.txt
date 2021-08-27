@@ -2,9 +2,10 @@ OBJECT Page 1 Company Information
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
-    Version List=NAVW19.00,NAVFR9.00;
+    Date=03/05/16;
+    Time=11:54:51;
+    Modified=Yes;
+    Version List=NAVW19.00,NAVFR9.00,AC1.00,ALDA,BC6;
   }
   PROPERTIES
   {
@@ -106,6 +107,9 @@ OBJECT Page 1 Company Information
 
     { 33  ;2   ;Field     ;
                 SourceExpr=Picture }
+
+    { 1000000000;2;Field  ;
+                SourceExpr="Picture 2" }
 
     { 1902768601;1;Group  ;
                 CaptionML=[ENU=Communication;
@@ -261,6 +265,60 @@ OBJECT Page 1 Company Information
     { 1120010;2;Field     ;
                 SourceExpr="Stock Capital" }
 
+    { 1180250010;2;Field  ;
+                SourceExpr="EORI No." }
+
+    { 1180250001;1;Group  ;
+                CaptionML=[ENU=Alda;
+                           FRA=Alda];
+                GroupType=Group }
+
+    { 1180250002;2;Field  ;
+                SourceExpr="Follower No. for MAJUSCULE" }
+
+    { 1180250003;2;Field  ;
+                SourceExpr="Bar Code for MAJUSCULE" }
+
+    { 1180250004;2;Field  ;
+                CaptionML=[ENU=Dim. Shipping Method Code;
+                           FRA=Code axe mode d'exp‚dition];
+                SourceExpr="Dim. Shipping Method Code" }
+
+    { 1180250005;2;Field  ;
+                CaptionML=[ENU=Dim. Selling Point Code;
+                           FRA=Code axe point de vente];
+                SourceExpr="Dim. Selling Point Code" }
+
+    { 1180250006;2;Field  ;
+                CaptionML=[ENU=Dim. Cust. Category Code;
+                           FRA=Code axe cat‚gorie client];
+                SourceExpr="Dim. Cust. Category Code" }
+
+    { 1180250007;2;Field  ;
+                CaptionML=[ENU=Dim. Dim. Manufaturer Code Code;
+                           FRA=Code axe fabricant];
+                SourceExpr="Dim. Manufaturer Code" }
+
+    { 1180250008;2;Field  ;
+                SourceExpr="Follower No. for CEA" }
+
+    { 1180250009;2;Group  ;
+                CaptionML=[ENU=PDF Creator;
+                           FRA=PDF];
+                GroupType=Group }
+
+    { 1180250011;3;Field  ;
+                SourceExpr="Printer Name" }
+
+    { 1180250012;3;Field  ;
+                SourceExpr="File Folder" }
+
+    { 1180250013;3;Field  ;
+                SourceExpr="Sending Mail Mgt. Method" }
+
+    { 1180250017;3;Field  ;
+                SourceExpr="E-mail for Sent Items" }
+
     { 1120014;2;Field     ;
                 SourceExpr=CISD }
 
@@ -341,6 +399,11 @@ OBJECT Page 1 Company Information
     END;
 
     BEGIN
+    {
+      AX1.00 Ajout Group : Alda
+                   Field : "Vendor No. for MAJUSCULE" "Follower No. for MAJUSCULE" "Dim. Shipping Method Filter"
+                   "Dim. Selling Point Filter" 3Dim. Manufaturer Code3
+    }
     END.
   }
 }

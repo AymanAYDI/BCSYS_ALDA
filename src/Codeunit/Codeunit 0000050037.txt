@@ -1,0 +1,44 @@
+OBJECT Codeunit 50037 SalesCrMemoHeader-Edit
+{
+  OBJECT-PROPERTIES
+  {
+    Date=23/07/18;
+    Time=12:01:01;
+    Modified=Yes;
+    Version List=;
+  }
+  PROPERTIES
+  {
+    TableNo=114;
+    Permissions=TableData 114=imd;
+    OnRun=BEGIN
+            SalesCrMemoHeader := Rec;
+            SalesCrMemoHeader.LOCKTABLE;
+            SalesCrMemoHeader.FIND;
+
+            SalesCrMemoHeader."External Document No." := "External Document No.";
+            SalesCrMemoHeader."Order Reference Customer" := "Order Reference Customer";
+
+            SalesCrMemoHeader."Bill-to Address" := "Bill-to Address";
+            SalesCrMemoHeader."Bill-to Address 2" := "Bill-to Address 2";
+
+            SalesCrMemoHeader."Bill-to Post Code" :=  "Bill-to Post Code";
+            SalesCrMemoHeader."Bill-to City" := "Bill-to City";
+
+            SalesCrMemoHeader.MODIFY;
+            Rec := SalesCrMemoHeader;
+          END;
+
+  }
+  CODE
+  {
+    VAR
+      SalesCrMemoHeader@1000000000 : Record 114;
+      PostCode@1000000001 : Record 225;
+      SalesCrMemoLine@1000000002 : Record 115;
+
+    BEGIN
+    END.
+  }
+}
+

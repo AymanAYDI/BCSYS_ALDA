@@ -2,9 +2,10 @@ OBJECT Table 60 Document Sending Profile
 {
   OBJECT-PROPERTIES
   {
-    Date=23/10/15;
-    Time=12:00:00;
-    Version List=NAVW19.00.00.43402;
+    Date=04/05/16;
+    Time=09:29:04;
+    Modified=Yes;
+    Version List=NAVW19.00.00.43402,BC6AUTOINV;
   }
   PROPERTIES
   {
@@ -108,6 +109,7 @@ OBJECT Table 60 Document Sending Profile
 
                                                    CaptionML=[ENU=One Related Party Selected;
                                                               FRA=Une partie associ‚e est s‚lectionn‚e] }
+    { 60200;  ;Use Contact Publish List;Boolean    }
   }
   KEYS
   {

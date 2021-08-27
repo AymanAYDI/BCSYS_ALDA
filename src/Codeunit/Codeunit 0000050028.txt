@@ -1,0 +1,252 @@
+OBJECT Codeunit 50028 DF Send Email Sales Document
+{
+  OBJECT-PROPERTIES
+  {
+    Date=11/05/16;
+    Time=16:09:32;
+    Modified=Yes;
+    Version List=BC6AUTOINV;
+  }
+  PROPERTIES
+  {
+    TableNo=50018;
+    Permissions=TableData 112=rm,
+                TableData 114=rm;
+    OnRun=VAR
+            DataFlow@1000000014 : Record 50014;
+            DataFlowMgt@1000000000 : Codeunit 50013;
+            SalesInvHeader@1000000001 : Record 112;
+            SalesInvHeader2@1000000016 : Record 112;
+            SalesCrMemoHeader@1000000018 : Record 114;
+            SalesCrMemoHeader2@1000000017 : Record 114;
+            CounterOK@1000000005 : Integer;
+            i@1000000006 : Integer;
+            tot@1000000007 : Integer;
+            TempBlob@1000000009 : TEMPORARY Record 99008535;
+            TempBlobBody@1000000013 : TEMPORARY Record 99008535;
+            ReportDistriMgt@1000000008 : Codeunit 452;
+            ContBusRel@1000000003 : Record 5054;
+            Cont@1000000002 : Record 5050;
+            Cust@1000000012 : Record 18;
+            EmailsRecipients@1000000010 : Text;
+            BCCI@1000000011 : Text;
+            AttachmentFilePath@1000000004 : Text;
+            SentOnce@1000000015 : Boolean;
+          BEGIN
+            IF NOT ("Source Table ID" IN [DATABASE::"Sales Invoice Header", DATABASE::"Sales Cr.Memo Header"])
+              THEN FIELDERROR("Source Table ID");
+            TESTFIELD("Data Flow Code");
+
+            CompInfo.GET;
+            CompInfo.TESTFIELD("E-mail for Sent Items");
+            BCCI := CompInfo."E-mail for Sent Items";
+
+            StateIndicator.Open();
+            StateIndicator.Start();
+            StateIndicator.UpdateDataFlowStep(Rec);
+            StateIndicator.InsertLogEntry(Rec);
+            DataFlow.GET("Data Flow Code");
+
+            CASE "Source Table ID" OF
+              DATABASE::"Sales Invoice Header":
+                BEGIN
+                  SalesInvHeader.SETVIEW(GetViewRestrictions());
+                  tot := SalesInvHeader.COUNT;
+                  IF SalesInvHeader.FINDSET(TRUE, FALSE) THEN
+                    REPEAT
+                      StateIndicator.Update();
+                      CLEAR(ReportDistriMgt);
+                      ReportDistriMgt.InitializeFrom(TRUE);
+                      AttachmentFilePath := ReportDistriMgt.GetReportPDFFileName(SalesInvHeader);
+                      Cust.GET(SalesInvHeader."Bill-to Customer No.");
+
+                      SentOnce := FALSE;
+
+                      IF DataFlow."Force Send To Email" = '' THEN BEGIN
+                        ContBusRel.SETCURRENTKEY("Link to Table","No.");
+                        ContBusRel.SETRANGE("Link to Table",ContBusRel."Link to Table"::Customer);
+                        ContBusRel.SETRANGE("No.",SalesInvHeader."Bill-to Customer No.");
+                        IF ContBusRel.FINDFIRST THEN BEGIN
+                          Cont.SETCURRENTKEY("Company Name","Company No.",Type,Name);
+                          Cont.SETRANGE("Company No.",ContBusRel."Contact No.");
+                          Cont.SETRANGE("Incl. in Email Inv.", TRUE);
+                          Cont.SETFILTER("E-Mail", '<>%1', '');
+                          IF Cont.FINDSET THEN
+                            REPEAT
+                              IF EmailFile(AttachmentFilePath,'', SalesInvHeader."No.", InvoiceTxt, TRUE, Cont."E-Mail", '', BCCI, GetAttachmentNo(DataFlow."Interaction Template Code", Cont."Language Code"))
+                                THEN SentOnce := TRUE;
+                            UNTIL Cont.NEXT = 0;
+                        END;
+                        IF NOT SentOnce THEN
+                          IF Cust."E-Mail" <> '' THEN BEGIN
+                            IF EmailFile(AttachmentFilePath,'', SalesInvHeader."No.", InvoiceTxt, TRUE, Cust."E-Mail", '', BCCI, GetAttachmentNo(DataFlow."Interaction Template Code", Cust."Language Code"))
+                              THEN SentOnce := TRUE;
+                          END;
+                        IF NOT SentOnce THEN
+                          EmailFile(AttachmentFilePath,'', SalesInvHeader."No.", COPYSTR('['+DataFlow.Code+'] '+ InvoiceTxt, 1 ,150), TRUE, BCCI, '', '', GetAttachmentNo(DataFlow."Interaction Template Code", Cust."Language Code"));
+                      END ELSE
+                        EmailFile(AttachmentFilePath,'', SalesInvHeader."No.", COPYSTR('['+DataFlow.Code+'] '+ InvoiceTxt, 1 ,150), TRUE, DataFlow."Force Send To Email", '', BCCI, GetAttachmentNo(DataFlow."Interaction Template Code", Cont."Language Code"));
+
+                      SalesInvHeader2.GET(SalesInvHeader."No.");
+                      DataFlowMgt.StampSalesInvHeader(SalesInvHeader2, Rec);
+
+                      SalesInvHeader2.MODIFY;
+
+                      CounterOK := CounterOK + 1;
+                      IF EXISTS(AttachmentFilePath) THEN
+                        IF ERASE(AttachmentFilePath) THEN;
+
+                    UNTIL SalesInvHeader.NEXT = 0;
+                  COMMIT;
+              END;
+
+
+              DATABASE::"Sales Cr.Memo Header":
+                BEGIN
+                  SalesCrMemoHeader.SETVIEW(GetViewRestrictions());
+                  tot := SalesCrMemoHeader.COUNT;
+                  IF SalesCrMemoHeader.FINDSET(TRUE, FALSE) THEN
+                    REPEAT
+                      StateIndicator.Update();
+                      CLEAR(ReportDistriMgt);
+                      ReportDistriMgt.InitializeFrom(TRUE);
+                      AttachmentFilePath := ReportDistriMgt.GetReportPDFFileName(SalesCrMemoHeader);
+                      Cust.GET(SalesCrMemoHeader."Bill-to Customer No.");
+
+                      SentOnce := FALSE;
+
+                      IF DataFlow."Force Send To Email" = '' THEN BEGIN
+                        ContBusRel.SETCURRENTKEY("Link to Table","No.");
+                        ContBusRel.SETRANGE("Link to Table",ContBusRel."Link to Table"::Customer);
+                        ContBusRel.SETRANGE("No.",SalesCrMemoHeader."Bill-to Customer No.");
+                        IF ContBusRel.FINDFIRST THEN BEGIN
+                          Cont.SETCURRENTKEY("Company Name","Company No.",Type,Name);
+                          Cont.SETRANGE("Company No.",ContBusRel."Contact No.");
+                          Cont.SETRANGE("Incl. in Email Inv.", TRUE);
+                          Cont.SETFILTER("E-Mail", '<>%1', '');
+                          IF Cont.FINDSET THEN
+                            REPEAT
+                              IF EmailFile(AttachmentFilePath,'', SalesCrMemoHeader."No.", CrMemoTxt, TRUE, Cont."E-Mail", '', BCCI, GetAttachmentNo(DataFlow."Interaction Template Code", Cont."Language Code"))
+                                THEN SentOnce := TRUE;
+                            UNTIL Cont.NEXT = 0;
+                        END;
+                        IF NOT SentOnce THEN
+                          IF Cust."E-Mail" <> '' THEN BEGIN
+                            IF EmailFile(AttachmentFilePath,'', SalesCrMemoHeader."No.", CrMemoTxt, TRUE, Cust."E-Mail", '', BCCI, GetAttachmentNo(DataFlow."Interaction Template Code", Cust."Language Code"))
+                              THEN SentOnce := TRUE;
+                          END;
+                        IF NOT SentOnce THEN
+                          EmailFile(AttachmentFilePath,'', SalesCrMemoHeader."No.", COPYSTR('['+DataFlow.Code+'] '+ CrMemoTxt, 1 ,150), TRUE, BCCI, '', '', GetAttachmentNo(DataFlow."Interaction Template Code", Cust."Language Code"));
+                      END ELSE
+                        EmailFile(AttachmentFilePath,'', SalesCrMemoHeader."No.", COPYSTR('['+DataFlow.Code+'] '+CrMemoTxt, 1 ,150), TRUE, DataFlow."Force Send To Email", '', '', GetAttachmentNo(DataFlow."Interaction Template Code", Cust."Language Code"));
+
+                      SalesCrMemoHeader2.GET(SalesCrMemoHeader."No.");
+                      DataFlowMgt.StampSalesCrHeader(SalesCrMemoHeader2, Rec);
+                      SalesCrMemoHeader2.MODIFY;
+
+                      CounterOK := CounterOK + 1;
+                      IF EXISTS(AttachmentFilePath) THEN
+                        IF ERASE(AttachmentFilePath) THEN;
+
+                    UNTIL SalesCrMemoHeader.NEXT = 0;
+                  COMMIT;
+              END;
+
+            END; //CASE
+            StateIndicator.UpdateLogEntry(Rec, STRSUBSTNO(Text002, CounterOK, tot));
+            StateIndicator.EndUpdateDataFlowStep(Rec);
+          END;
+
+  }
+  CODE
+  {
+    VAR
+      StateIndicator@1000000000 : TEMPORARY Record 50005;
+      Text002@1000000001 : TextConst 'ENU=%1 sales documents out of a total of %2 have now been sent.;FRA=%1 document(s) vente sur %2 ont ‚t‚ envoy‚(s).';
+      CompInfo@1000000003 : Record 79;
+      EmailSubjectCapTxt@1000000008 : TextConst '@@@="%1 = Customer Name. %2 = Document Type %3 = Invoice No.";ENU=%1 - %2 %3;FRA=%1 - %2 %3';
+      ReportAsPdfFileNameMsg@1000000007 : TextConst '@@@="%1 = Document Type %2 = Invoice No.";ENU=Sales %1 %2.pdf;FRA=%1 vente %2.pdf';
+      InvoiceTxt@1000000006 : TextConst 'ENU=Invoice;FRA=Facture';
+      ShipmentTxt@1000000005 : TextConst 'ENU=Shipment;FRA=Exp‚dition';
+      CrMemoTxt@1000000004 : TextConst 'ENU=Credit Memo;FRA=Avoir';
+      ReportAsPdfFileNameMsgPurch@1000000002 : TextConst '@@@="%1 = Document Type %2 = Invoice No.";ENU=purchase %1 %2.pdf;FRA=%1 achat %2.pdf';
+
+    LOCAL PROCEDURE EmailFile@3(AttachmentFilePath@1001 : Text[250];AttachmentFileName@1005 : Text[250];PostedDocNo@1000 : Code[20];EmailDocName@1008 : Text[150];HideDialog@1003 : Boolean;SendTo@1000000000 : Text[250];CopyTo@1000000001 : Text[250];BCopyTo@1000000002 : Text[250];AttachmentBodyNo@1000000004 : Integer) Sent : Boolean;
+    VAR
+      TempEmailItem@1002 : TEMPORARY Record 9500;
+      CompanyInformation@1004 : Record 79;
+      InteractionTemplate@1000000003 : Record 5064;
+      Attachment@1000000005 : Record 5062;
+      InStream@1000000006 : InStream;
+      InStream2@1000000010 : InStream;
+      buffer@1000000007 : Text;
+      DotStream2@1000000012 : DotNet "'mscorlib'.System.IO.StreamReader";
+      DotFile@1000000013 : DotNet "'mscorlib'.System.IO.File";
+      FileManagement@1000000014 : Codeunit 419;
+      AttachmentFilePathLogo@1000000009 : Text[250];
+      AttachmentFileNameLogo@1000000008 : Text[250];
+    BEGIN
+      IF AttachmentFileName = '' THEN
+        AttachmentFileName := STRSUBSTNO(ReportAsPdfFileNameMsg,EmailDocName,PostedDocNo);
+      AttachmentFileNameLogo := 'logo.png';
+      AttachmentFilePathLogo := FileManagement.ServerTempFileName('png');
+      CLEAR(InStream);
+      CompanyInformation.GET;
+      CompanyInformation.CALCFIELDS(Picture);
+      CompanyInformation.Picture.EXPORT(AttachmentFilePathLogo);
+
+      WITH TempEmailItem DO BEGIN
+        "Send to" := SendTo;
+        "Send BCC" := BCopyTo;
+        "Send CC" := CopyTo;
+        Subject := COPYSTR(
+            STRSUBSTNO(
+              EmailSubjectCapTxt,CompanyInformation.Name,EmailDocName,PostedDocNo),1,
+            MAXSTRLEN(Subject));
+        "Attachment File Path" := AttachmentFilePath;
+        "Attachment Name" := AttachmentFileName;
+        "Attachment2 File Path" := AttachmentFilePathLogo;
+        "Attachment2 Name" := AttachmentFileNameLogo;
+        IF Attachment.GET(AttachmentBodyNo) THEN BEGIN
+          Attachment.CALCFIELDS(Attachment);
+          IF Attachment.Attachment.HASVALUE THEN BEGIN
+            Attachment.Attachment.CREATEINSTREAM(InStream);
+            DotStream2 := DotStream2.StreamReader(InStream);
+            buffer := DotStream2.ReadToEnd();
+            buffer := STRSUBSTNO(buffer, "Attachment2 Name",
+                STRSUBSTNO('%1 <br /> %2 <br /> %3 <br /> %4',
+                  CompanyInformation.Address,
+                  CompanyInformation."Address 2",
+                  CompanyInformation."Post Code" + ' ' + CompanyInformation.City,
+                  CompanyInformation."Phone No."
+                )
+              , PostedDocNo);
+            SetBodyText(buffer);
+          END;
+        END;
+
+        Sent := TryToSend(HideDialog);
+        IF EXISTS(AttachmentFilePathLogo) THEN
+            IF ERASE(AttachmentFilePathLogo) THEN;
+      END;
+    END;
+
+    LOCAL PROCEDURE GetAttachmentNo@1000000001(_InteractionTemplateCode@1000000000 : Code[20];_LanguageCode@1000000001 : Code[10]) : Integer;
+    VAR
+      InteractionTmplLanguage@1000000003 : Record 5103;
+      InteractionTemplate@1000000002 : Record 5064;
+    BEGIN
+      InteractionTmplLanguage.SETRANGE("Interaction Template Code", _InteractionTemplateCode);
+      InteractionTmplLanguage.SETRANGE("Language Code", _LanguageCode);
+      IF InteractionTmplLanguage.ISEMPTY THEN
+        InteractionTmplLanguage.SETRANGE("Language Code");
+      IF InteractionTmplLanguage.FINDFIRST THEN
+        EXIT(InteractionTmplLanguage."Attachment No.")
+      ELSE EXIT(0);
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

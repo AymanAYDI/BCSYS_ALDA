@@ -4,6 +4,7 @@ OBJECT Table 370 Excel Buffer
   {
     Date=15/09/15;
     Time=12:00:00;
+    Modified=Yes;
     Version List=NAVW19.00;
   }
   PROPERTIES

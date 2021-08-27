@@ -1,0 +1,370 @@
+OBJECT Report 50048 Exp. Purch. Inv. & Cr.Memo
+{
+  OBJECT-PROPERTIES
+  {
+    Date=07/03/16;
+    Time=11:14:43;
+    Modified=Yes;
+    Version List=,2016;
+  }
+  PROPERTIES
+  {
+    CaptionML=[ENU=Exp. Purch. Inv. & Cr.Memo;
+               FRA=Exp. facture et avoir achat];
+    ProcessingOnly=Yes;
+    OnInitReport=BEGIN
+                   StartingDate := CALCDATE('<-1M-CM>',WORKDATE);
+                   EndingDate := CALCDATE('<-1M+CM>',WORKDATE);
+                 END;
+
+    OnPreReport=BEGIN
+                  CASE TRUE OF
+                    (StartingDate <> 0D) AND (EndingDate <> 0D):DateFilter := STRSUBSTNO('%1..%2',StartingDate,EndingDate);
+                    (StartingDate <> 0D) AND (EndingDate = 0D):DateFilter := STRSUBSTNO('%1..',StartingDate);
+                    (StartingDate = 0D) AND (EndingDate <> 0D):DateFilter := STRSUBSTNO('..%1',EndingDate);
+                    (StartingDate = 0D) AND (EndingDate  = 0D):DateFilter := '';
+                  END;//CASE
+
+                  IF GUIALLOWED THEN
+                    Window.OPEN(Text000);
+
+                  EntryNo += 1;
+
+                  TmpEDIEntry.INIT;
+                  TmpEDIEntry."Entry No." := EntryNo;
+                  TmpEDIEntry."Field 1" := "Purch. Inv. Header".FIELDCAPTION("Posting Date");
+                  TmpEDIEntry."Field 2" := "Purch. Inv. Line".FIELDCAPTION("Document No.");
+                  TmpEDIEntry."Field 3" := "Purch. Inv. Header".FIELDCAPTION("Buy-from Vendor No.");
+                  TmpEDIEntry."Field 4" := "Purch. Inv. Header".FIELDCAPTION("Buy-from Vendor Name");
+                  TmpEDIEntry."Field 5" := "Purch. Inv. Header".FIELDCAPTION("Buy-from Address");
+                  TmpEDIEntry."Field 6" := "Purch. Inv. Header".FIELDCAPTION("Buy-from Address 2");
+                  TmpEDIEntry."Field 7" := "Purch. Inv. Header".FIELDCAPTION("Buy-from Post Code");
+                  TmpEDIEntry."Field 8" := "Purch. Inv. Header".FIELDCAPTION("Buy-from City");
+                  TmpEDIEntry."Field 9" := "Purch. Inv. Header".FIELDCAPTION("Pay-to Vendor No.");
+                  TmpEDIEntry."Field 10" := "Purch. Inv. Header".FIELDCAPTION("Pay-to Name");
+                  TmpEDIEntry."Field 11" := "Purch. Inv. Header".FIELDCAPTION("Pay-to Address");
+                  TmpEDIEntry."Field 12" := "Purch. Inv. Header".FIELDCAPTION("Pay-to Address 2");
+                  TmpEDIEntry."Field 13" := "Purch. Inv. Header".FIELDCAPTION("Pay-to Post Code");
+                  TmpEDIEntry."Field 14" := "Purch. Inv. Header".FIELDCAPTION("Pay-to City");
+                  TmpEDIEntry."Field 15" := "Purch. Inv. Line".FIELDCAPTION("No.");
+                  TmpEDIEntry."Field 16" := "Purch. Inv. Line".FIELDCAPTION(Description);
+                  TmpEDIEntry."Field 17" := "Purch. Inv. Line".FIELDCAPTION(Quantity);
+                  TmpEDIEntry."Field 18" := "Purch. Inv. Line".FIELDCAPTION("Unit Cost");
+                  TmpEDIEntry."Field 19" := "Purch. Inv. Line".FIELDCAPTION("Line Discount Amount");
+                  //TmpEDIEntry."Field 20" := "purch. Inv. Line".FIELDCAPTION("Montant Ecotaxe");
+                  TmpEDIEntry."Field 21" := "Purch. Inv. Line".FIELDCAPTION(Amount);
+                  TmpEDIEntry."Field 22" := "Purch. Inv. Line".FIELDCAPTION("Amount Including VAT");
+                  TmpEDIEntry."Field 23" := "Purch. Inv. Line".FIELDCAPTION("VAT %");
+                  TmpEDIEntry."Field 24" := "Purch. Inv. Line".FIELDCAPTION("VAT Base Amount");
+                  TmpEDIEntry.INSERT;
+                END;
+
+    OnPostReport=BEGIN
+                   IF GUIALLOWED THEN
+                     Window.CLOSE;
+                 END;
+
+  }
+  DATASET
+  {
+    { 5290;    ;DataItem;                    ;
+               DataItemTable=Table122;
+               DataItemTableView=SORTING(No.);
+               OnPreDataItem=BEGIN
+                               IF DateFilter <> '' THEN
+                                 SETFILTER("Posting Date",DateFilter);
+                             END;
+                              }
+
+    { 5291;1   ;DataItem;                    ;
+               DataItemTable=Table123;
+               DataItemTableView=SORTING(Document No.,Line No.)
+                                 WHERE(Type=FILTER(<>' '));
+               OnAfterGetRecord=BEGIN
+                                  EntryNo += 1;
+
+                                  TmpEDIEntry.INIT;
+                                  TmpEDIEntry."Entry No." := EntryNo;
+                                  TmpEDIEntry."Field 1" := FORMAT("Purch. Inv. Header"."Posting Date");
+                                  TmpEDIEntry."Field 2" := FORMAT("Document No.");
+                                  TmpEDIEntry."Field 3" := FORMAT("Purch. Inv. Header"."Buy-from Vendor No.");
+                                  TmpEDIEntry."Field 4" := "Purch. Inv. Header"."Buy-from Vendor Name";
+                                  TmpEDIEntry."Field 5" := "Purch. Inv. Header"."Buy-from Address";
+                                  TmpEDIEntry."Field 6" := "Purch. Inv. Header"."Buy-from Address 2";
+                                  TmpEDIEntry."Field 7" := "Purch. Inv. Header"."Buy-from Post Code";
+                                  TmpEDIEntry."Field 8" := "Purch. Inv. Header"."Buy-from City";
+                                  TmpEDIEntry."Field 9" := FORMAT("Purch. Inv. Header"."Pay-to Vendor No.");
+                                  TmpEDIEntry."Field 10" := "Purch. Inv. Header"."Pay-to Name";
+                                  TmpEDIEntry."Field 11" := "Purch. Inv. Header"."Pay-to Address";
+                                  TmpEDIEntry."Field 12" := "Purch. Inv. Header"."Pay-to Address 2";
+                                  TmpEDIEntry."Field 13" := "Purch. Inv. Header"."Pay-to Post Code";
+                                  TmpEDIEntry."Field 14" := "Purch. Inv. Header"."Pay-to City";
+                                  TmpEDIEntry."Field 15" := FORMAT("No.");
+                                  TmpEDIEntry."Field 16" := Description;
+                                  TmpEDIEntry."Field 17" := FORMAT(Quantity);
+                                  TmpEDIEntry."Field 18" := FORMAT("Unit Cost");
+                                  TmpEDIEntry."Field 19" := FORMAT("Line Discount Amount");
+
+                                  TmpEDIEntry."Field 21" := FORMAT(Amount);
+                                  TmpEDIEntry."Field 22" := FORMAT("Amount Including VAT");
+                                  TmpEDIEntry."Field 23" := FORMAT("VAT %");
+                                  TmpEDIEntry."Field 24" := FORMAT("VAT Base Amount");
+                                  TmpEDIEntry.INSERT;
+                                END;
+
+               DataItemLink=Document No.=FIELD(No.) }
+
+    { 5292;    ;DataItem;                    ;
+               DataItemTable=Table124;
+               DataItemTableView=SORTING(No.);
+               OnPreDataItem=BEGIN
+                               IF DateFilter <> '' THEN
+                                 SETFILTER("Posting Date",DateFilter);
+                             END;
+                              }
+
+    { 5293;1   ;DataItem;                    ;
+               DataItemTable=Table125;
+               DataItemTableView=SORTING(Document No.,Line No.)
+                                 WHERE(Type=FILTER(<>' '));
+               OnAfterGetRecord=BEGIN
+                                  EntryNo += 1;
+
+                                  TmpEDIEntry.INIT;
+                                  TmpEDIEntry."Entry No." := EntryNo;
+                                  TmpEDIEntry."Field 1" := FORMAT("Purch. Cr. Memo Hdr."."Posting Date");
+                                  TmpEDIEntry."Field 2" := FORMAT("Document No.");
+                                  TmpEDIEntry."Field 3" := FORMAT("Purch. Cr. Memo Hdr."."Buy-from Vendor No.");
+                                  TmpEDIEntry."Field 4" := "Purch. Cr. Memo Hdr."."Buy-from Vendor Name";
+                                  TmpEDIEntry."Field 5" := "Purch. Cr. Memo Hdr."."Buy-from Address";
+                                  TmpEDIEntry."Field 6" := "Purch. Cr. Memo Hdr."."Buy-from Address 2";
+                                  TmpEDIEntry."Field 7" := "Purch. Cr. Memo Hdr."."Buy-from Post Code";
+                                  TmpEDIEntry."Field 8" := "Purch. Cr. Memo Hdr."."Buy-from City";
+                                  TmpEDIEntry."Field 9" := FORMAT("Purch. Cr. Memo Hdr."."Pay-to Vendor No.");
+                                  TmpEDIEntry."Field 10" := "Purch. Cr. Memo Hdr."."Pay-to Name";
+                                  TmpEDIEntry."Field 11" := "Purch. Cr. Memo Hdr."."Pay-to Address";
+                                  TmpEDIEntry."Field 12" := "Purch. Cr. Memo Hdr."."Pay-to Address 2";
+                                  TmpEDIEntry."Field 13" := "Purch. Cr. Memo Hdr."."Pay-to Post Code";
+                                  TmpEDIEntry."Field 14" := "Purch. Cr. Memo Hdr."."Pay-to City";
+                                  TmpEDIEntry."Field 15" := FORMAT("No.");
+                                  TmpEDIEntry."Field 16" := Description;
+                                  TmpEDIEntry."Field 17" := FORMAT(Quantity);
+                                  TmpEDIEntry."Field 18" := FORMAT("Unit Cost");
+                                  TmpEDIEntry."Field 19" := FORMAT("Line Discount Amount");
+
+                                  TmpEDIEntry."Field 21" := FORMAT(Amount);
+                                  TmpEDIEntry."Field 22" := FORMAT("Amount Including VAT");
+                                  TmpEDIEntry."Field 23" := FORMAT("VAT %");
+                                  TmpEDIEntry."Field 24" := FORMAT("VAT Base Amount");
+                                  TmpEDIEntry.INSERT;
+                                END;
+
+               DataItemLink=Document No.=FIELD(No.) }
+
+    { 5294;    ;DataItem;                    ;
+               DataItemTable=Table2000000026;
+               DataItemTableView=SORTING(Number)
+                                 ORDER(Ascending)
+                                 WHERE(Number=FILTER(1..));
+               OnPreDataItem=BEGIN
+                               CarriageReturn := 13;
+                               LineFeed := 10;
+
+                               CLEAR(FileOutStream);
+                               CLEAR(RecRef);
+                               CLEAR(CurrFile);
+
+                               SETRANGE(Number,1,TmpEDIEntry.COUNT);
+                             END;
+
+               OnAfterGetRecord=BEGIN
+                                  IF Number = 1 THEN BEGIN
+                                    TmpEDIEntry.FINDSET;
+
+                                    CurrFile.WRITEMODE := TRUE;
+                                    CurrFile.TEXTMODE := TRUE;
+                                    CurrFile.CREATE(FileName);
+                                  END ELSE
+                                    TmpEDIEntry.NEXT;
+
+                                  RecRef.GETTABLE(TmpEDIEntry);
+
+                                  Line := '';
+                                  FieldVal := '';
+                                  FOR i := 10 TO 33 DO BEGIN
+                                    CLEAR(FldRef);
+                                    FldRef := RecRef.FIELD(i);
+                                    FieldVal := FORMAT(FldRef.VALUE);
+                                    FieldVal := Ascii2Ansi(FieldVal);
+                                    IF i = 10 THEN
+                                      Line := FieldVal
+                                    ELSE
+                                      Line := Line + ';' + FieldVal;
+                                  END;//FOR
+                                  CurrFile.WRITE(Line);
+                                END;
+
+               OnPostDataItem=BEGIN
+                                CurrFile.CLOSE;
+                              END;
+                               }
+
+  }
+  REQUESTPAGE
+  {
+    PROPERTIES
+    {
+      OnInit=BEGIN
+               FileNameVisible := TRUE;
+             END;
+
+      OnOpenPage=BEGIN
+                   FileNameVisible := ISSERVICETIER;
+                 END;
+
+    }
+    CONTROLS
+    {
+      { 1180250004;0;Container;
+                  ContainerType=ContentArea }
+
+      { 1180250003;1;Group  ;
+                  CaptionML=[ENU=Options;
+                             FRA=Options] }
+
+      { 1180250002;2;Field  ;
+                  CaptionML=[ENU=Starting Date;
+                             FRA=Date d‚Äöbut];
+                  SourceExpr=StartingDate }
+
+      { 1180250001;2;Field  ;
+                  CaptionML=[ENU=Ending Date;
+                             FRA=Date fin];
+                  SourceExpr=EndingDate }
+
+      { 1180250005;2;Field  ;
+                  Name=FileName;
+                  CaptionML=[ENU=File Name;
+                             FRA=Nom du fichier];
+                  SourceExpr=FileName;
+                  Visible=FileNameVisible;
+                  OnAssistEdit=BEGIN
+                                 SaveToFile(FileName);
+                               END;
+                                }
+
+    }
+  }
+  LABELS
+  {
+  }
+  CODE
+  {
+    VAR
+      TmpEDIEntry@1180250011 : TEMPORARY Record 50002;
+      StartingDate@1180250001 : Date;
+      EndingDate@1180250002 : Date;
+      DateFilter@1180250004 : Text[30];
+      CurrFile@1180250010 : File;
+      FileOutStream@1180250009 : OutStream;
+      RecRef@1180250008 : RecordRef;
+      FldRef@1180250007 : FieldRef;
+      CarriageReturn@1180250006 : Char;
+      LineFeed@1180250005 : Char;
+      FieldVal@1180250003 : Text[1024];
+      FileName@1180250012 : Text[1024];
+      Line@1180250013 : Text[1024];
+      i@1180250014 : Integer;
+      AsciiStr@1180250017 : Text[250];
+      AnsiStr@1180250016 : Text[250];
+      CharVar@1180250015 : ARRAY [32] OF Char;
+      EntryNo@1180250018 : Integer;
+      FileNameVisible@1180250019 : Boolean INDATASET;
+      Text000@1180250024 : TextConst 'ENU=Batch in process...;FRA=Traitement en cours...';
+      Text001@1180250022 : TextConst 'ENU=Export to TXT File;FRA=Exporter en fichier TXT';
+      Text002@1180250021 : TextConst 'ENU=TXT Files (*.txt)|*.txt|All Files (*.*)|*.*;FRA=Fichiers TXT (*.txt)|*.txt|Tous les fichiers (*.*)|*.*';
+      Text003@1180250020 : TextConst 'ENU=Default.txt;FRA=Default.txt';
+      Window@1180250023 : Dialog;
+      FileMgt@1000000000 : Codeunit 419;
+
+    PROCEDURE Ansi2Ascii@1180250010(_Text@1180250001 : Text[250]) : Text[250];
+    BEGIN
+      MakeVars;
+      EXIT(CONVERTSTR(_Text,AnsiStr,AsciiStr));
+    END;
+
+    PROCEDURE Ascii2Ansi@1180250009(_Text@1180250001 : Text[250]) : Text[250];
+    BEGIN
+      MakeVars;
+      EXIT(CONVERTSTR(_Text,AsciiStr,AnsiStr));
+    END;
+
+    PROCEDURE MakeVars@1180250005();
+    BEGIN
+
+      AsciiStr := 'ÄÅÇÉÑÖÜáàâäãåçéèêëíìîïñóòôöõúùûü†°¢£§•¶ß®©™´¨≠ÆØ›››››µ∂∑∏››++Ωæ++--+-+∆«++--›-+';
+      AsciiStr := AsciiStr +'œ–—“”‘i÷◊ÿ++›_›ﬁÓ‡·‚„‰ÂÊÁËÈÍÎÏÌÓÔÒ=ÛÙıˆ˜¯˘˙˚¸˝›ˇ';
+      CharVar[1] := 196;
+      CharVar[2] := 197;
+      CharVar[3] := 201;
+      CharVar[4] := 242;
+      CharVar[5] := 220;
+      CharVar[6] := 186;
+      CharVar[7] := 191;
+      CharVar[8] := 188;
+      CharVar[9] := 187;
+      CharVar[10] := 193;
+      CharVar[11] := 194;
+      CharVar[12] := 192;
+      CharVar[13] := 195;
+      CharVar[14] := 202;
+      CharVar[15] := 203;
+      CharVar[16] := 200;
+      CharVar[17] := 205;
+      CharVar[18] := 206;
+      CharVar[19] := 204;
+      CharVar[20] := 175;
+      CharVar[21] := 223;
+      CharVar[22] := 213;
+      CharVar[23] := 254;
+      CharVar[24] := 218;
+      CharVar[25] := 219;
+      CharVar[26] := 217;
+      CharVar[27] := 180;
+      CharVar[28] := 177;
+      CharVar[29] := 176;
+      CharVar[30] := 185;
+      CharVar[31] := 179;
+      CharVar[32] := 178;
+
+      AnsiStr  := '«¸È‚‰‡ÂÁÍÎËÔÓÏ'+FORMAT(CharVar[1])+FORMAT(CharVar[2])+FORMAT(CharVar[3])+ 'Ê∆Ùˆ'+FORMAT(CharVar[4]);
+      AnsiStr := AnsiStr + '˚˘ˇ÷'+FORMAT(CharVar[5])+'¯£ÿ◊É·ÌÛ˙Ò—™'+FORMAT(CharVar[6])+FORMAT(CharVar[7]);
+      AnsiStr := AnsiStr + 'Æ¨Ω'+FORMAT(CharVar[8])+'°´'+FORMAT(CharVar[9])+'___¶¶' + FORMAT(CharVar[10])+FORMAT(CharVar[11]);
+      AnsiStr := AnsiStr + FORMAT(CharVar[12]) + '©¶¶++¢•++--+-+„' + FORMAT(CharVar[13]) + '++--¶-+§–';
+      AnsiStr  :=  AnsiStr +FORMAT(CharVar[14])+FORMAT(CharVar[15])+FORMAT(CharVar[16])+'i'+FORMAT(CharVar[17])+FORMAT(CharVar[18]);
+      AnsiStr  :=  AnsiStr + 'œ++__¶' + FORMAT(CharVar[19])+FORMAT(CharVar[20])+'”'+FORMAT(CharVar[21])+'‘“ı';
+      AnsiStr  :=  AnsiStr + FORMAT(CharVar[22]) + 'µ' + FORMAT(CharVar[23]) + 'ﬁ' + FORMAT(CharVar[24])+ FORMAT(CharVar[25]);
+      AnsiStr  :=  AnsiStr + FORMAT(CharVar[26]) + '˝›Ø' + FORMAT(CharVar[27]) + '≠' + FORMAT(CharVar[28]) +'=æ∂ß˜∏'+ FORMAT(CharVar[29]
+      );
+      AnsiStr  :=  AnsiStr + '®∑' + FORMAT(CharVar[30]) +FORMAT(CharVar[31]) +FORMAT(CharVar[32]) +'_ ';
+    END;
+
+    PROCEDURE SaveToFile@1102601001(VAR FileName2@1102601002 : Text[1024]);
+    VAR
+      CommonDialogMgt@1102601000 : Codeunit 412;
+      NewFileName@1102601001 : Text[1024];
+    BEGIN
+      NewFileName := FileMgt.UploadFileWithFilter(Text001,'*.txt','(*.txt)|*.txt','txt');
+
+      IF NewFileName <> '' THEN
+        FileName2 := NewFileName;
+    END;
+
+    BEGIN
+    END.
+  }
+  RDLDATA
+  {
+  }
+}
+

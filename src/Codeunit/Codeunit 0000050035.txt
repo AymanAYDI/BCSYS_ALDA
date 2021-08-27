@@ -1,0 +1,33 @@
+OBJECT Codeunit 50035 Schedule DF Job Queue
+{
+  OBJECT-PROPERTIES
+  {
+    Date=07/11/17;
+    Time=12:17:32;
+    Modified=Yes;
+    Version List=;
+  }
+  PROPERTIES
+  {
+    TableNo=472;
+    OnRun=VAR
+            DataFlowMgt@1000000000 : Codeunit 50013;
+            DataFlow@1000000002 : Record 50014;
+            DataFlowStep@1000000001 : Record 50018;
+          BEGIN
+            TESTFIELD("Parameter String");
+            DataFlow.GET("Parameter String");
+            DataFlowStep.SETRANGE("Data Flow Code", "Parameter String");
+            DataFlowStep.FINDFIRST;
+            DataFlowMgt.ExcuteFromStep(DataFlowStep);
+          END;
+
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

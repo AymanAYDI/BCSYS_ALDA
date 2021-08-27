@@ -1,0 +1,34 @@
+OBJECT Codeunit 50080 FieldCaptionMigration
+{
+  OBJECT-PROPERTIES
+  {
+    Date=05/02/16;
+    Time=15:04:55;
+    Modified=Yes;
+    Version List=;
+  }
+  PROPERTIES
+  {
+    OnRun=VAR
+            MyFilter@1000000000 : Text;
+          BEGIN
+            MyFilter := 'Nø';
+            Field.SETRANGE(Field.TableNo,5080);
+            Field.SETFILTER("Field Caption",'@'+MyFilter+'*');
+            IF Field.FINDFIRST THEN
+              MESSAGE('OK')
+            ELSE
+              ERROR('');
+          END;
+
+  }
+  CODE
+  {
+    VAR
+      Field@1000000000 : Record 2000000041;
+
+    BEGIN
+    END.
+  }
+}
+

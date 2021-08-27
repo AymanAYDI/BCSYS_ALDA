@@ -2,8 +2,9 @@ OBJECT Table 760 Trailing Sales Orders Setup
 {
   OBJECT-PROPERTIES
   {
-    Date=09/09/14;
-    Time=12:00:00;
+    Date=23/03/16;
+    Time=10:04:13;
+    Modified=Yes;
     Version List=NAVW18.00;
   }
   PROPERTIES
@@ -38,10 +39,20 @@ OBJECT Table 760 Trailing Sales Orders Setup
                                                                     FRA=Aires empil‚es,Aires empil‚es (%),Histogramme empil‚,Histogramme empil‚ (%)];
                                                    OptionString=Stacked Area,Stacked Area (%),Stacked Column,Stacked Column (%) }
     { 7   ;   ;Latest Order Document Date;Date    ;FieldClass=FlowField;
-                                                   CalcFormula=Max("Sales Header"."Document Date" WHERE (Document Type=CONST(Order)));
+                                                   CalcFormula=Max("Sales Header"."Document Date" WHERE (Document Type=CONST(Order),
+                                                                                                         Salesperson Code=FIELD(Salesperson Code Filter)));
                                                    AccessByPermission=TableData 110=R;
                                                    CaptionML=[ENU=Latest Order Document Date;
                                                               FRA=Date du dernier document de commande] }
+    { 60043;  ;Salesperson Code Filter;Code150    ;FieldClass=FlowFilter;
+                                                   TableRelation=Salesperson/Purchaser;
+                                                   OnValidate=VAR
+                                                                ApprovalEntry@1001 : Record 454;
+                                                              BEGIN
+                                                              END;
+
+                                                   CaptionML=[ENU=Salesperson Code;
+                                                              FRA=Code vendeur] }
   }
   KEYS
   {

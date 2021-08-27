@@ -2,22 +2,25 @@ OBJECT Codeunit 12 Gen. Jnl.-Post Line
 {
   OBJECT-PROPERTIES
   {
-    Date=22/12/15;
-    Time=12:00:00;
-    Version List=NAVW19.00.00.44365,NAVFR9.00.00.44365;
+    Date=15/04/16;
+    Time=16:22:54;
+    Modified=Yes;
+    Version List=NAVW19.00.00.44365,NAVFR9.00.00.44365,AC1.00,AB6.TAH.001,ALDA;
   }
   PROPERTIES
   {
     TableNo=81;
-    Permissions=TableData 17=imd,
+    Permissions=TableData 15=r,
+                TableData 17=rimd,
                 TableData 21=imd,
                 TableData 25=imd,
                 TableData 45=imd,
+                TableData 50=r,
                 TableData 253=rimd,
                 TableData 254=imd,
                 TableData 271=imd,
                 TableData 272=imd,
-                TableData 379=imd,
+                TableData 379=rimd,
                 TableData 380=imd,
                 TableData 1053=rim,
                 TableData 5601=rimd,
@@ -742,6 +745,10 @@ OBJECT Codeunit 12 Gen. Jnl.-Post Line
         GLEntry."Bal. Account Type" := "Bal. Account Type";
         GLEntry."Bal. Account No." := "Bal. Account No.";
         GLEntry."No. Series" := "Posting No. Series";
+        //AB6.TAH.001  <<
+        GLEntry."ID lettrage Sage" := "ID lettrage Sage";
+        //AB6.TAH.001  >>
+
         IF "Additional-Currency Posting" =
            "Additional-Currency Posting"::"Additional-Currency Amount Only"
         THEN BEGIN
@@ -1408,6 +1415,13 @@ OBJECT Codeunit 12 Gen. Jnl.-Post Line
       GLEntry."G/L Account No." := GLAccNo;
       GLEntry."System-Created Entry" := SystemCreatedEntry;
       GLEntry.Amount := Amount;
+      //AC1.00
+      GLEntry."Order Reference Customer" := GenJnlLine."Order Reference Customer";
+      //AC2.00
+      GLEntry."Cost Center Code" := GenJnlLine."Cost Center Code";
+      // ALDA 171214D
+      GLEntry."Country Dimension Code" := GenJnlLine."Country Dimension Code";
+
       GLEntry."Additional-Currency Amount" :=
         GLCalcAddCurrency(Amount,AmountAddCurr,GLEntry."Additional-Currency Amount",UseAmountAddCurr,GenJnlLine);
     END;
@@ -5477,6 +5491,15 @@ OBJECT Codeunit 12 Gen. Jnl.-Post Line
     END;
 
     BEGIN
+    {
+      AC1.00 Ajout C/AL PostCust() PostVend() InitGLEntry() => mig 2016 transfered in tables functions
+      AB6.TAH.001 - 04/09/12
+        - REPRISE
+      //AC2.00 initGLEntry
+      "Cost Center Code"
+      // ALDA 171214D initGLEntry
+      "Country Dimension Code"
+    }
     END.
   }
 }

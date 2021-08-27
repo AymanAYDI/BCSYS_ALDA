@@ -4,6 +4,7 @@ OBJECT Page 402 Sales Order Statistics
   {
     Date=23/10/15;
     Time=12:00:00;
+    Modified=Yes;
     Version List=NAVW19.00.00.43402;
   }
   PROPERTIES
@@ -27,6 +28,9 @@ OBJECT Page 402 Sales Order Statistics
 
     OnAfterGetRecord=BEGIN
                        RefreshOnAfterGetRecord;
+
+                       //AC1.00
+                       CalcNbrOfSalesLine();
                      END;
 
     OnQueryClosePage=BEGIN
@@ -211,6 +215,11 @@ OBJECT Page 402 Sales Order Statistics
                               UpdateHeaderInfo(1,TempVATAmountLine1);
                             END;
                              }
+
+    { 1180250001;2;Field  ;
+                CaptionML=[ENU=Nbr. Of Sales Line;
+                           FRA=Nb. de ligne vente];
+                SourceExpr=NbrOfSalesLine }
 
     { 1905885101;1;Group  ;
                 CaptionML=[ENU=Invoicing;
@@ -634,6 +643,7 @@ OBJECT Page 402 Sales Order Statistics
       PrepmtInvPct@1036 : Decimal;
       PrepmtDeductedPct@1035 : Decimal;
       i@1021 : Integer;
+      NbrOfSalesLine@1180250001 : Integer;
       PrevNo@1022 : Code[20];
       ActiveTab@1023 : 'General,Invoicing,Shipping,Prepayment';
       PrevTab@1024 : 'General,Invoicing,Shipping,Prepayment';
@@ -994,6 +1004,21 @@ OBJECT Page 402 Sales Order Statistics
           "Inv. Discount Amount" := "Line Amount" - Amount;
       END;
       UpdateInvDiscAmount(1);
+    END;
+
+    PROCEDURE CalcNbrOfSalesLine@1180250003();
+    VAR
+      SalesLine2@1180250001 : Record 37;
+    BEGIN
+      //AC1.00
+
+      SalesLine2.RESET;
+      SalesLine2.SETRANGE("Document Type","Document Type");
+      SalesLine2.SETRANGE("Document No.","No.");
+      IF SalesLine2.FINDSET THEN
+        NbrOfSalesLine := SalesLine2.COUNT
+      ELSE
+        NbrOfSalesLine := 0;
     END;
 
     BEGIN

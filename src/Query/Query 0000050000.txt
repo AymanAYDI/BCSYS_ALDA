@@ -1,0 +1,39 @@
+OBJECT Query 50000 ShipmentNotInvoiced
+{
+  OBJECT-PROPERTIES
+  {
+    Date=22/03/16;
+    Time=16:38:33;
+    Modified=Yes;
+    Version List=;
+  }
+  PROPERTIES
+  {
+    Permissions=TableData 111=r;
+  }
+  ELEMENTS
+  {
+    { 1000000000;;DataItem;                  ;
+               DataItemTable=Table111 }
+
+    { 1000000001;1;Column;                   ;
+               DataSource=Document No. }
+
+    { 1000000002;1;Column;                   ;
+               ColumnFilter=Sum_Qty_Shipped_Not_Invoiced=FILTER(<>0);
+               DataSource=Qty. Shipped Not Invoiced;
+               MethodType=Totals;
+               Method=Sum }
+
+    { 1000000003;1;Filter;                   ;
+               DataSource=Salesperson Code }
+
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

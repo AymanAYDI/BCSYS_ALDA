@@ -2,9 +2,10 @@ OBJECT Table 36 Sales Header
 {
   OBJECT-PROPERTIES
   {
-    Date=22/12/15;
-    Time=12:00:00;
-    Version List=NAVW19.00.00.44365;
+    Date=12/02/20;
+    Time=15:47:35;
+    Modified=Yes;
+    Version List=NAVW19.00.00.44365,AC2.00,ALDA,BC6AUTOINV;
   }
   PROPERTIES
   {
@@ -20,6 +21,18 @@ OBJECT Table 36 Sales Header
                  VALIDATE("Sell-to Contact No.",GetFilterContNo);
 
                "Doc. No. Occurrence" := ArchiveManagement.GetNextOccurrenceNo(DATABASE::"Sales Header","Document Type","No.");
+               //AC1.00 BEGIN
+               CompanyInfo.GET();
+               "Dim. Shipping Method Filter" := CompanyInfo."Dim. Shipping Method Code";
+               //AC1.00 END
+             END;
+
+    OnModify=BEGIN
+               //AC1.00 BEGIN
+               CompanyInfo.GET();
+               "Dim. Shipping Method Filter" := CompanyInfo."Dim. Shipping Method Code";
+               GetSalesPerson("Salesperson Code");
+               //AC1.00 END
              END;
 
     OnDelete=VAR
@@ -170,7 +183,9 @@ OBJECT Table 36 Sales Header
                                                                     FRA=Devis,Commande,Facture,Avoir,Commande ouverte,Retour];
                                                    OptionString=Quote,Order,Invoice,Credit Memo,Blanket Order,Return Order }
     { 2   ;   ;Sell-to Customer No.;Code20        ;TableRelation=Customer;
-                                                   OnValidate=BEGIN
+                                                   OnValidate=VAR
+                                                                Cont@1000000000 : Record 5050;
+                                                              BEGIN
                                                                 CheckCreditLimitIfLineNotInsertedYet;
                                                                 TESTFIELD(Status,Status::Open);
                                                                 IF ("Sell-to Customer No." <> xRec."Sell-to Customer No.") AND
@@ -262,6 +277,7 @@ OBJECT Table 36 Sales Header
 
                                                                 Cust.CheckBlockedCustOnDocs(Cust,"Document Type",FALSE,FALSE);
                                                                 Cust.TESTFIELD("Gen. Bus. Posting Group");
+                                                                "Executing Service Code" := Cust."Executing Service Code"; //SH
                                                                 "Sell-to Customer Template Code" := '';
                                                                 "Sell-to Customer Name" := Cust.Name;
                                                                 "Sell-to Customer Name 2" := Cust."Name 2";
@@ -271,6 +287,26 @@ OBJECT Table 36 Sales Header
                                                                 "Sell-to Post Code" := Cust."Post Code";
                                                                 "Sell-to County" := Cust.County;
                                                                 "Sell-to Country/Region Code" := Cust."Country/Region Code";
+                                                                //AC1.00 BEGIN
+                                                                "Sell-to Phone No." := Cust."Phone No.";
+                                                                "Sell-to Fax No." := Cust."Fax No.";
+                                                                "Sell-to E-Mail" := Cust."E-Mail";
+                                                                "Ship. Agent Instruction Line" := Cust."Ship. Agent Instruction Line";
+                                                                "Ship. Agent Instruction Line 2" := Cust."Ship. Agent Instruction Line 2";
+                                                                //BCSYS 150917
+                                                                VALIDATE("Use Shipment Address",Cust."Use Shipment Address");
+
+                                                                Cust.CALCFIELDS("Dim. Shipping Method Code");
+                                                                CASE Cust."Dim. Shipping Method Code" OF
+                                                                  'DCL':"Order Type" := "Order Type"::DD;
+                                                                  'DG':"Order Type" := "Order Type"::DG;
+                                                                  ELSE
+                                                                    "Order Type" := "Order Type"::AA;
+                                                                END;//CASE
+                                                                UpdateOrderRefCust();
+                                                                //AC1.00 END
+                                                                //AC2.00
+                                                                "Cost Center Code" := Cust."Cost Center Code";
                                                                 IF NOT SkipSellToContact THEN
                                                                   "Sell-to Contact" := Cust.Contact;
                                                                 "Gen. Bus. Posting Group" := Cust."Gen. Bus. Posting Group";
@@ -282,6 +318,12 @@ OBJECT Table 36 Sales Header
                                                                 "Shipping Advice" := Cust."Shipping Advice";
                                                                 "Responsibility Center" := UserSetupMgt.GetRespCenter(0,Cust."Responsibility Center");
                                                                 VALIDATE("Location Code",UserSetupMgt.GetLocation(0,Cust."Location Code","Responsibility Center"));
+                                                                // ACBDU 160414D
+                                                                VALIDATE("Area Code",Cust."Area Code");
+                                                                // ALDA 031114D
+                                                                "Validated by" := Cust."Validated by";
+                                                                // ALDA 040116D
+                                                                "Grouping Code" := Cust."Grouping Code";
 
                                                                 IF "Sell-to Customer No." = xRec."Sell-to Customer No." THEN
                                                                   IF ShippedSalesLinesExist OR ReturnReceiptExist THEN BEGIN
@@ -323,12 +365,20 @@ OBJECT Table 36 Sales Header
                                                                   NoSeriesMgt.TestManual(GetNoSeriesCode);
                                                                   "No. Series" := '';
                                                                 END;
+
+                                                                //AC1.00 BEGIN
+                                                                IF ("Document Type" IN ["Document Type"::Quote,"Document Type"::Order]) AND
+                                                                   ("No." <> '') THEN
+                                                                  UpdateOrderRefCust();
+                                                                //AC1.00 END
                                                               END;
 
                                                    CaptionML=[ENU=No.;
                                                               FRA=Nø] }
     { 4   ;   ;Bill-to Customer No.;Code20        ;TableRelation=Customer;
-                                                   OnValidate=BEGIN
+                                                   OnValidate=VAR
+                                                                DynamicField@1000000000 : Record 50007;
+                                                              BEGIN
                                                                 TESTFIELD(Status,Status::Open);
                                                                 BilltoCustomerNoChanged := xRec."Bill-to Customer No." <> "Bill-to Customer No.";
                                                                 IF BilltoCustomerNoChanged THEN
@@ -384,6 +434,17 @@ OBJECT Table 36 Sales Header
                                                                 Cust.CheckBlockedCustOnDocs(Cust,"Document Type",FALSE,FALSE);
                                                                 Cust.TESTFIELD("Customer Posting Group");
                                                                 CheckCrLimit;
+                                                                //AC1.00 BEGIN
+                                                                Cust.CALCFIELDS("Dim. Shipping Method Code");
+                                                                IF "Order Type" = "Order Type"::AA THEN
+                                                                  CASE Cust."Dim. Shipping Method Code" OF
+                                                                    'DCL':"Order Type" := "Order Type"::DD;
+                                                                    'DG':"Order Type" := "Order Type"::DG;
+                                                                    ELSE
+                                                                      "Order Type" := "Order Type"::AA;
+                                                                END;//CASE
+                                                                //AC1.00 END
+
                                                                 "Bill-to Customer Template Code" := '';
                                                                 "Bill-to Name" := Cust.Name;
                                                                 "Bill-to Name 2" := Cust."Name 2";
@@ -424,6 +485,11 @@ OBJECT Table 36 Sales Header
                                                                 "Salesperson Code" := Cust."Salesperson Code";
                                                                 "Combine Shipments" := Cust."Combine Shipments";
                                                                 Reserve := Cust.Reserve;
+                                                                //AC1.00 BEGIN
+                                                                "Direct Inv. Posted" := Cust."Direct Inv. Posted";
+                                                                UpdateOrderRefCust();
+                                                                //AC1.00 END
+
                                                                 IF "Document Type" = "Document Type"::Order THEN
                                                                   "Prepayment %" := Cust."Prepayment %";
 
@@ -434,18 +500,35 @@ OBJECT Table 36 Sales Header
                                                                   END;
                                                                 END;
 
+                                                                //ALDA 160914D.Begin
+                                                                {
                                                                 CreateDim(
                                                                   DATABASE::Customer,"Bill-to Customer No.",
                                                                   DATABASE::"Salesperson/Purchaser","Salesperson Code",
                                                                   DATABASE::Campaign,"Campaign No.",
                                                                   DATABASE::"Responsibility Center","Responsibility Center",
                                                                   DATABASE::"Customer Template","Bill-to Customer Template Code");
+                                                                }
+                                                                CreateDim(
+                                                                  DATABASE::Customer,"Sell-to Customer No.",
+                                                                  DATABASE::"Salesperson/Purchaser","Salesperson Code",
+                                                                  DATABASE::Campaign,"Campaign No.",
+                                                                  DATABASE::"Responsibility Center","Responsibility Center",
+                                                                  DATABASE::"Customer Template","Sell-to Customer Template Code");
+                                                                //ALDA 160914D.End
 
                                                                 VALIDATE("Payment Terms Code");
                                                                 VALIDATE("Prepmt. Payment Terms Code");
                                                                 VALIDATE("Payment Method Code");
                                                                 VALIDATE("Currency Code");
                                                                 VALIDATE("Prepayment %");
+
+                                                                //BC6 - MM - 18/12/18 >>
+                                                                IF BilltoCustomerNoChanged THEN BEGIN
+                                                                  //"Executing Service Code" := Cust."Executing Service Code"; //SH
+                                                                  "Registration No." := Cust."Registration No.o";
+                                                                END;
+                                                                //BC6 - MM - 18/12/18 <<
 
                                                                 IF (xRec."Sell-to Customer No." = "Sell-to Customer No.") AND
                                                                    BilltoCustomerNoChanged
@@ -458,6 +541,18 @@ OBJECT Table 36 Sales Header
 
                                                                 "Bill-to IC Partner Code" := Cust."IC Partner Code";
                                                                 "Send IC Document" := ("Bill-to IC Partner Code" <> '') AND ("IC Direction" = "IC Direction"::Outgoing);
+
+                                                                //BC6 03/07/18 >>
+                                                                IF BilltoCustomerNoChanged THEN BEGIN
+                                                                  DynamicField.SETRANGE("Table No.",DATABASE::"Sales Header");
+                                                                  DynamicField.SETRANGE(Code,"Bill-to Customer No.");
+                                                                  IF DynamicField.FINDSET THEN
+                                                                    REPEAT
+                                                                      SETFILTER("Dynamic Field Name",DynamicField.Description);
+                                                                      VALIDATE("Dynamic Field Value",DynamicField.Value);
+                                                                    UNTIL DynamicField.NEXT = 0;
+                                                                END;
+                                                                //BC6 03/07/18 <<
                                                               END;
 
                                                    CaptionML=[ENU=Bill-to Customer No.;
@@ -901,6 +996,8 @@ OBJECT Table 36 Sales Header
                                                                   DATABASE::Campaign,"Campaign No.",
                                                                   DATABASE::"Responsibility Center","Responsibility Center",
                                                                   DATABASE::"Customer Template","Bill-to Customer Template Code");
+                                                                //BC6>>
+                                                                GetSalesPerson("Salesperson Code");
                                                               END;
 
                                                    CaptionML=[ENU=Salesperson Code;
@@ -1180,7 +1277,12 @@ OBJECT Table 36 Sales Header
 
                                                    CaptionML=[ENU=Document Date;
                                                               FRA=Date document] }
-    { 100 ;   ;External Document No.;Code35       ;CaptionML=[ENU=External Document No.;
+    { 100 ;   ;External Document No.;Code35       ;OnValidate=BEGIN
+                                                                //AC1.00
+                                                                UpdateOrderRefCust();
+                                                              END;
+
+                                                   CaptionML=[ENU=External Document No.;
                                                               FRA=Nø doc. externe] }
     { 101 ;   ;Area                ;Code10        ;TableRelation=Area;
                                                    OnValidate=BEGIN
@@ -2018,7 +2120,6 @@ OBJECT Table 36 Sales Header
                                                                   UpdateSalesLines(FIELDCAPTION("Requested Delivery Date"),CurrFieldNo <> 0);
                                                               END;
 
-                                                   AccessByPermission=TableData 99000880=R;
                                                    CaptionML=[ENU=Requested Delivery Date;
                                                               FRA=Date livraison demand‚e] }
     { 5791;   ;Promised Delivery Date;Date        ;OnValidate=BEGIN
@@ -2027,7 +2128,6 @@ OBJECT Table 36 Sales Header
                                                                   UpdateSalesLines(FIELDCAPTION("Promised Delivery Date"),CurrFieldNo <> 0);
                                                               END;
 
-                                                   AccessByPermission=TableData 99000880=R;
                                                    CaptionML=[ENU=Promised Delivery Date;
                                                               FRA=Date livraison confirm‚e] }
     { 5792;   ;Shipping Time       ;DateFormula   ;OnValidate=BEGIN
@@ -2124,6 +2224,254 @@ OBJECT Table 36 Sales Header
 
                                                    CaptionML=[ENU=Assigned User ID;
                                                               FRA=Code utilisateur affect‚] }
+    { 50000;  ;Dim. Shipping Method Filter;Code20 ;TableRelation=Dimension;
+                                                   CaptionML=[ENU=Dim. Shipping Method Filter;
+                                                              FRA=Filtre axe mode d'exp‚dition];
+                                                   Description=AC1.00;
+                                                   Editable=No }
+    { 50001;  ;Dim. Shipping Method Code;Code20   ;FieldClass=FlowField;
+                                                   CalcFormula=Lookup("Dimension Set Entry"."Dimension Value Code" WHERE (Dimension Set ID=FIELD(Dimension Set ID),
+                                                                                                                          Dimension Code=FIELD(Dim. Shipping Method Filter)));
+                                                   CaptionML=[ENU=Dim. Shipping Method Code;
+                                                              FRA=Code axe mode d'exp‚dition];
+                                                   Description=AC1.00;
+                                                   Editable=No }
+    { 50002;  ;Order Reference Customer;Text35    ;OnValidate=BEGIN
+                                                                IF "Document Type" = "Document Type"::Order THEN BEGIN
+                                                                  TESTFIELD(Status,Status::Open);
+
+                                                                  TestExistLineExported();
+
+                                                                  IF ("Order Reference Customer" <> '') AND
+                                                                     ("Order Reference Customer" <> xRec."Order Reference Customer") THEN BEGIN
+                                                                    IF OrdersPostedExists THEN
+                                                                      ERROR(STRSUBSTNO(Text50001,FIELDCAPTION("Order Reference Customer")));
+                                                                    UpdateSalesLines(FIELDCAPTION("Order Reference Customer"),CurrFieldNo <> 0);
+                                                                    //UpdateSalesLines(FIELDCAPTION("Order Reference Customer"),FALSE);//CurrFieldNo <> 0);
+                                                                    UpdatePurchOrder(FIELDCAPTION("Order Reference Customer"));
+                                                                  END;
+                                                                END;
+                                                              END;
+
+                                                   CaptionML=[ENU=Order Reference Customer;
+                                                              FRA=R‚f‚rence commande client];
+                                                   Description=AC1.00;
+                                                   Editable=Yes }
+    { 50003;  ;Direct Inv. Posted  ;Boolean       ;CaptionML=[ENU=Direct Inv. Posted;
+                                                              FRA=Facturation direct];
+                                                   Description=AC1.00 }
+    { 50004;  ;Sell-to Phone No.   ;Text30        ;ExtendedDatatype=Phone No.;
+                                                   CaptionML=[ENU=Sell-to Phone No.;
+                                                              FRA=Nø t‚l‚phone donneur d'ordre];
+                                                   Description=AC1.00 }
+    { 50005;  ;Sell-to Fax No.     ;Text30        ;CaptionML=[ENU=Sell-to Fax No.;
+                                                              FRA=Nø t‚l‚copie donneur d'ordre];
+                                                   Description=AC1.00 }
+    { 50006;  ;Sell-to E-Mail      ;Text80        ;ExtendedDatatype=E-Mail;
+                                                   CaptionML=[ENU=Sell-to E-Mail;
+                                                              FRA=E-mail donneur d'ordre];
+                                                   Description=AC1.00 }
+    { 50007;  ;Gross Weight        ;Decimal       ;CaptionML=[ENU=Gross Weight;
+                                                              FRA=Poids brut];
+                                                   DecimalPlaces=0:5;
+                                                   Description=AC1.00 }
+    { 50008;  ;Net Weight          ;Decimal       ;CaptionML=[ENU=Net Weight;
+                                                              FRA=Poids net];
+                                                   DecimalPlaces=0:5;
+                                                   Description=AC1.00 }
+    { 50009;  ;Volume              ;Decimal       ;CaptionML=[ENU=Volume;
+                                                              FRA=Volume];
+                                                   Description=AC1.00 }
+    { 50010;  ;Nbr. of Pallet      ;Integer       ;CaptionML=[ENU=Nbr. of Pallet;
+                                                              FRA=Nb. de palette];
+                                                   Description=AC1.00 }
+    { 50011;  ;Nbr. of Package     ;Integer       ;CaptionML=[ENU=Nbr. of Package;
+                                                              FRA=Nb. de colis];
+                                                   Description=AC1.00 }
+    { 50012;  ;Nbr. of Package per Pallet;Integer ;CaptionML=[ENU=Nbr. of Package per Pallet;
+                                                              FRA=Nb. de colis par palette];
+                                                   Description=AC1.00 }
+    { 50013;  ;Ship. Agent Instruction Line;Text35;CaptionML=[ENU=Shipping Agent Instruction Line;
+                                                              FRA=Ligne d'instruction de livraison transporteur];
+                                                   Description=AC1.00 }
+    { 50014;  ;Ship. Agent Instruction Line 2;Text35;
+                                                   CaptionML=[ENU=Shipping Agent Instruction Line 2;
+                                                              FRA=Ligne d'instruction de livraison transporteur 2];
+                                                   Description=AC1.00 }
+    { 50015;  ;Vendor Shipment No. ;Code20        ;CaptionML=[ENU=Vendor Shipment No.;
+                                                              FRA=Nø B.L. fournisseur] }
+    { 50016;  ;Last EDI Code for Batch;Code10      }
+    { 50017;  ;Last EDI DT for Batch;DateTime      }
+    { 50018;  ;Amount Order        ;Decimal       ;FieldClass=FlowField;
+                                                   CalcFormula=Sum("Sales Line"."Line Amount" WHERE (Document Type=FIELD(Document Type),
+                                                                                                     Document No.=FIELD(No.)));
+                                                   CaptionML=FRA=Montant commande;
+                                                   Description=AB6.JME.001 }
+    { 50019;  ;Order Type          ;Option        ;OnValidate=VAR
+                                                                SalesLine2@1180250001 : Record 37;
+                                                                ChangeLogMgt@1180250004 : Codeunit 423;
+                                                                RecRef@1180250003 : RecordRef;
+                                                                xRecRef@1180250002 : RecordRef;
+                                                              BEGIN
+                                                                IF NOT SalesLinesExist THEN
+                                                                  EXIT;
+
+                                                                CALCFIELDS("Completely Shipped");
+                                                                TESTFIELD("Completely Shipped",FALSE);
+
+                                                                TestExistLineExported();
+
+                                                                SalesLine2.LOCKTABLE;
+                                                                xRecRef.GETTABLE(xRec);
+                                                                MODIFY;
+                                                                RecRef.GETTABLE(Rec);
+                                                                //ChangeLogMgt.LogModification(RecRef,xRecRef);
+                                                                ChangeLogMgt.LogModification(RecRef);
+
+                                                                SalesLine2.RESET;
+                                                                SalesLine2.SETRANGE("Document Type","Document Type");
+                                                                SalesLine2.SETRANGE("Document No.","No.");
+                                                                SalesLine2.SETRANGE(Type,SalesLine2.Type::Item);
+                                                                IF SalesLine2.FINDSET THEN
+                                                                  REPEAT
+                                                                    xRecRef.GETTABLE(SalesLine2);
+                                                                    IF SalesLine2."Quantity Shipped" < SalesLine2.Quantity THEN
+                                                                      CASE "Order Type" OF
+                                                                        "Order Type"::AA:BEGIN
+                                                                          SalesLine2.VALIDATE("Vendor No. for EDI Sending",'');
+                                                                          SalesLine2.MODIFY(TRUE);
+                                                                        END;
+                                                                        "Order Type"::DD,"Order Type"::DG,"Order Type"::"DG sans Stock":BEGIN
+                                                                          SalesLine2.VALIDATE("Vendor No. for EDI Sending",'0174');
+                                                                          SalesLine2.VALIDATE("Qty. to Ship",0);
+                                                                          SalesLine2.MODIFY(TRUE);
+                                                                        END;
+                                                                      END;//CASE
+                                                                    RecRef.GETTABLE(SalesLine2);
+                                                                //    ChangeLogMgt.LogModification(RecRef,xRecRef);
+                                                                    ChangeLogMgt.LogModification(RecRef);
+                                                                  UNTIL SalesLine2.NEXT = 0;
+                                                              END;
+
+                                                   CaptionML=[ENU=Order Type;
+                                                              FRA=Type de commande];
+                                                   OptionCaptionML=[ENU=AA,DG,DD,DG sans Stock;
+                                                                    FRA=AA,DG,DD,DG sans Stock];
+                                                   OptionString=AA,DG,DD,DG sans Stock }
+    { 50023;  ;Order Source Type   ;Option        ;OnValidate=BEGIN
+                                                                UpdateSalesLines(FIELDCAPTION("Order Source Type"),CurrFieldNo <> 0);
+                                                              END;
+
+                                                   CaptionML=[ENU=Order Source Type;
+                                                              FRA=Type origine commande];
+                                                   OptionCaptionML=[ENU=" ,Mail,Fax,Phone,Web,Quote";
+                                                                    FRA=" ,Mail,Fax,T‚l‚phone,Internet,Devis"];
+                                                   OptionString=[ ,Mail,Fax,Phone,Web,Quote];
+                                                   Description=ACBDU 100314D }
+    { 50024;  ;Cost Center Code    ;Code20        ;CaptionML=[ENU=Cost Center Code;
+                                                              FRA=Code centre de co–t];
+                                                   Description=ACBDU 100314D }
+    { 50025;  ;Area Code           ;Code20        ;TableRelation="Dynamic Field".Code WHERE (Table No.=CONST(18),
+                                                                                             Field No.=CONST(50021));
+                                                   OnValidate=BEGIN
+                                                                UpdateSalesLines(FIELDCAPTION("Area Code"),CurrFieldNo <> 0);
+                                                              END;
+
+                                                   CaptionML=[ENU=Area Code;
+                                                              FRA=Code site];
+                                                   Description=ACBDU 160414D }
+    { 50029;  ;Validated by        ;Text50        ;CaptionML=[ENU=Validated by;
+                                                              FRA=Valid‚ par];
+                                                   Description=ALDA 031114D }
+    { 50030;  ;Country Dimension Code;Code20      ;TableRelation=Country/Region;
+                                                   OnValidate=BEGIN
+                                                                // ALDA 171214D
+                                                                UpdateSalesLines(FIELDCAPTION("Country Dimension Code"),CurrFieldNo <> 0);
+                                                              END;
+
+                                                   CaptionML=[ENU=Country Dimension Code;
+                                                              FRA=Code axe pays];
+                                                   Description=ALDA 171214D }
+    { 50033;  ;Micro Order No.     ;Code20        ;CaptionML=[ENU=Micro Order No.;
+                                                              FRA=Nø commande micro];
+                                                   Description=ALDA 061015D }
+    { 50034;  ;Grouping Code       ;Code20        ;CaptionML=[ENU=Grouping Code;
+                                                              FRA=Code regroupement];
+                                                   Description=ALDA 040116D }
+    { 50035;  ;EDI Add. Info. 1    ;Code50        ;CaptionML=[ENU=NUM_SUBSEQUENT;
+                                                              FRA=NUM_SUBSEQUENT];
+                                                   Description=Nø du march‚ subs‚quent;
+                                                   CaptionClass=GetCaptionClass(50035) }
+    { 50036;  ;EDI Add. Info. 2    ;Code50        ;CaptionML=[ENU=REF_ENGAGEMENT;
+                                                              FRA=REF_ENGAGEMENT];
+                                                   Description=R‚f‚rence engagement;
+                                                   CaptionClass=GetCaptionClass(50036) }
+    { 50037;  ;EDI Add. Info. 3    ;Code50        ;CaptionML=[ENU=NUM_EJ;
+                                                              FRA=NUM_EJ];
+                                                   Description=Nø d'engagement juridique;
+                                                   CaptionClass=GetCaptionClass(50037) }
+    { 50038;  ;EDI Add. Info. 4    ;Code50        ;CaptionML=[ENU=NUM_EJ;
+                                                              FRA=TRS_ID];
+                                                   Description=Nø de transaction unique;
+                                                   CaptionClass=GetCaptionClass(50038) }
+    { 50039;  ;TRS_ID_AUTORISATION ;Decimal       ;CaptionML=[ENU=TRS_ID_AUTORISATION;
+                                                              FRA=TRS_ID_AUTORISATION];
+                                                   Description=Nø de paiment Ingenico }
+    { 50040;  ;EDI Add. Info. 5    ;Code50        ;CaptionML=FRA=CODE_WCP;
+                                                   Description=Nø client g‚n‚r‚ par le site D‚fense Bureau }
+    { 50041;  ;EDI Add. Info. 6    ;Code50        ;CaptionML=[ENU=NUM_MARKET;
+                                                              FRA=NUM_MARKET];
+                                                   Description=Num‚ro de march‚ }
+    { 50042;  ;Use Shipment Address;Boolean       ;OnValidate=BEGIN
+                                                                //BCSYS 200917
+                                                                IF "Micro Order No." <> '' THEN
+                                                                  ERROR(Text50003);
+                                                              END;
+
+                                                   CaptionML=[ENU=Use Shipment Address;
+                                                              FRA=Utiliser Adresse Livraison] }
+    { 50050;  ;Dynamic Field Name  ;Text50        ;FieldClass=FlowFilter;
+                                                   Description=Used to complete EDI Add Fields }
+    { 50051;  ;Dynamic Field No.   ;Integer       ;FieldClass=FlowField;
+                                                   CalcFormula=Lookup("Dynamic Field"."Field No." WHERE (Table No.=CONST(36),
+                                                                                                         Description=FIELD(Dynamic Field Name),
+                                                                                                         Code=FIELD(Bill-to Customer No.)));
+                                                   Description=Used to complete EDI Add Fields }
+    { 50052;  ;Dynamic Field Value ;Code50        ;OnValidate=VAR
+                                                                RecRef@1000000002 : RecordRef;
+                                                                fref@1000000001 : FieldRef;
+                                                                MyFieldNo@1000000000 : Integer;
+                                                              BEGIN
+                                                                //BC6 02/07/18 For ANVEO mapping import
+                                                                SETFILTER("Dynamic Field Name","Dynamic Field Name");
+                                                                CALCFIELDS("Dynamic Field No.");
+
+                                                                MyFieldNo := "Dynamic Field No.";
+                                                                RecRef.GETTABLE(Rec);
+                                                                fref := RecRef.FIELD(MyFieldNo);
+                                                                fref.VALUE := FORMAT("Dynamic Field Value");
+                                                                RecRef.SETTABLE(Rec);
+                                                              END;
+
+                                                   Description=Used to complete EDI Add Fields }
+    { 50060;  ;Executing Service Code;Code100     ;CaptionML=[ENU=Executing Service Code;
+                                                              FRA=Code service ‚xecutant] }
+    { 50061;  ;Registration No.    ;Text20        ;CaptionML=[ENU=Registration No.;
+                                                              FRA=Nø SIRET] }
+    { 60200;  ;Data Flow Code      ;Code20        ;TableRelation="Data Flow";
+                                                   CaptionML=[ENU=Data Flow Code;
+                                                              FRA=Code flux de donn‚es] }
+    { 60201;  ;Data Flow Status No.;Integer       ;TableRelation="Data Flow Status".No. WHERE (Data Flow Code=FIELD(Data Flow Code));
+                                                   CaptionML=[ENU=Data Flow Status No.;
+                                                              FRA=Nø statut flux de donn‚es] }
+    { 60202;  ;Data Flow Status Caption;Text250   ;FieldClass=FlowField;
+                                                   CalcFormula=Lookup("Data Flow Status".Name WHERE (Data Flow Code=FIELD(Data Flow Code),
+                                                                                                     No.=FIELD(Data Flow Status No.)));
+                                                   CaptionML=[ENU=Data Flow Status Caption;
+                                                              FRA=L‚gende statut flux donn‚es];
+                                                   Editable=No }
+    { 60203;  ;Skip From Data Flow ;Boolean       ;CaptionML=[ENU=Skip From Data Flow;
+                                                              FRA=Exclure Fact. Auto] }
   }
   KEYS
   {
@@ -2136,6 +2484,8 @@ OBJECT Table 36 Sales Header
     {    ;Document Type,Sell-to Contact No.        }
     {    ;Bill-to Contact No.                      }
     {    ;Incoming Document Entry No.              }
+    {    ;Last EDI Code for Batch,Last EDI DT for Batch }
+    {    ;Document Type,Status,Shipment Date       }
   }
   FIELDGROUPS
   {
@@ -2246,15 +2596,19 @@ OBJECT Table 36 Sales Header
       Text062@1072 : TextConst 'ENU=You cannot change %1 because the corresponding %2 %3 has been assigned to this %4.;FRA=Vous ne pouvez pas modifier %1 car le %2 %3 correspondant a ‚t‚ affect‚ … ce %4.';
       Text063@1077 : TextConst 'ENU=Reservations exist for this order. These reservations will be canceled if a date conflict is caused by this change.\\Do you want to continue?;FRA=Il existe des r‚servations pour cette commande. Ces r‚servations seront annul‚es si cette modification entraŒne un conflit de dates.\\Voulez-vous continuerÿ?';
       Text064@1090 : TextConst 'ENU=You may have changed a dimension.\\Do you want to update the lines?;FRA=Vous avez probablement modifi‚ un axe analytique.\\Souhaitez-vous mettre … jour les lignesÿ?';
+      Text50000@1180250001 : TextConst 'ENU=(of purchase order(s) linked);FRA=(de(s) commande(s) d''achat associ‚e(s))';
       UpdateDocumentDate@1120 : Boolean;
       Text066@1095 : TextConst 'ENU=You cannot change %1 to %2 because an open inventory pick on the %3.;FRA=Vous ne pouvez pas modifier %1 en %2 car un pr‚lŠvement stock est ouvert sur %3.';
       Text070@1096 : TextConst 'ENU=You cannot change %1  to %2 because an open warehouse shipment exists for the %3.;FRA=Vous ne pouvez pas modifier %1 en %2 car il existe une exp‚dition entrep“t ouverte pour %3.';
       BilltoCustomerNoChanged@1121 : Boolean;
+      Text50001@1180250002 : TextConst 'ENU=You cannot change %1 because the order and/or one or more sales associated order(s) is(are) partially or completely posted.;FRA=Vous ne pouvez pas modifier %1 car la commande et/ou une ou plusieurs commande(s) vente associ‚e est(sont) partiellement ou totalement valid‚e(s).';
+      Text50002@1180250003 : TextConst 'FRA=La vente %1 %2 a ‚t‚ ou partiellement ‚t‚ envoy‚ … l''EDI.';
       Text071@1011 : TextConst 'ENU=There are unpaid prepayment invoices that are related to the document of type %1 with the number %2.;FRA=Il existe des factures d''acompte impay‚es li‚es au document de type %1 portant le num‚ro %2.';
       Text072@1013 : TextConst 'ENU=There are unpaid prepayment invoices related to the document of type %1 with the number %2.;FRA=Il existe des factures d''acompte impay‚es li‚es au document de type %1 portant le num‚ro %2.';
       DeferralLineQst@1144 : TextConst 'ENU=Do you want to update the deferral schedules for the lines?;FRA=Souhaitez-vous mettre … jour les tableaux ‚chelonnement pour les lignesÿ?';
       SynchronizingMsg@1026 : TextConst 'ENU=Synchronizing ...\ from: Sales Header with %1\ to: Assembly Header with %2.;FRA=Synchronisation ...\ deÿ: En-tˆte vente avec %1\ versÿ: En-tˆte assemblage avec %2.';
       ShippingAdviceErr@1029 : TextConst 'ENU=This order must be a complete shipment.;FRA=Cet ordre doit ˆtre une exp‚dition trait‚e.';
+      Text50003@1000000000 : TextConst 'ENU=Can not change because this order has already been send to EDI;FRA=Modification impossible car la commande a d‚j… ‚t‚ envoy‚e en EDI.';
 
     PROCEDURE InitInsert@61();
     BEGIN
@@ -2514,6 +2868,10 @@ OBJECT Table 36 Sales Header
           Cust.GET(CustNo);
       END ELSE
         CLEAR(Cust);
+      //BC6>>
+      CompanyInfo.GET;
+      Cust.SETFILTER("Dim. Shipping Method Filter", CompanyInfo."Dim. Shipping Method Code");
+      GetSalesPerson("Salesperson Code");
     END;
 
     PROCEDURE SalesLinesExist@3() : Boolean;
@@ -2688,7 +3046,15 @@ OBJECT Table 36 Sales Header
               FIELDCAPTION("Shipping Time"),
               FIELDCAPTION("Requested Delivery Date"),
               FIELDCAPTION("Promised Delivery Date"),
-              FIELDCAPTION("Outbound Whse. Handling Time"):
+              FIELDCAPTION("Outbound Whse. Handling Time"),
+              //AC1.00
+              FIELDCAPTION("Order Reference Customer"),
+              //AC2.00
+              FIELDCAPTION("Order Source Type"),
+              //ACBDU 160414D
+              FIELDCAPTION("Area Code"),
+              // ALDA 171214D
+              FIELDCAPTION("Country Dimension Code"):
                 ConfirmResvDateConflict;
             END
           ELSE
@@ -2747,6 +3113,21 @@ OBJECT Table 36 Sales Header
             SalesLine.FIELDCAPTION("Deferral Code"):
               IF SalesLine."No." <> '' THEN
                 SalesLine.VALIDATE("Deferral Code");
+            //AC1.00 BEGIN
+            FIELDCAPTION("Order Reference Customer"):
+              IF SalesLine."No." <> '' THEN
+                SalesLine.VALIDATE("Order Reference Customer","Order Reference Customer");
+            //AC1.00 END
+            //AC2.00 BEGIN
+            FIELDCAPTION("Order Source Type"):
+              IF SalesLine."No." <> '' THEN
+                SalesLine.VALIDATE("Order Source Type","Order Source Type");
+            //AC2.00 END
+            // ALDA 171214D.Begin
+            FIELDCAPTION("Country Dimension Code"):
+              IF SalesLine."No." <> '' THEN
+                SalesLine.VALIDATE("Country Dimension Code","Country Dimension Code");
+            // ALDA 171214D.End
           END;
           SalesLineReserve.AssignForPlanning(SalesLine);
           SalesLine.MODIFY(TRUE);
@@ -3059,6 +3440,10 @@ OBJECT Table 36 Sales Header
           "Ship-to City" := ContComp.City;
           "Ship-to Post Code" := ContComp."Post Code";
           "Ship-to County" := ContComp.County;
+          //BC6>>
+          IF Cont."E-Mail" <> '' THEN
+            "Sell-to E-Mail" := Cont."E-Mail";
+          //BC6<<
           VALIDATE("Ship-to Country/Region Code",ContComp."Country/Region Code");
           IF ("Sell-to Customer Template Code" = '') AND (NOT CustTemplate.ISEMPTY) THEN
             VALIDATE("Sell-to Customer Template Code",Cont.FindCustomerTemplate);
@@ -4017,7 +4402,186 @@ OBJECT Table 36 Sales Header
         UpdateSalesLines(SalesLine.FIELDCAPTION("Deferral Code"),FALSE);
     END;
 
+    PROCEDURE UpdatePurchOrder@1180250008(ChangedFieldName@1000 : Text[100]);
+    VAR
+      UpdateConfirmed@1002 : Boolean;
+      PurchHeader@1180250001 : Record 38;
+      PurchLine@1180250002 : Record 39;
     BEGIN
+      //AC1.00
+
+      IF NOT PurchOrderExist THEN
+        EXIT;
+
+      IF OrdersPostedExists THEN
+        EXIT;
+
+      IF NOT GUIALLOWED THEN
+        UpdateConfirmed := TRUE
+      ELSE
+        CASE ChangedFieldName OF
+          FIELDCAPTION("Order Reference Customer"):
+            UpdateConfirmed :=
+              CONFIRM(
+                STRSUBSTNO(
+                  Text032 + '\\' +
+                  Text50000,ChangedFieldName));
+          //UpdateConfirmed := TRUE;
+        END;//CASE
+
+      PurchHeader.LOCKTABLE;
+      PurchLine.LOCKTABLE;
+      PurchHeader.RESET;
+      PurchHeader.SETRANGE("Document Type",PurchHeader."Document Type"::Order);
+      PurchHeader.SETRANGE("Order Reference Customer",xRec."Order Reference Customer");
+      IF PurchHeader.FINDSET THEN
+        REPEAT
+          CASE ChangedFieldName OF
+            FIELDCAPTION("Order Reference Customer"):BEGIN
+              IF UpdateConfirmed THEN
+                IF (PurchHeader."Document Type" = PurchHeader."Document Type"::Order) AND (PurchHeader."No." <> '') THEN BEGIN
+                  PurchHeader."Order Reference Customer" := "Order Reference Customer";
+                  PurchLine.RESET;
+                  PurchLine.SETRANGE("Document Type",PurchHeader."Document Type");
+                  PurchLine.SETRANGE("Document No.",PurchHeader."No.");
+                  IF PurchLine.FINDSET THEN
+                    REPEAT
+                      PurchLine."Order Reference Customer" := "Order Reference Customer";
+                      PurchLine.MODIFY;
+                    UNTIL PurchLine.NEXT = 0;
+              END;
+            END;
+          END;//CASE
+          PurchHeader.MODIFY(TRUE);
+        UNTIL PurchHeader.NEXT = 0;
+    END;
+
+    PROCEDURE PurchOrderExist@1180250001() : Boolean;
+    VAR
+      PurchHeader@1180250001 : Record 38;
+    BEGIN
+      //AC1.00
+
+      IF xRec."Order Reference Customer" = '' THEN
+        EXIT(FALSE);
+
+      PurchHeader.RESET;
+      PurchHeader.SETRANGE("Document Type",PurchHeader."Document Type"::Order);
+      PurchHeader.SETRANGE("Order Reference Customer",xRec."Order Reference Customer");
+      EXIT(PurchHeader.FINDFIRST);
+    END;
+
+    PROCEDURE OrdersPostedExists@1180250002() : Boolean;
+    VAR
+      SalesLine2@1180250001 : Record 37;
+      PurchLine@1180250002 : Record 39;
+    BEGIN
+      //AC1.00
+
+      IF xRec."Order Reference Customer" = '' THEN
+        EXIT(FALSE);
+
+      PurchLine.RESET;
+      PurchLine.SETRANGE("Document Type",PurchLine."Document Type"::Order);
+      PurchLine.SETRANGE("Order Reference Customer",xRec."Order Reference Customer");
+      PurchLine.SETFILTER("Quantity Received",'<>%1',0);
+
+      SalesLine2.RESET;
+      SalesLine2.SETRANGE("Document Type",SalesLine."Document Type"::Order);
+      SalesLine2.SETRANGE("Order Reference Customer",xRec."Order Reference Customer");
+      SalesLine2.SETFILTER("Quantity Shipped",'<>%1',0);
+
+      IF PurchLine.FINDFIRST OR SalesLine2.FINDFIRST THEN
+        EXIT(TRUE)
+      ELSE
+        EXIT(FALSE);
+    END;
+
+    PROCEDURE ShowPurchOrder@1180250003();
+    VAR
+      PurchHeader@1180250001 : Record 38;
+    BEGIN
+      PurchHeader.RESET;
+
+      IF "Micro Order No." = '' THEN BEGIN
+        TESTFIELD("Order Reference Customer");
+        PurchHeader.SETRANGE("Document Type",PurchHeader."Document Type"::Order);
+        PurchHeader.SETRANGE("Order Reference Customer","Order Reference Customer");
+      END ELSE BEGIN
+        PurchHeader.SETRANGE("Document Type",PurchHeader."Document Type"::Order);
+        PurchHeader.SETRANGE("Micro Order No.","Micro Order No.");
+      END;
+      PAGE.RUNMODAL(PAGE::"Purchase Order",PurchHeader);
+    END;
+
+    PROCEDURE UpdateOrderRefCust@1180250011();
+    VAR
+      len@1180250001 : Integer;
+    BEGIN
+      //ALDA 160914D.Begin
+      {
+      len := STRLEN(FORMAT("No.")) + 1 + STRLEN(FORMAT("External Document No.")) + 1 + STRLEN(
+        FORMAT("Sell-to Customer No.")) + 1 + STRLEN(FORMAT("Bill-to Customer No."));
+      IF len <= 35 THEN
+        VALIDATE("Order Reference Customer",FORMAT("No.") + '/' + FORMAT("External Document No.") + '/' +
+          FORMAT("Sell-to Customer No.") + '/' + FORMAT("Bill-to Customer No."))
+      ELSE
+        VALIDATE("Order Reference Customer",FORMAT("No.") + '/' +
+          COPYSTR(FORMAT("External Document No."),1,STRLEN(FORMAT("External Document No.")) - (len - 35))
+          + '/' + FORMAT("Sell-to Customer No.") + '/' + FORMAT("Bill-to Customer No."));
+      }
+      len := STRLEN(FORMAT("No.")) + 1 + STRLEN(FORMAT("Your Reference")) + 1 + STRLEN(FORMAT("External Document No."));
+      IF len <= 35 THEN
+        VALIDATE("Order Reference Customer",FORMAT("No.") + '/' + FORMAT("Your Reference") + '/' + FORMAT("External Document No."))
+      ELSE
+        VALIDATE("Order Reference Customer",FORMAT("No.") + '/' + FORMAT("Your Reference") + '/' +
+          COPYSTR(FORMAT("External Document No."),1,STRLEN(FORMAT("External Document No.")) - (len - 35)));
+      //ALDA 160914.End
+    END;
+
+    PROCEDURE TestExistLineExported@1180250004();
+    VAR
+      SalesLine2@1180250001 : Record 37;
+    BEGIN
+      IF "Document Type" = "Document Type"::Order THEN BEGIN
+        SalesLine2.RESET;
+        SalesLine2.SETRANGE("Document Type","Document Type");
+        SalesLine2.SETRANGE("Document No.","No.");
+        SalesLine2.SETRANGE("Exported Line",TRUE);
+        IF SalesLine2.FINDSET(FALSE,FALSE) THEN
+          ERROR(STRSUBSTNO(Text50002,FIELDCAPTION("No."),"No."))
+      END;
+    END;
+
+    LOCAL PROCEDURE GetSalesPerson@1000000000(SalesPersCode@1000 : Code[10]);
+    VAR
+      Salesperson@1000000000 : Record 13;
+    BEGIN
+      IF "Salesperson Code" <> '' THEN
+        Salesperson.GET(SalesPersCode);
+    END;
+
+    LOCAL PROCEDURE GetSalesDocument@1000000001();
+    VAR
+      SalesHeader@1000000000 : Record 36;
+    BEGIN
+      SalesHeader.GET("Document Type", "No.");
+    END;
+
+    LOCAL PROCEDURE GetCaptionClass@1000000002(_FieldNo@1000000001 : Integer) : Text;
+    VAR
+      GetfieldCaption@1000000000 : Codeunit 50036;
+    BEGIN
+      EXIT(GetfieldCaption.GetCaption(DATABASE::"Sales Header",_FieldNo,"Bill-to Customer No."));
+    END;
+
+    BEGIN
+    {
+      AC1.00 Ajout Champ "Dim. Shipping Method Filter" "Shipping Method Code" "Order Reference Customer" "Direct Inv. Posted"
+                   C/AL OnInsert() UpdateSalesLines() PurchOrderExist() OrdersPostedExists();
+                   Variable CompanyInfo
+                   Function UpdatePurchOrder()
+    }
     END.
   }
 }

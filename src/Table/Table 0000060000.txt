@@ -1,0 +1,32 @@
+OBJECT Table 60000 TMP MAJ CLT
+{
+  OBJECT-PROPERTIES
+  {
+    Date=03/10/12;
+    Time=18:13:56;
+    Modified=Yes;
+    Version List=AB6.JME.001;
+  }
+  PROPERTIES
+  {
+  }
+  FIELDS
+  {
+    { 1   ;   ;Code client         ;Code20         }
+    { 2   ;   ;Code condition relance;Code10       }
+  }
+  KEYS
+  {
+    {    ;Code client                             ;Clustered=Yes }
+  }
+  FIELDGROUPS
+  {
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

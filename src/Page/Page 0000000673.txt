@@ -2,9 +2,10 @@ OBJECT Page 673 Job Queue Entry Card
 {
   OBJECT-PROPERTIES
   {
-    Date=09/09/14;
-    Time=12:00:00;
-    Version List=NAVW18.00;
+    Date=03/07/18;
+    Time=17:19:18;
+    Modified=Yes;
+    Version List=NAVW18.00,AC1.00;
   }
   PROPERTIES
   {
@@ -13,6 +14,11 @@ OBJECT Page 673 Job Queue Entry Card
     SourceTable=Table472;
     DataCaptionFields=Object Type to Run,Object Caption to Run;
     PageType=Card;
+    OnAfterGetRecord=BEGIN
+                       // AC1.00
+                       GetEDIDescription();
+                     END;
+
     OnNewRecord=BEGIN
                   ID := CREATEGUID;
                   Status := Status::"On Hold";
@@ -44,6 +50,32 @@ OBJECT Page 673 Job Queue Entry Card
                       PromotedCategory=Process;
                       OnAction=BEGIN
                                  SetStatus(Status::"On Hold");
+                               END;
+                                }
+      { 1180250001;2 ;Separator  }
+      { 1180250002;2 ;Action    ;
+                      Ellipsis=Yes;
+                      CaptionML=[ENU=Run;
+                                 FRA=Lancer];
+                      Promoted=Yes;
+                      PromotedIsBig=Yes;
+                      Image=ExecuteBatch;
+                      PromotedCategory=Process;
+                      OnAction=BEGIN
+                                 // AC1.00
+                                 RunOnPush();
+                               END;
+                                }
+      { 1180250004;2 ;Separator  }
+      { 1180250003;2 ;Action    ;
+                      CaptionML=[ENU=E.D.I.;
+                                 FRA=E.D.I.];
+                      Promoted=Yes;
+                      PromotedIsBig=Yes;
+                      Image=ImportExport;
+                      OnAction=BEGIN
+                                 // AC1.00
+                                 EDIOnPush();
                                END;
                                 }
       { 7       ;2   ;Action    ;
@@ -128,6 +160,11 @@ OBJECT Page 673 Job Queue Entry Card
 
     { 14  ;2   ;Field     ;
                 SourceExpr="Parameter String" }
+
+    { 1180250005;2;Field  ;
+                CaptionML=[ENU=EDI Description;
+                           FRA=D‚signation EDI];
+                SourceExpr=EDIDescription }
 
     { 3   ;2   ;Field     ;
                 SourceExpr="Job Queue Category Code" }
@@ -231,8 +268,62 @@ OBJECT Page 673 Job Queue Entry Card
   }
   CODE
   {
+    VAR
+      EDIDescription@1180250001 : Text[50];
+
+    PROCEDURE RunOnPush@1180250001();
+    VAR
+      JobQueueEntry@1180250001 : Record 472;
+    BEGIN
+      // AC1.00 BEGIN
+      CLEAR(JobQueueEntry);
+
+      JobQueueEntry.COPY(Rec);
+      CurrPage.SETSELECTIONFILTER(JobQueueEntry);
+
+      JobQueueEntry.RunJob();
+      // AC1.00 END
+    END;
+
+    PROCEDURE EDIOnPush@1180250002();
+    VAR
+      JobQueueEntry@1180250001 : Record 472;
+      EDISetup@1180250002 : Record 50000;
+      EDICode@1180250003 : Code[10];
+    BEGIN
+      // AC1.00 BEGIN
+      CLEAR(JobQueueEntry);
+
+      JobQueueEntry.COPY(Rec);
+      CurrPage.SETSELECTIONFILTER(JobQueueEntry);
+
+      JobQueueEntry.TESTFIELD("Parameter String");
+      EDICode := FORMAT("Parameter String");
+      EDISetup.GET(EDICode);
+
+      PAGE.RUNMODAL(PAGE::"E.D.I. Setup List",EDISetup);
+      // AC1.00 END
+    END;
+
+    PROCEDURE GetEDIDescription@1180250003();
+    VAR
+      EDISetup@1180250001 : Record 50000;
+    BEGIN
+      // AC1.00 BEGIN
+      EDISetup.RESET;
+      EDISetup.SETRANGE(Code,COPYSTR("Parameter String",1,MAXSTRLEN(EDISetup.Code)));
+      IF EDISetup.FINDFIRST THEN
+        EDIDescription := EDISetup.Description
+      ELSE
+        EDIDescription := '***Pas d''EDI***';
+      // AC1.00 END
+    END;
 
     BEGIN
+    {
+      AC1.00 BDU Ajout Fonction : Run(),ShowEDI;
+                       Action : Run...,EDI... + C/AL onPush()
+    }
     END.
   }
 }

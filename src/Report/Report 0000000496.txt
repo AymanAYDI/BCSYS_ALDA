@@ -2,9 +2,10 @@ OBJECT Report 496 Batch Post Purchase Orders
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
-    Version List=NAVW19.00;
+    Date=04/03/16;
+    Time=16:51:03;
+    Modified=Yes;
+    Version List=NAVW19.00,TAH.002;
   }
   PROPERTIES
   {
@@ -25,6 +26,9 @@ OBJECT Report 496 Batch Post Purchase Orders
                                  ERROR(Text000);
 
                                CounterTotal := COUNT;
+                               //AC BDU OPTI 1.00
+                               IF GUIALLOWED THEN
+                               //AC BDU OPTI 1.00
                                Window.OPEN(Text001);
                              END;
 
@@ -38,8 +42,15 @@ OBJECT Report 496 Batch Post Purchase Orders
                                     CalculateInvoiceDiscount;
 
                                   Counter := Counter + 1;
-                                  Window.UPDATE(1,"No.");
-                                  Window.UPDATE(2,ROUND(Counter / CounterTotal * 10000,1));
+
+                                  //AC BDU OPTI 1.00 BEGIN
+                                  IF GUIALLOWED THEN BEGIN
+                                  //AC BDU OPTI 1.00 BEGIN
+                                    Window.UPDATE(1,"No.");
+                                    Window.UPDATE(2,ROUND(Counter / CounterTotal * 10000,1));
+                                  //AC BDU OPTI 1.00 BEGIN
+                                  END;
+                                  //AC BDU OPTI 1.00 END
                                   Receive := ReceiveReq;
                                   Invoice := InvReq;
                                   CLEAR(PurchPost);
@@ -53,8 +64,14 @@ OBJECT Report 496 Batch Post Purchase Orders
                                 END;
 
                OnPostDataItem=BEGIN
-                                Window.CLOSE;
-                                MESSAGE(Text002,CounterOK,CounterTotal);
+                                //AC BDU OPTI 1.00
+                                IF GUIALLOWED THEN
+                                //AC BDU OPTI 1.00
+                                  Window.CLOSE;
+                                //AC BDU OPTI 1.00
+                                IF ShowEndMsg THEN
+                                //AC BDU OPTI 1.00
+                                  MESSAGE(Text002,CounterOK,CounterTotal);
                               END;
 
                ReqFilterFields=No.,Status }
@@ -151,6 +168,7 @@ OBJECT Report 496 Batch Post Purchase Orders
       ReplaceDocumentDate@1015 : Boolean;
       CalcInvDisc@1016 : Boolean;
       Text003@1017 : TextConst 'ENU=The exchange rate associated with the new posting date on the purchase header will not apply to the purchase lines.;FRA=Le taux de change associ‚ … la nouvelle date de comptabilisation sur l''en-tˆte achat ne s''applique pas aux lignes achat.';
+      ShowEndMsg@1000000000 : Boolean;
 
     LOCAL PROCEDURE CalculateInvoiceDiscount@1();
     BEGIN
@@ -181,6 +199,22 @@ OBJECT Report 496 Batch Post Purchase Orders
     BEGIN
       PurchSetup.GET;
       CalcInvDisc := PurchSetup."Calc. Inv. Discount";
+    END;
+
+    PROCEDURE InitReport@1180250001(ForReceiveReq@1180250001 : Boolean;ForInvReq@1180250002 : Boolean;ForPostingDateReq@1180250003 : Date;ForReplacePostingDate@1180250004 : Boolean;ForReplaceDocumentDate@1180250005 : Boolean;ForCalcInvDisc@1180250006 : Boolean;ForShowEndMsg@1180250007 : Boolean);
+    BEGIN
+      //AC1.00 BEGIN
+      InitValue;
+      ReceiveReq := ForReceiveReq;
+      InvReq := ForInvReq;
+      PostingDateReq := ForPostingDateReq;
+      ReplacePostingDate := ForReplacePostingDate;
+      ReplaceDocumentDate := ForReplaceDocumentDate;
+      CalcInvDisc := ForCalcInvDisc;
+      IF ForCalcInvDisc THEN
+        PurchSetup.TESTFIELD("Calc. Inv. Discount",FALSE);
+      ShowEndMsg := ForShowEndMsg;
+      //AC1.00 END
     END;
 
     BEGIN

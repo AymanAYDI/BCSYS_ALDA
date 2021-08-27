@@ -2,9 +2,10 @@ OBJECT Table 9500 Email Item
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
-    Version List=NAVW19.00;
+    Date=11/05/16;
+    Time=16:05:29;
+    Modified=Yes;
+    Version List=NAVW19.00,BC6AUTOINV;
   }
   PROPERTIES
   {
@@ -57,6 +58,10 @@ OBJECT Table 9500 Email Item
                                                               FRA=Nom document joint] }
     { 11  ;   ;Plaintext Formatted ;Boolean       ;CaptionML=[ENU=Plaintext Formatted;
                                                               FRA=Texte simple format‚] }
+    { 50000;  ;Attachment2 File Path;Text250      ;CaptionML=[ENU=Attachment File Path;
+                                                              FRA=Chemin d'accŠs au fichier joint] }
+    { 50001;  ;Attachment2 Name    ;Text250       ;CaptionML=[ENU=Attachment Name;
+                                                              FRA=Nom document joint] }
   }
   KEYS
   {
@@ -113,6 +118,14 @@ OBJECT Table 9500 Email Item
       EmailAddresses := CONVERTSTR(EmailAddresses,',',';');
       EmailAddresses := DELCHR(EmailAddresses,'<>');
       MailManagement.CheckValidEmailAddresses(EmailAddresses);
+    END;
+
+    PROCEDURE TryToSend@1000000000(HideMailDialog@1000 : Boolean) : Boolean;
+    VAR
+      MailManagement@1001 : Codeunit 9520;
+    BEGIN
+      //BC6>>
+      EXIT(MailManagement.SendMailOrExit(Rec,HideMailDialog));
     END;
 
     BEGIN

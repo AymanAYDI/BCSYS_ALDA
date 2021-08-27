@@ -4,7 +4,8 @@ OBJECT Page 9034 Acc. Receivable Activities
   {
     Date=07/09/12;
     Time=12:00:00;
-    Version List=NAVW17.00;
+    Modified=Yes;
+    Version List=NAVW17.00,AB6.JME.001;
   }
   PROPERTIES
   {
@@ -61,14 +62,17 @@ OBJECT Page 9034 Acc. Receivable Activities
     { 11  ;1   ;Group     ;
                 CaptionML=[ENU=Document Approvals;
                            FRA=Approbations document];
+                Visible=FALSE;
                 GroupType=CueGroup }
 
     { 14  ;2   ;Field     ;
                 SourceExpr="SOs Pending Approval";
+                Visible=FALSE;
                 DrillDownPageID=Sales Order List }
 
     { 12  ;2   ;Field     ;
                 SourceExpr="Approved Sales Orders";
+                Visible=FALSE;
                 DrillDownPageID=Sales Order List }
 
   }

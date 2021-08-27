@@ -2,9 +2,10 @@ OBJECT Codeunit 452 Report Distribution Management
 {
   OBJECT-PROPERTIES
   {
-    Date=23/10/15;
-    Time=12:00:00;
-    Version List=NAVW19.00.00.43402;
+    Date=23/05/16;
+    Time=14:59:03;
+    Modified=Yes;
+    Version List=NAVW19.00.00.43402,BC6AUTOINV;
   }
   PROPERTIES
   {
@@ -244,7 +245,7 @@ OBJECT Codeunit 452 Report Distribution Management
         ReportLayoutSelection.SetTempLayoutSelected(0);
       END ELSE
         IF NOT REPORT.SAVEASPDF(ReportID,ServerAttachmentFilePath,HeaderDoc) THEN
-          ERROR(ServerSaveAsPdfFailedErr);
+          ERROR(GETLASTERRORTEXT);
 
       IF NOT EXISTS(ServerAttachmentFilePath) THEN
         ERROR(ServerSaveAsPdfAbortedErr);
@@ -470,6 +471,33 @@ OBJECT Codeunit 452 Report Distribution Management
         SaveFileOnClient(
           ZipPath,
           ClientZipFileName);
+    END;
+
+    PROCEDURE GetReportPDFFileName@1000000000(HeaderDoc@1000 : Variant) : Text;
+    VAR
+      ReportSelections@1003 : Record 77;
+      FileManagement@1004 : Codeunit 419;
+      DocumentRecordRef@1002 : RecordRef;
+      ServerAttachmentFilePath@1006 : Text[250];
+    BEGIN
+      DocumentRecordRef.GETTABLE(HeaderDoc);
+      CASE DocumentRecordRef.NUMBER OF
+        DATABASE::"Sales Invoice Header":
+          ReportSelections.SETRANGE(Usage,ReportSelections.Usage::"S.Invoice");
+        DATABASE::"Sales Cr.Memo Header":
+          ReportSelections.SETRANGE(Usage,ReportSelections.Usage::"S.Cr.Memo");
+        DATABASE::"Sales Header":
+          ReportSelections.SETRANGE(Usage,ReportSelections.Usage::"S.Quote");
+        ELSE
+          EXIT('');
+      END;
+
+      IF NOT ReportSelections.FINDLAST THEN EXIT('');
+      ServerAttachmentFilePath := COPYSTR(FileManagement.ServerTempFileName('pdf'),1,250);
+
+      IF REPORT.SAVEASPDF(ReportSelections."Report ID",ServerAttachmentFilePath,HeaderDoc) THEN
+        IF EXISTS(ServerAttachmentFilePath) THEN
+          EXIT(ServerAttachmentFilePath);
     END;
 
     BEGIN

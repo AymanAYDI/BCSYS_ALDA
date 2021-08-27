@@ -2,9 +2,10 @@ OBJECT Page 133 Posted Sales Invoice Subform
 {
   OBJECT-PROPERTIES
   {
-    Date=22/12/15;
-    Time=12:00:00;
-    Version List=NAVW19.00.00.44365,NAVFR9.00.00.44365;
+    Date=26/02/19;
+    Time=15:39:33;
+    Modified=Yes;
+    Version List=NAVW19.00.00.44365,NAVFR9.00.00.44365,AB6.TAH.001,AB6.JME.001,ALDA;
   }
   PROPERTIES
   {
@@ -51,6 +52,7 @@ OBJECT Page 133 Posted Sales Invoice Subform
                       Name=ItemTrackingEntries;
                       CaptionML=[ENU=Item &Tracking Entries;
                                  FRA=êcritures &traáabilitÇ];
+                      Visible=FALSE;
                       Image=ItemTrackingLedger;
                       OnAction=BEGIN
                                  ShowItemTrackingLines;
@@ -99,8 +101,23 @@ OBJECT Page 133 Posted Sales Invoice Subform
     { 1   ;1   ;Group     ;
                 GroupType=Repeater }
 
+    { 1000000002;2;Field  ;
+                SourceExpr="Document No." }
+
+    { 1000000003;2;Field  ;
+                SourceExpr="Sell-to Customer No." }
+
+    { 1000000004;2;Field  ;
+                SourceExpr="Posting Date" }
+
+    { 1000000006;2;Field  ;
+                SourceExpr="Bill-to Customer No." }
+
     { 2   ;2   ;Field     ;
                 SourceExpr=Type }
+
+    { 1000000001;2;Field  ;
+                SourceExpr="Line No." }
 
     { 4   ;2   ;Field     ;
                 SourceExpr="No." }
@@ -108,6 +125,15 @@ OBJECT Page 133 Posted Sales Invoice Subform
     { 26  ;2   ;Field     ;
                 SourceExpr="Cross-Reference No.";
                 Visible=FALSE }
+
+    { 1000000000;2;Field  ;
+                SourceExpr="Cross-Reference No. of Vendor" }
+
+    { 1180250004;2;Field  ;
+                SourceExpr="HS Code" }
+
+    { 1180250003;2;Field  ;
+                SourceExpr="External Line No." }
 
     { 20  ;2   ;Field     ;
                 SourceExpr="IC Partner Code";
@@ -147,6 +173,18 @@ OBJECT Page 133 Posted Sales Invoice Subform
                 BlankZero=Yes;
                 SourceExpr="Line Amount" }
 
+    { 1000000007;2;Field  ;
+                SourceExpr="Shipment No." }
+
+    { 1000000008;2;Field  ;
+                SourceExpr="Order Reference Customer" }
+
+    { 1180250001;2;Field  ;
+                SourceExpr="Ecotaxe Unitaire" }
+
+    { 1180250002;2;Field  ;
+                SourceExpr="Montant Ecotaxe" }
+
     { 16  ;2   ;Field     ;
                 BlankZero=Yes;
                 SourceExpr="Line Discount %" }
@@ -177,6 +215,24 @@ OBJECT Page 133 Posted Sales Invoice Subform
     { 70  ;2   ;Field     ;
                 SourceExpr="Shortcut Dimension 2 Code";
                 Visible=FALSE }
+
+    { 1180250006;2;Field  ;
+                SourceExpr="Country Dimension Code" }
+
+    { 1000000005;2;Field  ;
+                SourceExpr="Anomaly Code" }
+
+    { 1000000009;2;Field  ;
+                SourceExpr="Amount Including VAT" }
+
+    { 1000000010;2;Field  ;
+                SourceExpr="Salesperson Code" }
+
+    { 1000000011;2;Field  ;
+                SourceExpr="Gen. Bus. Posting Group" }
+
+    { 1000000012;2;Field  ;
+                SourceExpr="Gen. Prod. Posting Group" }
 
     { 28  ;1   ;Group     ;
                 GroupType=Group }

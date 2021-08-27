@@ -2,9 +2,10 @@ OBJECT Table 110 Sales Shipment Header
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
-    Version List=NAVW19.00;
+    Date=04/03/19;
+    Time=16:59:58;
+    Modified=Yes;
+    Version List=NAVW19.00,AC2.00;
   }
   PROPERTIES
   {
@@ -343,6 +344,133 @@ OBJECT Table 110 Sales Shipment Header
                                                               FRA=Code prestation transporteur] }
     { 7001;   ;Allow Line Disc.    ;Boolean       ;CaptionML=[ENU=Allow Line Disc.;
                                                               FRA=Autoriser remise ligne] }
+    { 50002;  ;Order Reference Customer;Text35    ;CaptionML=[ENU=Order Reference Customer;
+                                                              FRA=R‚f‚rence commande client];
+                                                   Description=AC1.00 }
+    { 50003;  ;Direct Inv. Posted  ;Boolean       ;CaptionML=[ENU=Direct Inv. Posted;
+                                                              FRA=Facturation direct];
+                                                   Description=AC1.00 }
+    { 50004;  ;Sell-to Phone No.   ;Text30        ;ExtendedDatatype=Phone No.;
+                                                   CaptionML=[ENU=Sell-to Phone No.;
+                                                              FRA=Nø t‚l‚phone donneur d'ordre];
+                                                   Description=AC1.00 }
+    { 50005;  ;Sell-to Fax No.     ;Text30        ;CaptionML=[ENU=Sell-to Fax No.;
+                                                              FRA=Nø t‚l‚copie donneur d'ordre];
+                                                   Description=AC1.00 }
+    { 50006;  ;Sell-to E-Mail      ;Text80        ;ExtendedDatatype=E-Mail;
+                                                   CaptionML=[ENU=Sell-to E-Mail;
+                                                              FRA=E-mail donneur d'ordre];
+                                                   Description=AC1.00 }
+    { 50007;  ;Gross Weight        ;Decimal       ;CaptionML=[ENU=Gross Weight;
+                                                              FRA=Poids brut];
+                                                   DecimalPlaces=0:5;
+                                                   Description=AC1.00 }
+    { 50008;  ;Net Weight          ;Decimal       ;CaptionML=[ENU=Net Weight;
+                                                              FRA=Poids net];
+                                                   DecimalPlaces=0:5;
+                                                   Description=AC1.00 }
+    { 50009;  ;Volume              ;Decimal       ;CaptionML=[ENU=Volume;
+                                                              FRA=Volume];
+                                                   Description=AC1.00 }
+    { 50010;  ;Nbr. of Pallet      ;Integer       ;CaptionML=[ENU=Nbr. of Pallet;
+                                                              FRA=Nb. de palette];
+                                                   Description=AC1.00 }
+    { 50011;  ;Nbr. of Package     ;Integer       ;CaptionML=[ENU=Nbr. of Package;
+                                                              FRA=Nb. de colis];
+                                                   Description=AC1.00 }
+    { 50012;  ;Nbr. of Package per Pallet;Integer ;CaptionML=[ENU=Nbr. of Package per Pallet;
+                                                              FRA=Nb. de colis par palette];
+                                                   Description=AC1.00 }
+    { 50013;  ;Ship. Agent Instruction Line;Text35;CaptionML=[ENU=Shipping Agent Instruction Line;
+                                                              FRA=Ligne d'instruction de livraison transporteur];
+                                                   Description=AC1.00 }
+    { 50014;  ;Ship. Agent Instruction Line 2;Text35;
+                                                   CaptionML=[ENU=Shipping Agent Instruction Line 2;
+                                                              FRA=Ligne d'instruction de livraison transporteur 2];
+                                                   Description=AC1.00 }
+    { 50015;  ;Vendor Shipment No. ;Code20        ;CaptionML=[ENU=Vendor Shipment No.;
+                                                              FRA=Nø B.L. fournisseur] }
+    { 50016;  ;Montant BL          ;Decimal       ;FieldClass=FlowField;
+                                                   CalcFormula=Sum("Sales Shipment Line"."Item Charge Base Amount" WHERE (Document No.=FIELD(No.),
+                                                                                                                          Sell-to Customer No.=FIELD(Sell-to Customer No.)));
+                                                   CaptionML=FRA=Montant BL;
+                                                   Description=AB6.JME.001 }
+    { 50017;  ;Quantit‚ … facturer ;Decimal       ;FieldClass=FlowField;
+                                                   CalcFormula=Sum("Sales Shipment Line"."Qty. Shipped Not Invoiced" WHERE (Document No.=FIELD(No.),
+                                                                                                                            Sell-to Customer No.=FIELD(Sell-to Customer No.)));
+                                                   CaptionML=FRA=Quantit‚ … facturer;
+                                                   Description=AB6.JME.001 }
+    { 50018;  ;Quantit‚ restante … exp‚dier;Decimal;
+                                                   FieldClass=FlowField;
+                                                   CalcFormula=Sum("Sales Line"."Outstanding Quantity" WHERE (Document No.=FIELD(Order No.),
+                                                                                                              Sell-to Customer No.=FIELD(Sell-to Customer No.)));
+                                                   CaptionML=FRA=Quantit‚ restante … exp‚dier;
+                                                   Description=AB6.JME.001 }
+    { 50020;  ;Exported            ;Boolean       ;CaptionML=[ENU=Exported;
+                                                              FRA=Export‚e];
+                                                   Description=ALDA 030215D }
+    { 50021;  ;Date Exported       ;DateTime      ;CaptionML=[ENU=Date Exported;
+                                                              FRA=Date export‚];
+                                                   Description=ALDA 030215D;
+                                                   Editable=No }
+    { 50023;  ;Order Source Type   ;Option        ;CaptionML=[ENU=Order Source Type;
+                                                              FRA=Type origine commande];
+                                                   OptionCaptionML=[ENU=" ,Mail,Fax,Phone,Web,Quote";
+                                                                    FRA=" ,Mail,Fax,T‚l‚phone,Internet,Devis"];
+                                                   OptionString=[ ,Mail,Fax,Phone,Web,Quote];
+                                                   Description=ACBDU 100314D }
+    { 50024;  ;Cost Center Code    ;Code20        ;CaptionML=[ENU=Cost Center Code;
+                                                              FRA=Code centre de co–t];
+                                                   Description=ACBDU 100314D }
+    { 50025;  ;Area Code           ;Code20        ;TableRelation="Dynamic Field".Code WHERE (Table No.=CONST(18),
+                                                                                             Field No.=CONST(50021));
+                                                   CaptionML=[ENU=Area Code;
+                                                              FRA=Code site];
+                                                   Description=ACBDU 160414D;
+                                                   Editable=No }
+    { 50029;  ;Validated by        ;Text50        ;CaptionML=[ENU=Validated by;
+                                                              FRA=Valid‚ par];
+                                                   Description=ALDA 031114D;
+                                                   Editable=No }
+    { 50031;  ;EDI Code            ;Code20        ;TableRelation="E.D.I. Setup";
+                                                   CaptionML=[ENU=E.D.I. Code;
+                                                              FRA=Code E.D.I.];
+                                                   Description=ALDA 030215D;
+                                                   Editable=No }
+    { 50032;  ;EDI No.             ;Code20        ;CaptionML=[ENU=EDI No.;
+                                                              FRA=Nø EDI];
+                                                   Description=ALDA 030215D;
+                                                   Editable=No }
+    { 50033;  ;Micro Order No.     ;Code20        ;CaptionML=[ENU=Micro Order No.;
+                                                              FRA=Nø commande micro];
+                                                   Description=ALDA 061015D }
+    { 50034;  ;Grouping Code       ;Code20        ;CaptionML=[ENU=Grouping Code;
+                                                              FRA=Code regroupement];
+                                                   Description=ALDA 040116D }
+    { 50035;  ;NUM_SUBSEQUENT      ;Code50        ;CaptionML=[ENU=NUM_SUBSEQUENT;
+                                                              FRA=NUM_SUBSEQUENT];
+                                                   Description=Nø du march‚ subs‚quent }
+    { 50036;  ;REF_ENGAGEMENT      ;Code50        ;CaptionML=[ENU=REF_ENGAGEMENT;
+                                                              FRA=REF_ENGAGEMENT];
+                                                   Description=R‚f‚rence engagement }
+    { 50037;  ;NUM_EJ              ;Code50        ;CaptionML=[ENU=NUM_EJ;
+                                                              FRA=NUM_EJ];
+                                                   Description=Nø d'engagement juridique }
+    { 50038;  ;TRS_ID              ;Code50        ;CaptionML=[ENU=NUM_EJ;
+                                                              FRA=TRS_ID];
+                                                   Description=Nø de transaction unique }
+    { 50039;  ;TRS_ID_AUTORISATION ;Decimal       ;CaptionML=[ENU=TRS_ID_AUTORISATION;
+                                                              FRA=TRS_ID_AUTORISATION];
+                                                   Description=Nø de paiment Ingenico }
+    { 50040;  ;CODE_WCP            ;Code20        ;CaptionML=FRA=CODE_WCP;
+                                                   Description=Nø client g‚n‚r‚ par le site D‚fense Bureau }
+    { 50041;  ;NUM_MARKET          ;Code50        ;CaptionML=[ENU=NUM_MARKET;
+                                                              FRA=NUM_MARKET];
+                                                   Description=Num‚ro de march‚ }
+    { 50060;  ;Executing Service Code;Code100     ;CaptionML=[ENU=Executing Service Code;
+                                                              FRA=Code service ‚xecutant] }
+    { 50061;  ;Registration No.    ;Text20        ;CaptionML=[ENU=Registration No.;
+                                                              FRA=Nø SIRET] }
   }
   KEYS
   {
@@ -381,6 +509,25 @@ OBJECT Table 110 Sales Shipment Header
         REPEAT
           REPORT.RUNMODAL(ReportSelection."Report ID",ShowRequestForm,FALSE,SalesShptHeader);
         UNTIL ReportSelection.NEXT = 0;
+      END;
+    END;
+
+    PROCEDURE PrintRecords2@1000000001(ShowRequestForm@1000 : Boolean;_SalesShptHeader@1000000002 : Record 110);
+    VAR
+      CustomReportSelection@1000000000 : Record 9657;
+      ReportSelections@1000000001 : Record 77;
+    BEGIN
+      //BCSYS 130417
+      ReportSelections.SETRANGE(Usage,ReportSelections.Usage::"S.Shipment");
+
+      IF CustomReportSelection.PrintCustomReports(_SalesShptHeader,FALSE,FALSE) = 0 THEN BEGIN
+        _SalesShptHeader.COPY(Rec);
+         ReportSelections.SETRANGE(Usage,ReportSelections.Usage::"S.Shipment");
+         ReportSelections.SETFILTER("Report ID",'<>0');
+         ReportSelections.FIND('-');
+         REPEAT
+           REPORT.RUNMODAL(ReportSelections."Report ID",TRUE,FALSE,_SalesShptHeader)
+         UNTIL ReportSelections.NEXT = 0;
       END;
     END;
 
@@ -437,6 +584,9 @@ OBJECT Table 110 Sales Shipment Header
     END;
 
     BEGIN
+    {
+      AC1.00 Ajout Field "Order Reference Customer"
+    }
     END.
   }
 }

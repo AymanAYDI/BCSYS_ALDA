@@ -1,0 +1,82 @@
+OBJECT XMLport 50050 ItemCrossRef
+{
+  OBJECT-PROPERTIES
+  {
+    Date=02/03/18;
+    Time=14:26:04;
+    Modified=Yes;
+    Version List=;
+  }
+  PROPERTIES
+  {
+  }
+  ELEMENTS
+  {
+    { [{6137FE16-7E4A-4322-9FAA-8A923BBC4987}];  ;root                ;Element ;Text     }
+
+    { [{B1BF9941-DCC6-4CA3-BDF1-912D169263A7}];1 ;ItemCrossRef        ;Element ;Table   ;
+                                                  SourceTable=Table5717 }
+
+    { [{24A01797-D413-46D1-B0A7-A8F9019F738B}];2 ;a                   ;Element ;Field   ;
+                                                  DataType=Code;
+                                                  SourceField=Item Cross Reference::Item No. }
+
+    { [{0B1A6639-CF43-4B24-9D76-9AF7DA0FCFCE}];2 ;z                   ;Element ;Field   ;
+                                                  DataType=Code;
+                                                  SourceField=Item Cross Reference::Variant Code }
+
+    { [{F692B45D-BFA5-4CFA-844E-A9555BC65C8B}];2 ;e                   ;Element ;Field   ;
+                                                  DataType=Code;
+                                                  SourceField=Item Cross Reference::Unit of Measure }
+
+    { [{A03D28FD-9875-4F5C-8D91-685B73612660}];2 ;r                   ;Element ;Field   ;
+                                                  DataType=Option;
+                                                  SourceField=Item Cross Reference::Cross-Reference Type }
+
+    { [{9E99CE52-15A7-4A76-B2B3-BBE9D535A526}];2 ;t                   ;Element ;Field   ;
+                                                  DataType=Code;
+                                                  SourceField=Item Cross Reference::Cross-Reference Type No. }
+
+    { [{B91A8361-4951-44A5-9869-EE1AD16D0C26}];2 ;y                   ;Element ;Field   ;
+                                                  DataType=Code;
+                                                  SourceField=Item Cross Reference::Cross-Reference No. }
+
+    { [{4B7D7B8A-8EBD-40D8-8C24-5EF513901740}];2 ;u                   ;Element ;Field   ;
+                                                  DataType=Text;
+                                                  SourceField=Item Cross Reference::Description }
+
+    { [{FA928170-80C4-47A0-B8A7-71D6B01C9BCF}];2 ;i                   ;Element ;Field   ;
+                                                  DataType=Boolean;
+                                                  SourceField=Item Cross Reference::Discontinue Bar Code }
+
+    { [{5C6E44A0-42CC-47A4-94FF-96B0AFFCE79A}];2 ;o                   ;Element ;Field   ;
+                                                  DataType=Code;
+                                                  SourceField=Item Cross Reference::Bar Code }
+
+    { [{B87C4C5F-7379-4979-B40E-E8013C2E80C0}];2 ;p                   ;Element ;Text     }
+
+    { [{789ECB1B-71EC-41E2-940B-F8D2F69DF2B6}];2 ;q                   ;Element ;Text     }
+
+    { [{2B58D6BB-F8BA-42C8-B332-93D932187E4B}];2 ;r                   ;Element ;Text     }
+
+  }
+  EVENTS
+  {
+  }
+  REQUESTPAGE
+  {
+    PROPERTIES
+    {
+    }
+    CONTROLS
+    {
+    }
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

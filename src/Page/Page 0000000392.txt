@@ -4,6 +4,7 @@ OBJECT Page 392 Phys. Inventory Journal
   {
     Date=15/09/15;
     Time=12:00:00;
+    Modified=Yes;
     Version List=NAVW19.00;
   }
   PROPERTIES
@@ -273,6 +274,21 @@ OBJECT Page 392 Phys. Inventory Journal
                                  CurrPage.UPDATE(FALSE);
                                END;
                                 }
+      { 1180250003;2 ;Separator  }
+      { 1180250004;2 ;Action    ;
+                      Ellipsis=Yes;
+                      CaptionML=[ENU=Imp./Exp. Phys. Inventory Jnl.;
+                                 FRA=Imp./exp. f. inventaire];
+                      Description=ACBDU 130614D;
+                      Promoted=Yes;
+                      PromotedIsBig=Yes;
+                      Image=Excel;
+                      PromotedCategory=Process;
+                      OnAction=BEGIN
+                                 // ACBDU 130614D
+                                 ImpExpPhysInvJnlOnpush;
+                               END;
+                                }
     }
   }
   CONTROLS
@@ -329,6 +345,12 @@ OBJECT Page 392 Phys. Inventory Journal
 
     { 10  ;2   ;Field     ;
                 SourceExpr=Description }
+
+    { 1180250001;2;Field  ;
+                SourceExpr="Last Phys. Invt. Date" }
+
+    { 1180250002;2;Field  ;
+                SourceExpr="Item Shelf No." }
 
     { 41  ;2   ;Field     ;
                 SourceExpr="Shortcut Dimension 1 Code";
@@ -514,6 +536,21 @@ OBJECT Page 392 Phys. Inventory Journal
       CurrPage.SAVERECORD;
       ItemJnlMgt.SetName(CurrentJnlBatchName,Rec);
       CurrPage.UPDATE(FALSE);
+    END;
+
+    PROCEDURE ImpExpPhysInvJnlOnpush@1180250001();
+    VAR
+      ImpExpPhysInvJnl@1180250001 : Report 101;
+    BEGIN
+      // ACBDU 130614D.Bengin
+      ERROR('Report … faire   Report50040');
+
+      ItemJournalBatch.SETRANGE("Journal Template Name","Journal Template Name");
+      ItemJournalBatch.SETRANGE(Name,"Journal Batch Name");
+      ImpExpPhysInvJnl.SETTABLEVIEW(ItemJournalBatch);
+      ImpExpPhysInvJnl.RUNMODAL;
+      CLEAR(ImpExpPhysInvJnl);
+      // ACBDU 130614D.End
     END;
 
     BEGIN

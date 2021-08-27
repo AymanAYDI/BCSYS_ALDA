@@ -1,0 +1,68 @@
+OBJECT Page 50026 Xml Buffer
+{
+  OBJECT-PROPERTIES
+  {
+    Date=28/09/15;
+    Time=15:21:35;
+    Modified=Yes;
+    Version List=GIM;
+  }
+  PROPERTIES
+  {
+    SourceTable=Table50012;
+    PageType=List;
+  }
+  CONTROLS
+  {
+    { 1000000000;0;Container;
+                ContainerType=ContentArea }
+
+    { 1000000001;1;Group  ;
+                Name=Group;
+                GroupType=Repeater }
+
+    { 1000000002;2;Field  ;
+                SourceExpr="Entry No." }
+
+    { 1000000003;2;Field  ;
+                SourceExpr="Table No." }
+
+    { 1000000004;2;Field  ;
+                SourceExpr="Field No." }
+
+    { 1000000005;2;Field  ;
+                SourceExpr="Field Caption" }
+
+    { 1000000006;2;Field  ;
+                SourceExpr=ValueAsText }
+
+    { 1000000007;2;Field  ;
+                SourceExpr=Path }
+
+    { 1000000008;2;Field  ;
+                SourceExpr="Xml ID" }
+
+    { 1000000009;2;Field  ;
+                SourceExpr="Parent Entry No." }
+
+    { 1000000010;2;Field  ;
+                SourceExpr=Indent }
+
+    { 1000000011;2;Field  ;
+                SourceExpr=NodeType }
+
+    { 1000000012;2;Field  ;
+                SourceExpr=NodeName }
+
+    { 1000000013;2;Field  ;
+                SourceExpr=NewValueAsText }
+
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

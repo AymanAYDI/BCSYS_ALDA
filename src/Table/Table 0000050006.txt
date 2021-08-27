@@ -1,0 +1,73 @@
+OBJECT Table 50006 Document by Mail
+{
+  OBJECT-PROPERTIES
+  {
+    Date=13/07/15;
+    Time=16:02:37;
+    Modified=Yes;
+    Version List=ALDA;
+  }
+  PROPERTIES
+  {
+    CaptionML=[ENU=Document by Mail;
+               FRA=Dcoument par mail];
+  }
+  FIELDS
+  {
+    { 1   ;   ;Entry No.           ;Integer       ;CaptionML=[ENU=Entry No.;
+                                                              FRA=Nø s‚quence] }
+    { 2   ;   ;Creation Date       ;Date          ;CaptionML=[ENU=Creation Date;
+                                                              FRA=Date cr‚ation] }
+    { 3   ;   ;Created By          ;Code20        ;TableRelation=Table2000000002;
+                                                   OnLookup=VAR
+                                                              LoginMgt@1000 : Codeunit 418;
+                                                            BEGIN
+                                                              LoginMgt.LookupUserID("Created By");
+                                                            END;
+
+                                                   TestTableRelation=No;
+                                                   CaptionML=[ENU=Created By;
+                                                              FRA=Cr‚‚ par] }
+    { 4   ;   ;Document Type       ;Option        ;CaptionML=[ENU=Document Type;
+                                                              FRA=Type document];
+                                                   OptionCaptionML=[ENU=Quote,Blanket Order,Order,Invoice,Return Order,Credit Memo,Posted Shipment,Posted Invoice,Posted Return Receipt,Posted Credit Memo;
+                                                                    FRA=Devis,Commande ouverte,Commande,Facture,Retour,Avoir,Exp‚dition enregistr‚e,Facture enregistr‚e,R‚ception retour enreg.,Avoir enregistr‚];
+                                                   OptionString=Quote,Blanket Order,Order,Invoice,Return Order,Credit Memo,Posted Shipment,Posted Invoice,Posted Return Receipt,Posted Credit Memo }
+    { 5   ;   ;Document No.        ;Code20        ;CaptionML=[ENU=Document No.;
+                                                              FRA=Nø document] }
+    { 6   ;   ;E-Mail 1            ;Text80        ;CaptionML=[ENU=E-Mail 1;
+                                                              FRA=E-mail 1] }
+    { 7   ;   ;E-Mail 2            ;Text80        ;CaptionML=[ENU=E-Mail 2;
+                                                              FRA=E-mail 2] }
+    { 8   ;   ;Handled             ;Boolean       ;CaptionML=[ENU=Handled;
+                                                              FRA=Trait‚] }
+    { 9   ;   ;Handled By          ;Code20        ;OnLookup=VAR
+                                                              LoginMgt@1120000 : Codeunit 418;
+                                                            BEGIN
+                                                              LoginMgt.LookupUserID("Handled By");
+                                                            END;
+
+                                                   CaptionML=[ENU=Handled By;
+                                                              FRA=Trait‚ par] }
+    { 10  ;   ;System              ;Boolean       ;CaptionML=[ENU=System;
+                                                              FRA=SystŠme];
+                                                   Editable=No }
+    { 11  ;   ;Printer Name        ;Text30         }
+  }
+  KEYS
+  {
+    {    ;Entry No.                               ;Clustered=Yes }
+    {    ;Document Type,Document No.,Handled       }
+    {    ;Handled,Creation Date                    }
+  }
+  FIELDGROUPS
+  {
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

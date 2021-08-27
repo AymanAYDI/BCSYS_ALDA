@@ -2,12 +2,14 @@ OBJECT Page 9082 Customer Statistics FactBox
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
+    Date=21/03/16;
+    Time=19:19:15;
+    Modified=Yes;
     Version List=NAVW19.00;
   }
   PROPERTIES
   {
+    Permissions=TableData 50=r;
     CaptionML=[ENU=Customer Statistics;
                FRA=Statistiques client];
     SourceTable=Table18;
@@ -48,7 +50,8 @@ OBJECT Page 9082 Customer Statistics FactBox
                 GroupType=Group }
 
     { 14  ;2   ;Field     ;
-                SourceExpr="Outstanding Orders (LCY)" }
+                SourceExpr="Outstanding Orders (LCY)";
+                Visible=FALSE }
 
     { 15  ;2   ;Field     ;
                 CaptionML=[ENU=Shipped Not Invd. (LCY);
@@ -65,7 +68,8 @@ OBJECT Page 9082 Customer Statistics FactBox
                 GroupType=Group }
 
     { 7   ;2   ;Field     ;
-                SourceExpr="Outstanding Serv. Orders (LCY)" }
+                SourceExpr="Outstanding Serv. Orders (LCY)";
+                Visible=FALSE }
 
     { 6   ;2   ;Field     ;
                 SourceExpr="Serv Shipped Not Invoiced(LCY)" }

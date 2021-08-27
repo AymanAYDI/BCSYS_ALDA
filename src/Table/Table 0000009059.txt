@@ -4,6 +4,7 @@ OBJECT Table 9059 Administration Cue
   {
     Date=07/09/12;
     Time=12:00:00;
+    Modified=Yes;
     Version List=NAVW17.00;
   }
   PROPERTIES
@@ -40,6 +41,50 @@ OBJECT Table 9059 Administration Cue
                                                    CaptionML=[ENU=Date Filter3;
                                                               FRA=Filtre date3];
                                                    Editable=No }
+    { 50000;  ;Date Filter (Yesterday Today);DateTime;
+                                                   FieldClass=FlowFilter;
+                                                   CaptionML=[ENU=Date Filter (Yesterday & Today);
+                                                              FRA=Filtre date (hier & aujourd'hui)];
+                                                   Editable=No }
+    { 50001;  ;EDI Log on Error J - 1J;Integer    ;FieldClass=FlowField;
+                                                   CalcFormula=Count("E.D.I. Log" WHERE (Status=CONST(Error),
+                                                                                         Treatment Date=FIELD("Date Filter (Yesterday Today)")));
+                                                   CaptionML=[ENU=EDI Log on Error;
+                                                              FRA=Trace EDI en erreur] }
+    { 50002;  ;EDI Log to Handle J - 1J;Integer   ;FieldClass=FlowField;
+                                                   CalcFormula=Count("E.D.I. Log" WHERE (Status=CONST(" "),
+                                                                                         Treatment Date=FIELD("Date Filter (Yesterday Today)")));
+                                                   CaptionML=[ENU=EDI Log to Handle;
+                                                              FRA=Trace EDI … traiter] }
+    { 50003;  ;EDI Log Saved (OK) J - 1J;Integer  ;FieldClass=FlowField;
+                                                   CalcFormula=Count("E.D.I. Log" WHERE (Status=CONST(OK),
+                                                                                         Treatment Date=FIELD("Date Filter (Yesterday Today)")));
+                                                   CaptionML=[ENU=EDI Log Saved (OK);
+                                                              FRA=Trace EDI sauvegard‚e (OK)] }
+    { 50010;  ;EDI Log on Error    ;Integer       ;FieldClass=FlowField;
+                                                   CalcFormula=Count("E.D.I. Log" WHERE (Status=CONST(Error)));
+                                                   CaptionML=[ENU=EDI Log on Error;
+                                                              FRA=Trace EDI en erreur] }
+    { 50011;  ;EDI Log to Handle   ;Integer       ;FieldClass=FlowField;
+                                                   CalcFormula=Count("E.D.I. Log" WHERE (Status=CONST(" ")));
+                                                   CaptionML=[ENU=EDI Log to Handle;
+                                                              FRA=Trace EDI … traiter] }
+    { 50012;  ;EDI Log Saved (OK)  ;Integer       ;FieldClass=FlowField;
+                                                   CalcFormula=Count("E.D.I. Log" WHERE (Status=CONST(OK)));
+                                                   CaptionML=[ENU=EDI Log Saved (OK);
+                                                              FRA=Trace EDI sauvegard‚e (OK)] }
+    { 50020;  ;Nbr. of  Document to Send;Integer  ;FieldClass=FlowField;
+                                                   CalcFormula=Count("Document by Mail" WHERE (Printer Name=FILTER(0)));
+                                                   CaptionML=[ENU=Nbr. of  Document to Send;
+                                                              FRA=Nb. de document … envoyer] }
+    { 50021;  ;Nbr. of  Document Sent;Integer     ;FieldClass=FlowField;
+                                                   CalcFormula=Count("Document by Mail" WHERE (Printer Name=FILTER(0)));
+                                                   CaptionML=[ENU=Nbr. of  Document Sent;
+                                                              FRA=Nb. de document envoy‚] }
+    { 50022;  ;Nbr. of  Document on Error;Integer ;FieldClass=FlowField;
+                                                   CalcFormula=Count("Document by Mail" WHERE (Handled=CONST(No)));
+                                                   CaptionML=[ENU=Nbr. of  Document on Error;
+                                                              FRA=Nb. de document en erreur] }
   }
   KEYS
   {

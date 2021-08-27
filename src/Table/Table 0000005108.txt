@@ -4,7 +4,8 @@ OBJECT Table 5108 Sales Line Archive
   {
     Date=15/09/15;
     Time=12:00:00;
-    Version List=NAVW19.00;
+    Modified=Yes;
+    Version List=NAVW19.00AC.100,AB6.TAH.001;
   }
   PROPERTIES
   {
@@ -603,6 +604,74 @@ OBJECT Table 5108 Sales Line Archive
     { 7002;   ;Customer Disc. Group;Code20        ;TableRelation="Customer Discount Group";
                                                    CaptionML=[ENU=Customer Disc. Group;
                                                               FRA=Groupe rem. client] }
+    { 50000;  ;Exported Line       ;Boolean       ;CaptionML=[ENU=Exported Line;
+                                                              FRA=Ligne export‚e];
+                                                   Description=AC1.00;
+                                                   Editable=No }
+    { 50001;  ;Date Exported       ;DateTime      ;CaptionML=[ENU=Date Exported;
+                                                              FRA=Date export‚];
+                                                   Description=AC1.00;
+                                                   Editable=No }
+    { 50002;  ;EDI Code            ;Code10        ;TableRelation="E.D.I. Setup";
+                                                   CaptionML=[ENU=E.D.I. Code;
+                                                              FRA=Code E.D.I.];
+                                                   Description=AC1.00;
+                                                   Editable=No }
+    { 50003;  ;EDI No.             ;Code20        ;CaptionML=[ENU=EDI No.;
+                                                              FRA=Nø EDI];
+                                                   Description=AC1.00;
+                                                   Editable=No }
+    { 50004;  ;Vendor No. for EDI Sending;Code20  ;TableRelation=Vendor;
+                                                   CaptionML=FRA=Nø fournisseur pour envoi EDI;
+                                                   Description=AC1.00 }
+    { 50006;  ;Order Reference Customer;Text35    ;CaptionML=[ENU=Order Reference Customer;
+                                                              FRA=R‚f‚rence commande client];
+                                                   Description=AC1.00;
+                                                   Editable=No }
+    { 50010;  ;Ecotaxe Unitaire    ;Decimal       ;BlankZero=Yes;
+                                                   Description=AB6.TAH.001;
+                                                   AutoFormatType=2 }
+    { 50011;  ;Montant Ecotaxe     ;Decimal       ;BlankZero=Yes;
+                                                   Description=AB6.TAH.001;
+                                                   AutoFormatType=2 }
+    { 50013;  ;Line No. Reference Customer;Integer;CaptionML=[ENU=Line No. Reference Customer;
+                                                              FRA=Nø ligne r‚f‚rence commande client];
+                                                   Description=AC1.00 }
+    { 50014;  ;Anomaly Code        ;Code10        ;CaptionML=[ENU=Anomaly Code;
+                                                              FRA=Code anomalie];
+                                                   Description=AC1.00 }
+    { 50015;  ;External Line No.   ;Integer       ;CaptionML=[ENU=External Line No.;
+                                                              FRA=Nø ligne externe];
+                                                   Description=AC1.00 }
+    { 50016;  ;Reliquat            ;Decimal       ;CaptionML=FRA=Reliquat;
+                                                   Description=AB6.JME.001 }
+    { 50023;  ;Order Source Type   ;Option        ;CaptionML=[ENU=Order Source Type;
+                                                              FRA=Type origine commande];
+                                                   OptionCaptionML=[ENU=" ,Mail,Fax,Phone,Web,Quote";
+                                                                    FRA=" ,Mail,Fax,T‚l‚phone,Internet,Devis"];
+                                                   OptionString=[ ,Mail,Fax,Phone,Web,Quote];
+                                                   Description=ACBDU 100314D }
+    { 50025;  ;Area Code           ;Code10        ;TableRelation="Dynamic Field".Code WHERE (Table No.=CONST(18),
+                                                                                             Field No.=CONST(50021));
+                                                   CaptionML=[ENU=Area Code;
+                                                              FRA=Code site];
+                                                   Description=ACBDU 160414D }
+    { 50026;  ;Account No. (DPAM)  ;Code20        ;TableRelation="Dynamic Field".Code WHERE (Table No.=CONST(27),
+                                                                                             Field No.=CONST(50013));
+                                                   CaptionML=[ENU=Account No. (DPAM);
+                                                              FRA=Nø compte (DPAM)];
+                                                   Description=ACBDU 130614D;
+                                                   Editable=No }
+    { 50027;  ;Typology Code (DPAM);Code20        ;TableRelation="Dynamic Field".Code WHERE (Table No.=CONST(27),
+                                                                                             Field No.=CONST(50014));
+                                                   CaptionML=[ENU=Typology Code (DPAM);
+                                                              FRA=Code typologie (DPAM)];
+                                                   Description=ACBDU 130614D;
+                                                   Editable=No }
+    { 50028;  ;Typology Description (DPAM);Text50 ;CaptionML=[ENU=Typology Description (DPAM);
+                                                              FRA=Description typologie (DPAM)];
+                                                   Description=ACBDU 130614D;
+                                                   Editable=No }
   }
   KEYS
   {
@@ -673,6 +742,11 @@ OBJECT Table 5108 Sales Line Archive
     END;
 
     BEGIN
+    {
+      //AC1.00 Ajout champ "Exported Line" "Date Exported" "EDI Code" "EDI No." "Vendor No. for EDI Sending"
+      AB6.TAH.001 05/09/2012
+       -Ajout du champ 50010 - 50011
+    }
     END.
   }
 }

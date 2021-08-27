@@ -1,0 +1,67 @@
+OBJECT Codeunit 50036 GetfieldCaption
+{
+  OBJECT-PROPERTIES
+  {
+    Date=04/07/18;
+    Time=09:25:14;
+    Modified=Yes;
+    Version List=;
+  }
+  PROPERTIES
+  {
+    Permissions=TableData 18=r;
+    OnRun=BEGIN
+          END;
+
+  }
+  CODE
+  {
+
+    PROCEDURE GetCaption@1000000000(_TableNo@1000000000 : Integer;_FieldNo@1000000001 : Integer;_CustNo@1000000002 : Code[20]) : Text;
+    VAR
+      CaptionTable@1000000003 : Record 50007;
+      AllObjWithCaption@1000000004 : Record 2000000058;
+      Field@1000000005 : Record 2000000041;
+    BEGIN
+      //If cust no is explicit in caption table
+      IF CaptionTable.GET(_TableNo,_FieldNo,_CustNo) THEN
+        EXIT(CaptionTable.Description);
+
+      //else
+      CaptionTable.SETRANGE("Table No.",_TableNo);
+      CaptionTable.SETRANGE("Field No.",_FieldNo);
+      IF CaptionTable.FINDSET THEN
+        REPEAT
+          IF GetCustomer(CaptionTable.Code) THEN BEGIN
+            EXIT(CaptionTable.Description);
+          END;
+        UNTIL CaptionTable.NEXT = 0;
+
+      IF Field.GET(_TableNo,_FieldNo) THEN
+        EXIT(Field."Field Caption");
+    END;
+
+    LOCAL PROCEDURE GetCustomer@1000000001(_Param@1000000001 : Text) : Boolean;
+    VAR
+      Customer@1000000000 : Record 18;
+    BEGIN
+      Customer.SETFILTER("No.",_Param);
+      EXIT(NOT Customer.ISEMPTY);
+    END;
+
+    PROCEDURE GetCode@1000000004(_TableNo@1000000000 : Integer;_FieldNo@1000000001 : Integer;_CustNo@1000000002 : Code[20]) : Text;
+    VAR
+      CaptionTable@1000000003 : Record 50007;
+      AllObjWithCaption@1000000004 : Record 2000000058;
+      Field@1000000005 : Record 2000000041;
+    BEGIN
+      //If cust no is explicit in caption table
+      IF CaptionTable.GET(_TableNo,_FieldNo,_CustNo) THEN
+        EXIT(CaptionTable.Description);
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

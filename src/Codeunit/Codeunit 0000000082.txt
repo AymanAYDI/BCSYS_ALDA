@@ -2,8 +2,9 @@ OBJECT Codeunit 82 Sales-Post + Print
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
+    Date=18/04/17;
+    Time=09:40:31;
+    Modified=Yes;
     Version List=NAVW19.00;
   }
   PROPERTIES
@@ -94,7 +95,11 @@ OBJECT Codeunit 82 Sales-Post + Print
               IF Ship THEN BEGIN
                 SalesShptHeader."No." := "Last Shipping No.";
                 SalesShptHeader.SETRECFILTER;
-                PrintReport(ReportSelection.Usage::"S.Shipment");
+                //BCSYS 180417
+                CustomReportID := CustomReportSelection.PrintCustomReports(SalesShptHeader,SendReportAsEmail,FALSE);
+                IF CustomReportID = 0 THEN
+                //fin BCSYS 180417
+                  PrintReport(ReportSelection.Usage::"S.Shipment");
               END;
               IF Invoice THEN BEGIN
                 SalesInvHeader."No." := "Last Posting No.";

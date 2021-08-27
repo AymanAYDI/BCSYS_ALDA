@@ -1,0 +1,51 @@
+OBJECT XMLport 50008 Exp./Imp. City Customer
+{
+  OBJECT-PROPERTIES
+  {
+    Date=23/02/16;
+    Time=14:11:38;
+    Modified=Yes;
+    Version List=;
+  }
+  PROPERTIES
+  {
+    Format=Variable Text;
+    FieldDelimiter=<None>;
+    FieldSeparator=[;];
+  }
+  ELEMENTS
+  {
+    { [{CEF28D0C-A4E7-46D4-B62A-7D04265264BA}];  ;root                ;Element ;Text     }
+
+    { [{01979E60-2F1B-4862-85D7-73A247070A24}];1 ;Customer            ;Element ;Table   ;
+                                                  SourceTable=Table18 }
+
+    { [{C86707C6-7173-486B-9277-07C294EAF691}];2 ;No                  ;Element ;Field   ;
+                                                  DataType=Code;
+                                                  SourceField=Customer::No. }
+
+    { [{1B2A5A8B-3C42-41D2-A6D7-28A255DF7CFF}];2 ;City                ;Element ;Field   ;
+                                                  DataType=Text;
+                                                  SourceField=Customer::City }
+
+  }
+  EVENTS
+  {
+  }
+  REQUESTPAGE
+  {
+    PROPERTIES
+    {
+    }
+    CONTROLS
+    {
+    }
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

@@ -1,0 +1,65 @@
+OBJECT Codeunit 50021 ImportXMLMajuscule
+{
+  OBJECT-PROPERTIES
+  {
+    Date=15/03/16;
+    Time=12:21:26;
+    Modified=Yes;
+    Version List=GIM;
+  }
+  PROPERTIES
+  {
+    TableNo=472;
+    OnRun=VAR
+            XmlNode@1000000001 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlNode";
+            XmlNodes@1000000000 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlNodeList";
+            XmlBuffer2@1000000003 : Record 50012;
+          BEGIN
+            //Import XML in buffer
+            //"Parameter String" := 'C:\Common Profiles\ALDA\EDI-MAJ000-ADH257-VEN126263-290815.ubl';
+            //"Parameter String" := 'C:\Users\ea\Desktop\EDI-MAJ000-ADH257-VEN126263-290815_copy.ubl';
+            GIMXmlMgt.Init("Parameter String",'MAJUSCULE');
+            GIMXmlMgt.GetBuffer(XmlBuffer,TRUE);
+            XmlBuffer.SETCURRENTKEY("Xml ID");
+            IF XmlBuffer.FINDFIRST THEN BEGIN
+
+              XmlBuffer2 := XmlBuffer;
+              XmlBuffer.INIT;
+              XmlBuffer."Entry No." := 2;
+              XmlBuffer."Table No."  := 50008;
+              XmlBuffer."Field No." := 2;
+              XmlBuffer.ValueAsText := '0174';
+              XmlBuffer."Xml ID" := XmlBuffer2."Xml ID";
+              XmlBuffer.INSERT;
+              XmlBuffer.SETRANGE("Table No.",50009);
+              XmlBuffer.SETRANGE("Field No.",65003);
+              IF XmlBuffer.FINDFIRST THEN
+                REPEAT
+                  XmlBuffer2 := XmlBuffer;
+                  XmlBuffer.INIT;
+                  XmlBuffer."Entry No." := XmlBuffer2."Entry No." + 1;
+                  XmlBuffer."Table No."  := 50009;
+                  XmlBuffer."Field No." := 2;
+                  XmlBuffer."Xml ID" := XmlBuffer2."Xml ID";
+                  XmlBuffer.ValueAsText := '0174';
+                  XmlBuffer.INSERT;
+                  XmlBuffer := XmlBuffer2;
+                UNTIL XmlBuffer.NEXT = 0;
+              //PAGE.RUN(0,XmlBuffer);
+              GIMImportXMLFile.StoreBuffer(XmlBuffer);
+            END;
+          END;
+
+  }
+  CODE
+  {
+    VAR
+      XmlBuffer@1000000004 : TEMPORARY Record 50012;
+      GIMXmlMgt@1000000003 : Codeunit 50020;
+      GIMImportXMLFile@1000000002 : Codeunit 50022;
+
+    BEGIN
+    END.
+  }
+}
+

@@ -2,9 +2,10 @@ OBJECT Page 47 Sales Invoice Subform
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
-    Version List=NAVW19.00;
+    Date=16/03/21;
+    Time=12:10:10;
+    Modified=Yes;
+    Version List=NAVW19.00,AB6.TAH.001,ALDA;
   }
   PROPERTIES
   {
@@ -235,7 +236,6 @@ OBJECT Page 47 Sales Invoice Subform
 
     { 58  ;2   ;Field     ;
                 SourceExpr="Cross-Reference No.";
-                Visible=FALSE;
                 OnValidate=BEGIN
                              CrossReferenceNoOnAfterValidat;
                              NoOnAfterValidate;
@@ -247,6 +247,12 @@ OBJECT Page 47 Sales Invoice Subform
                            NoOnAfterValidate;
                          END;
                           }
+
+    { 1000000001;2;Field  ;
+                SourceExpr="Cross-Reference No. of Vendor" }
+
+    { 1180250004;2;Field  ;
+                SourceExpr="HS Code" }
 
     { 74  ;2   ;Field     ;
                 SourceExpr="IC Partner Code";
@@ -284,7 +290,8 @@ OBJECT Page 47 Sales Invoice Subform
                 Visible=FALSE }
 
     { 32  ;2   ;Field     ;
-                SourceExpr="Location Code" }
+                SourceExpr="Location Code";
+                Visible=FALSE }
 
     { 76  ;2   ;Field     ;
                 SourceExpr="Bin Code";
@@ -302,6 +309,7 @@ OBJECT Page 47 Sales Invoice Subform
 
     { 34  ;2   ;Field     ;
                 SourceExpr="Unit of Measure Code";
+                Visible=FALSE;
                 OnValidate=BEGIN
                              UnitofMeasureCodeOnAfterValida;
                              RedistributeTotalsOnAfterValidate;
@@ -339,6 +347,14 @@ OBJECT Page 47 Sales Invoice Subform
                              RedistributeTotalsOnAfterValidate;
                            END;
                             }
+
+    { 1180250001;2;Field  ;
+                SourceExpr="Ecotaxe Unitaire";
+                Visible=FALSE }
+
+    { 1180250002;2;Field  ;
+                SourceExpr="Montant Ecotaxe";
+                Visible=FALSE }
 
     { 90  ;2   ;Field     ;
                 CaptionML=[ENU=Sales Line Disc. Exists;
@@ -378,6 +394,7 @@ OBJECT Page 47 Sales Invoice Subform
     { 36  ;2   ;Field     ;
                 BlankZero=Yes;
                 SourceExpr="Qty. to Assign";
+                Visible=FALSE;
                 OnDrillDown=BEGIN
                               CurrPage.SAVERECORD;
                               ShowItemChargeAssgnt;
@@ -388,6 +405,7 @@ OBJECT Page 47 Sales Invoice Subform
     { 82  ;2   ;Field     ;
                 BlankZero=Yes;
                 SourceExpr="Qty. Assigned";
+                Visible=FALSE;
                 OnDrillDown=BEGIN
                               CurrPage.SAVERECORD;
                               ShowItemChargeAssgnt;
@@ -454,6 +472,9 @@ OBJECT Page 47 Sales Invoice Subform
     { 48  ;2   ;Field     ;
                 SourceExpr="Appl.-to Item Entry";
                 Visible=FALSE }
+
+    { 1000000000;2;Field  ;
+                SourceExpr="External Line No." }
 
     { 21  ;2   ;Field     ;
                 SourceExpr="Deferral Code";
@@ -539,6 +560,9 @@ OBJECT Page 47 Sales Invoice Subform
                            END;
                             }
 
+    { 1180250003;2;Field  ;
+                SourceExpr="Country Dimension Code" }
+
     { 104 ;2   ;Field     ;
                 SourceExpr="Document No.";
                 Visible=FALSE;
@@ -548,6 +572,12 @@ OBJECT Page 47 Sales Invoice Subform
                 SourceExpr="Line No.";
                 Visible=FALSE;
                 Editable=FALSE }
+
+    { 1000000002;2;Field  ;
+                SourceExpr="Vendor No. for EDI Sending" }
+
+    { 1000000003;2;Field  ;
+                SourceExpr="Sell-to Customer No." }
 
     { 39  ;1   ;Group     ;
                 GroupType=Group }

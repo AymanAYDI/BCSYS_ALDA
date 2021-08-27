@@ -2,13 +2,15 @@ OBJECT Codeunit 56 Sales - Calc Discount By Type
 {
   OBJECT-PROPERTIES
   {
-    Date=26/11/15;
-    Time=12:00:00;
+    Date=22/03/16;
+    Time=17:27:13;
+    Modified=Yes;
     Version List=NAVW19.00.00.43897;
   }
   PROPERTIES
   {
     TableNo=37;
+    Permissions=TableData 37=r;
     OnRun=VAR
             SalesLine@1000 : Record 37;
             SalesHeader@1001 : Record 36;

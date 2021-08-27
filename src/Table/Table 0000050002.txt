@@ -1,0 +1,133 @@
+OBJECT Table 50002 E.D.I. Entry
+{
+  OBJECT-PROPERTIES
+  {
+    Date=18/12/18;
+    Time=16:55:14;
+    Modified=Yes;
+    Version List=AC1.00;
+  }
+  PROPERTIES
+  {
+    OnDelete=VAR
+               EDIEntry@1180250001 : Record 50002;
+             BEGIN
+               EDIEntry.RESET;
+               EDIEntry.SETRANGE("Entry No.","Entry No." * -1);
+               EDIEntry.DELETEALL(FALSE);
+             END;
+
+    CaptionML=[ENU=Electronic Data Interchange Entry;
+               FRA=êcriture d'Çchange de DonnÇes InformatisÇ];
+  }
+  FIELDS
+  {
+    { 1   ;   ;Entry No.           ;Integer       ;CaptionML=[ENU=Entry No.;
+                                                              FRA=N¯ sÇquence] }
+    { 2   ;   ;User ID             ;Code20        ;TableRelation=User;
+                                                   OnLookup=VAR
+                                                              LoginMgt@1000 : Codeunit 418;
+                                                            BEGIN
+                                                              LoginMgt.LookupUserID("User ID");
+                                                            END;
+
+                                                   TestTableRelation=No;
+                                                   CaptionML=[ENU=User ID;
+                                                              FRA=Code utilisateur] }
+    { 3   ;   ;Imp./Exp. Date      ;DateTime      ;CaptionML=[ENU=Imp./Exp. Date;
+                                                              FRA=Date imp./exp.] }
+    { 6   ;   ;EDI Code            ;Code10        ;TableRelation="E.D.I. Setup";
+                                                   CaptionML=[ENU=EDI No.;
+                                                              FRA=Code EDI] }
+    { 7   ;   ;Error               ;Boolean       ;CaptionML=[ENU=Error;
+                                                              FRA=Erreur] }
+    { 8   ;   ;Handled             ;Boolean       ;CaptionML=[ENU=Handled;
+                                                              FRA=TraitÇ] }
+    { 10  ;   ;Field 1             ;Text50         }
+    { 11  ;   ;Field 2             ;Text50         }
+    { 12  ;   ;Field 3             ;Text50         }
+    { 13  ;   ;Field 4             ;Text50         }
+    { 14  ;   ;Field 5             ;Text50         }
+    { 15  ;   ;Field 6             ;Text50         }
+    { 16  ;   ;Field 7             ;Text50         }
+    { 17  ;   ;Field 8             ;Text50         }
+    { 18  ;   ;Field 9             ;Text50         }
+    { 19  ;   ;Field 10            ;Text50         }
+    { 20  ;   ;Field 11            ;Text50         }
+    { 21  ;   ;Field 12            ;Text50         }
+    { 22  ;   ;Field 13            ;Text50         }
+    { 23  ;   ;Field 14            ;Text50         }
+    { 24  ;   ;Field 15            ;Text50         }
+    { 25  ;   ;Field 16            ;Text50         }
+    { 26  ;   ;Field 17            ;Text50         }
+    { 27  ;   ;Field 18            ;Text50         }
+    { 28  ;   ;Field 19            ;Text50         }
+    { 29  ;   ;Field 20            ;Text50         }
+    { 30  ;   ;Field 21            ;Text50         }
+    { 31  ;   ;Field 22            ;Text50         }
+    { 32  ;   ;Field 23            ;Text50         }
+    { 33  ;   ;Field 24            ;Text50         }
+    { 34  ;   ;Field 25            ;Text50         }
+    { 35  ;   ;Field 26            ;Text50         }
+    { 36  ;   ;Field 27            ;Text50         }
+    { 37  ;   ;Field 28            ;Text50         }
+    { 38  ;   ;Field 29            ;Text50         }
+    { 39  ;   ;Field 30            ;Text50         }
+    { 40  ;   ;Field 31            ;Text50         }
+    { 41  ;   ;Field 32            ;Text50         }
+    { 42  ;   ;Field 33            ;Text50         }
+    { 43  ;   ;Field 34            ;Text50         }
+    { 44  ;   ;Field 35            ;Text50         }
+    { 45  ;   ;Field 36            ;Text50         }
+    { 46  ;   ;Field 37            ;Text50         }
+    { 47  ;   ;Field 38            ;Text50         }
+    { 48  ;   ;Field 39            ;Text50         }
+    { 49  ;   ;Field 40            ;Text50         }
+    { 50  ;   ;Field 41            ;Text50         }
+    { 51  ;   ;Field 42            ;Text50         }
+    { 52  ;   ;Field 43            ;Text50         }
+    { 53  ;   ;Field 44            ;Text50         }
+    { 54  ;   ;Field 45            ;Text50         }
+    { 55  ;   ;Field 46            ;Text50         }
+    { 56  ;   ;Field 47            ;Text50         }
+    { 57  ;   ;Field 48            ;Text50         }
+    { 58  ;   ;Field 49            ;Text50         }
+    { 59  ;   ;Field 50            ;Text50         }
+    { 60  ;   ;Field 51            ;Text50         }
+    { 61  ;   ;Field 52            ;Text50         }
+    { 62  ;   ;Field 53            ;Text50         }
+    { 63  ;   ;Field 54            ;Text50         }
+    { 64  ;   ;Field 55            ;Text50         }
+    { 65  ;   ;Field 56            ;Text50         }
+    { 66  ;   ;Field 57            ;Text50         }
+    { 67  ;   ;Field 58            ;Text50         }
+    { 68  ;   ;Field 59            ;Text50         }
+    { 69  ;   ;Field 60            ;Text50         }
+    { 70  ;   ;Field 61            ;Text50         }
+    { 71  ;   ;Field 62            ;Text50         }
+    { 72  ;   ;Field 63            ;Text50         }
+    { 73  ;   ;Field 64            ;Text50         }
+    { 74  ;   ;Field 65            ;Text50         }
+    { 75  ;   ;Field 66            ;Text50         }
+    { 76  ;   ;Field 67            ;Text50         }
+    { 77  ;   ;Field 68            ;Text50         }
+    { 78  ;   ;Field 69            ;Text50         }
+    { 4000;   ;Batch ID            ;GUID           }
+  }
+  KEYS
+  {
+    {    ;Entry No.                               ;Clustered=Yes }
+    {    ;EDI Code,Imp./Exp. Date,Error,Handled    }
+    {    ;Batch ID                                 }
+  }
+  FIELDGROUPS
+  {
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

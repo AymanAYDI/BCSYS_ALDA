@@ -2,9 +2,10 @@ OBJECT Page 26 Vendor Card
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
-    Version List=NAVW19.00,NAVFR9.00;
+    Date=20/04/16;
+    Time=19:08:35;
+    Modified=Yes;
+    Version List=NAVW19.00,NAVFR9.00,AC1.00;
   }
   PROPERTIES
   {
@@ -434,6 +435,21 @@ OBJECT Page 26 Vendor Card
                       Promoted=Yes;
                       Image=Journals;
                       PromotedCategory=Process }
+      { 1000000001;1 ;Action    ;
+                      Name=Duplicate;
+                      CaptionML=[ENU=Duplicate...;
+                                 FRA=Dupliquer...];
+                      Promoted=Yes;
+                      PromotedIsBig=Yes;
+                      Image=Copy;
+                      PromotedCategory=Process;
+                      OnAction=VAR
+                                 BCSystools@1000000000 : Codeunit 50015;
+                               BEGIN
+                                 //BC6>>
+                                 BCSystools.DuplicateVendor(Rec);
+                               END;
+                                }
       { 1900000006;0 ;ActionContainer;
                       ActionContainerType=Reports }
       { 1905916106;1 ;Action    ;
@@ -541,6 +557,13 @@ OBJECT Page 26 Vendor Card
 
     { 26  ;2   ;Field     ;
                 SourceExpr="Last Date Modified" }
+
+    { 1180250001;2;Field  ;
+                SourceExpr="Bar Code" }
+
+    { 1180250002;2;Field  ;
+                SourceExpr="One Order by Micro Order No.";
+                Visible=FALSE }
 
     { 1902768601;1;Group  ;
                 CaptionML=[ENU=Communication;
@@ -826,6 +849,9 @@ OBJECT Page 26 Vendor Card
     END;
 
     BEGIN
+    {
+      AC1.00 ajout Field "Bar Code"
+    }
     END.
   }
 }

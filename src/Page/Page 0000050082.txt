@@ -1,0 +1,418 @@
+OBJECT Page 50082 User Overview
+{
+  OBJECT-PROPERTIES
+  {
+    Date=23/03/16;
+    Time=18:51:20;
+    Modified=Yes;
+    Version List=NAVW17.10.00.36281;
+  }
+  PROPERTIES
+  {
+    CaptionML=[ENU=User Overview;
+               FRB=Vue utilisateur];
+    SaveValues=Yes;
+    LinksAllowed=No;
+    SourceTable=Table50015;
+    PageType=Worksheet;
+    SourceTableTemporary=Yes;
+    OnOpenPage=BEGIN
+                 IF UserName <> '' THEN BEGIN
+                   UserName := UserAcessControlMgt.ValidateUserID(UserName, Rec);
+                   UserAcessControlMgt.SetRoleColumnSet('', 0, NumberOfColumns);
+                   UserAcessControlMgt.RoleToCaptions(ColumnCaptions,NumberOfColumns,FALSE,CaptionRange);
+                 END;
+               END;
+
+    OnAfterGetRecord=VAR
+                       ColumnNo@1000 : Integer;
+                       x@1000000000 : Integer;
+                     BEGIN
+                       FOR x := 1 TO ARRAYLEN(ColumnValues) DO
+                         ColumnValues[x] := UserAcessControlMgt.GetCellValue("Company Name", ColumnCaptions[x]);
+                     END;
+
+    OnNewRecord=BEGIN
+                  CLEAR(ColumnValues);
+                END;
+
+    ActionList=ACTIONS
+    {
+      { 1900000004;0 ;ActionContainer;
+                      ActionContainerType=ActionItems }
+      { 28      ;1   ;ActionGroup;
+                      CaptionML=[ENU=F&unctions;
+                                 FRB=Fonction&s;
+                                 NLB=F&uncties];
+                      Image=Action }
+      { 2       ;1   ;Action    ;
+                      Name=PreviousColumn;
+                      CaptionML=[ENU=Previous Column;
+                                 FRB=Colonne pr‚c‚dente;
+                                 NLB=Vorige kolom];
+                      Promoted=Yes;
+                      PromotedIsBig=Yes;
+                      Image=PreviousRecord;
+                      PromotedCategory=Process;
+                      OnAction=BEGIN
+                                 AdjustColumnOffset(-1);
+                               END;
+                                }
+      { 1       ;1   ;Action    ;
+                      Name=NextColumn;
+                      CaptionML=[ENU=Next Column;
+                                 FRB=Colonne suivante;
+                                 NLB=Volgende kolom];
+                      Promoted=Yes;
+                      PromotedIsBig=Yes;
+                      Image=NextRecord;
+                      PromotedCategory=Process;
+                      OnAction=BEGIN
+                                 //AdjustColumnOffset(1);
+                               END;
+                                }
+      { 1000000000;1 ;Action    ;
+                      Name=AddColumn;
+                      CaptionML=[ENU=Add Role;
+                                 FRB=Ajouter un r“le];
+                      Promoted=Yes;
+                      PromotedIsBig=Yes;
+                      Image=AddWatch;
+                      PromotedCategory=Process;
+                      OnAction=BEGIN
+                                 UserAcessControlMgt.AddRoleID(ColumnCaptions,NumberOfColumns,FALSE,CaptionRange);
+                               END;
+                                }
+      { 1000000001;1 ;Action    ;
+                      Name=SavePublish;
+                      CaptionML=[ENU=Save and Publish;
+                                 FRB=Sauvegarder et publier];
+                      Promoted=Yes;
+                      PromotedIsBig=Yes;
+                      Image=PutawayLines;
+                      PromotedCategory=Process;
+                      OnAction=BEGIN
+                                 UserAcessControlMgt.SaveAndPublish;
+                               END;
+                                }
+      { 1000000002;  ;ActionContainer;
+                      ActionContainerType=RelatedInformation }
+      { 1000000003;1 ;ActionGroup;
+                      CaptionML=[ENU=Setup;
+                                 FRB=Param‚tres] }
+      { 1000000004;2 ;Action    ;
+                      Name=ModelPermissionSet;
+                      CaptionML=[ENU=Model Permission Set;
+                                 FRB=ModŠle ensembles autorisation];
+                      RunObject=Page 50084;
+                      Promoted=Yes;
+                      PromotedIsBig=Yes;
+                      Image=EncryptionKeys;
+                      PromotedCategory=Report }
+    }
+  }
+  CONTROLS
+  {
+    { 1900000001;0;Container;
+                ContainerType=ContentArea }
+
+    { 8   ;1   ;Group     ;
+                CaptionML=[ENU=General;
+                           FRB=G‚n‚ral;
+                           NLB=Algemeen] }
+
+    { 10  ;2   ;Field     ;
+                CaptionML=[ENU=User Name;
+                           FRB=Nom utilisateur;
+                           NLB=Gebruikersnaam];
+                SourceExpr=UserName;
+                OnValidate=BEGIN
+                             UserName := UserAcessControlMgt.ValidateUserID(UserName, Rec);
+                             UserAcessControlMgt.SetRoleColumnSet('', 0, NumberOfColumns);
+                             UserAcessControlMgt.RoleToCaptions(ColumnCaptions,NumberOfColumns,FALSE,CaptionRange);
+                             CurrPage.UPDATE(FALSE);
+                           END;
+
+                OnLookup=BEGIN
+                           UserName := UserAcessControlMgt.LookUserID(Text, Rec);
+                           UserAcessControlMgt.SetRoleColumnSet('', 0, NumberOfColumns);
+                           UserAcessControlMgt.RoleToCaptions(ColumnCaptions,NumberOfColumns,FALSE,CaptionRange);
+                           CurrPage.UPDATE(FALSE);
+                         END;
+                          }
+
+    { 48  ;1   ;Group     ;
+                GroupType=Repeater }
+
+    { 49  ;2   ;Field     ;
+                SourceExpr="Company Name" }
+
+    { 53  ;2   ;Field     ;
+                Name=ColumnValues1;
+                OptionCaptionML=[ENU=" ,yes,limited";
+                                 FRB=" ,oui,limit‚"];
+                BlankZero=Yes;
+                SourceExpr=ColumnValues[1];
+                CaptionClass=ColumnCaptions[1];
+                OnValidate=BEGIN
+                             ValidateCellValue(1);
+                           END;
+
+                OnLookup=BEGIN
+                           ValidateCellValue(1);
+                         END;
+
+                OnAssistEdit=BEGIN
+                               AssistEdit(1);
+                             END;
+                              }
+
+    { 59  ;2   ;Field     ;
+                Name=ColumnValues2;
+                OptionCaptionML=[ENU=" ,yes,limited";
+                                 FRB=" ,oui,limit‚"];
+                BlankZero=Yes;
+                SourceExpr=ColumnValues[2];
+                CaptionClass=ColumnCaptions[2];
+                OnValidate=BEGIN
+                             ValidateCellValue(2);
+                           END;
+
+                OnAssistEdit=BEGIN
+                               AssistEdit(2);
+                             END;
+                              }
+
+    { 61  ;2   ;Field     ;
+                Name=ColumnValues3;
+                OptionCaptionML=[ENU=" ,yes,limited";
+                                 FRB=" ,oui,limit‚"];
+                BlankZero=Yes;
+                SourceExpr=ColumnValues[3];
+                CaptionClass=ColumnCaptions[3];
+                OnValidate=BEGIN
+                             ValidateCellValue(3);
+                           END;
+
+                OnAssistEdit=BEGIN
+                               AssistEdit(3);
+                             END;
+                              }
+
+    { 63  ;2   ;Field     ;
+                Name=ColumnValues4;
+                OptionCaptionML=[ENU=" ,yes,limited";
+                                 FRB=" ,oui,limit‚"];
+                BlankZero=Yes;
+                SourceExpr=ColumnValues[4];
+                CaptionClass=ColumnCaptions[4];
+                OnValidate=BEGIN
+                             ValidateCellValue(4);
+                           END;
+
+                OnAssistEdit=BEGIN
+                               AssistEdit(4);
+                             END;
+                              }
+
+    { 65  ;2   ;Field     ;
+                Name=ColumnValues5;
+                OptionCaptionML=[ENU=" ,yes,limited";
+                                 FRB=" ,oui,limit‚"];
+                BlankZero=Yes;
+                SourceExpr=ColumnValues[5];
+                CaptionClass=ColumnCaptions[5];
+                OnValidate=BEGIN
+                             ValidateCellValue(5);
+                           END;
+
+                OnAssistEdit=BEGIN
+                               AssistEdit(5);
+                             END;
+                              }
+
+    { 81  ;2   ;Field     ;
+                Name=ColumnValues6;
+                OptionCaptionML=[ENU=" ,yes,limited";
+                                 FRB=" ,oui,limit‚"];
+                BlankZero=Yes;
+                SourceExpr=ColumnValues[6];
+                CaptionClass=ColumnCaptions[6];
+                OnValidate=BEGIN
+                             ValidateCellValue(6);
+                           END;
+
+                OnAssistEdit=BEGIN
+                               AssistEdit(6);
+                             END;
+                              }
+
+    { 79  ;2   ;Field     ;
+                Name=ColumnValues7;
+                OptionCaptionML=[ENU=" ,yes,limited";
+                                 FRB=" ,oui,limit‚"];
+                BlankZero=Yes;
+                SourceExpr=ColumnValues[7];
+                CaptionClass=ColumnCaptions[7];
+                OnValidate=BEGIN
+                             ValidateCellValue(7);
+                           END;
+
+                OnAssistEdit=BEGIN
+                               AssistEdit(7);
+                             END;
+                              }
+
+    { 77  ;2   ;Field     ;
+                Name=ColumnValues8;
+                OptionCaptionML=[ENU=" ,yes,limited";
+                                 FRB=" ,oui,limit‚"];
+                BlankZero=Yes;
+                SourceExpr=ColumnValues[8];
+                CaptionClass=ColumnCaptions[8];
+                OnValidate=BEGIN
+                             ValidateCellValue(8);
+                           END;
+
+                OnAssistEdit=BEGIN
+                               AssistEdit(8);
+                             END;
+                              }
+
+    { 75  ;2   ;Field     ;
+                Name=ColumnValues9;
+                OptionCaptionML=[ENU=" ,yes,limited";
+                                 FRB=" ,oui,limit‚"];
+                BlankZero=Yes;
+                SourceExpr=ColumnValues[9];
+                CaptionClass='3,' + ColumnCaptions[9];
+                OnValidate=BEGIN
+                             ValidateCellValue(9);
+                           END;
+
+                OnAssistEdit=BEGIN
+                               AssistEdit(9);
+                             END;
+                              }
+
+    { 73  ;2   ;Field     ;
+                Name=ColumnValues10;
+                OptionCaptionML=[ENU=" ,yes,limited";
+                                 FRB=" ,oui,limit‚"];
+                BlankZero=Yes;
+                SourceExpr=ColumnValues[10];
+                CaptionClass='3,' + ColumnCaptions[10];
+                OnValidate=BEGIN
+                             ValidateCellValue(10);
+                           END;
+
+                OnAssistEdit=BEGIN
+                               AssistEdit(10);
+                             END;
+                              }
+
+    { 71  ;2   ;Field     ;
+                Name=ColumnValues11;
+                OptionCaptionML=[ENU=" ,yes,limited";
+                                 FRB=" ,oui,limit‚"];
+                BlankZero=Yes;
+                SourceExpr=ColumnValues[11];
+                CaptionClass='3,' + ColumnCaptions[11];
+                OnValidate=BEGIN
+                             ValidateCellValue(11);
+                           END;
+
+                OnAssistEdit=BEGIN
+                               AssistEdit(11);
+                             END;
+                              }
+
+    { 69  ;2   ;Field     ;
+                Name=ColumnValues12;
+                OptionCaptionML=[ENU=" ,yes,limited";
+                                 FRB=" ,oui,limit‚"];
+                BlankZero=Yes;
+                SourceExpr=ColumnValues[12];
+                CaptionClass='3,' + ColumnCaptions[12];
+                OnValidate=BEGIN
+                             ValidateCellValue(12);
+                           END;
+
+                OnAssistEdit=BEGIN
+                               AssistEdit(12);
+                             END;
+                              }
+
+  }
+  CODE
+  {
+    VAR
+      Text000@1000 : TextConst 'ENU=DEFAULT;FRB=DEFAUT;NLB=STANDAARD';
+      Text005@1021 : TextConst 'ENU=1,6,,Dimension %1 Filter;FRB=1,6,,Filtre axe analytique %1;NLB=1,6,,Filter dimensie %1';
+      UserAcessControlMgt@1000000001 : Codeunit 50089;
+      ColumnCaptions@1000000002 : ARRAY [12] OF Text;
+      ColumnValues@1000000003 : ARRAY [12] OF ' ,Yes,Limited';
+      UserName@1000000000 : Code[20];
+      CaptionRange@1000000004 : Text[1024];
+      NumberOfColumns@1000000005 : Integer;
+
+    PROCEDURE SetAccSchedName@6(NewAccSchedName@1000 : Code[10]);
+    VAR
+      AccSchedName@1001 : Record 84;
+    BEGIN
+    END;
+
+    LOCAL PROCEDURE FormGetCaptionClass@12(DimNo@1000 : Integer) : Text[250];
+    BEGIN
+    END;
+
+    LOCAL PROCEDURE AssistEdit@5(ColumnNo@1003 : Integer);
+    VAR
+      EntityBuffer@1000000000 : TEMPORARY Record 50015;
+    BEGIN
+      IF UserAcessControlMgt.AssistEditEntity(ColumnValues[ColumnNo], "Company Name", ColumnCaptions[ColumnNo], EntityBuffer) THEN
+        ColumnValues[ColumnNo] := UserAcessControlMgt.SetCellValue(ColumnValues[ColumnNo], "Company Name", ColumnCaptions[ColumnNo], EntityBuffer);
+      CurrPage.UPDATE(FALSE);
+    END;
+
+    LOCAL PROCEDURE ValidateCellValue@1000000000(ColumnNo@1003 : Integer);
+    VAR
+      EntityBuffer@1000000000 : TEMPORARY Record 50015;
+    BEGIN
+      ColumnValues[ColumnNo] := UserAcessControlMgt.SetCellValue(ColumnValues[ColumnNo], "Company Name", ColumnCaptions[ColumnNo], EntityBuffer);
+      CurrPage.UPDATE(FALSE);
+    END;
+
+    LOCAL PROCEDURE UpdateColumnCaptions@19();
+    VAR
+      ColumnNo@1000 : Integer;
+      i@1001 : Integer;
+    BEGIN
+    END;
+
+    LOCAL PROCEDURE AdjustColumnOffset@18(Delta@1000 : Integer);
+    VAR
+      OldColumnOffset@1001 : Integer;
+    BEGIN
+    END;
+
+    LOCAL PROCEDURE UpdateDimFilterControls@4();
+    BEGIN
+    END;
+
+    LOCAL PROCEDURE CurrentSchedNameOnAfterValidate@19053875();
+    VAR
+      AccSchedName@1001 : Record 84;
+      PrevAnalysisView@1002 : Record 363;
+    BEGIN
+    END;
+
+    LOCAL PROCEDURE CurrentColumnNameOnAfterValidate@19064415();
+    BEGIN
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

@@ -1,0 +1,50 @@
+OBJECT XMLport 50007 Imp. Tariff Number
+{
+  OBJECT-PROPERTIES
+  {
+    Date=23/02/16;
+    Time=14:09:22;
+    Modified=Yes;
+    Version List=;
+  }
+  PROPERTIES
+  {
+    CaptionML=ENU=Imp. Tariff Number;
+    Direction=Import;
+    Format=Variable Text;
+    FieldDelimiter=<None>;
+    FieldSeparator=[;];
+    UseRequestPage=No;
+  }
+  ELEMENTS
+  {
+    { [{18C0D681-5BB2-4CD8-BA79-FB72B73DF7F5}];  ;root                ;Element ;Text     }
+
+    { [{E7234980-4724-4627-93EF-9F4640EA684E}];1 ;TariffNumber        ;Element ;Table   ;
+                                                  SourceTable=Table260 }
+
+    { [{3201EE53-6419-483B-819B-9A0C9A74574C}];2 ;No                  ;Element ;Field   ;
+                                                  DataType=Code;
+                                                  SourceField=Tariff Number::No. }
+
+  }
+  EVENTS
+  {
+  }
+  REQUESTPAGE
+  {
+    PROPERTIES
+    {
+    }
+    CONTROLS
+    {
+    }
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

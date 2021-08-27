@@ -4,6 +4,7 @@ OBJECT Page 6652 Posted Return Shipments
   {
     Date=09/09/14;
     Time=12:00:00;
+    Modified=Yes;
     Version List=NAVW18.00;
   }
   PROPERTIES
@@ -203,6 +204,9 @@ OBJECT Page 6652 Posted Return Shipments
     { 1102601001;2;Field  ;
                 SourceExpr="Document Date";
                 Visible=FALSE }
+
+    { 1180250001;2;Field  ;
+                SourceExpr="Vendor Authorization No." }
 
     { 1102601003;2;Field  ;
                 SourceExpr="Applies-to Doc. Type";

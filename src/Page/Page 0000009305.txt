@@ -2,9 +2,10 @@ OBJECT Page 9305 Sales Order List
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
-    Version List=NAVW19.00;
+    Date=10/07/20;
+    Time=14:45:59;
+    Modified=Yes;
+    Version List=NAVW19.00,AB6.JME.001;
   }
   PROPERTIES
   {
@@ -25,7 +26,7 @@ OBJECT Page 9305 Sales Order List
                    FILTERGROUP(0);
                  END;
 
-                 SETRANGE("Date Filter",0D,WORKDATE - 1);
+                 SETRANGE("Date Filter",0D,WORKDATE);
 
                  JobQueueActive := SalesSetup.JobQueueActive;
                  CRMIntegrationEnabled := CRMIntegrationManagement.IsCRMIntegrationEnabled;
@@ -89,6 +90,17 @@ OBJECT Page 9305 Sales Order List
                       CaptionML=[ENU=Documents;
                                  FRA=Documents];
                       Image=Documents }
+      { 1000000001;2 ;Action    ;
+                      Name=ShowPurchDocument;
+                      CaptionML=[ENU=Show Purch. Document;
+                                 FRA=Afficher document achat];
+                      PromotedIsBig=Yes;
+                      Image=Purchase;
+                      OnAction=BEGIN
+                                 //BC6>>
+                                 ShowPurchOrder();
+                               END;
+                                }
       { 1102601009;2 ;Action    ;
                       CaptionML=[ENU=S&hipments;
                                  FRA=E&xp‚ditions];
@@ -109,6 +121,7 @@ OBJECT Page 9305 Sales Order List
                       RunObject=Page 143;
                       RunPageView=SORTING(Prepayment Order No.);
                       RunPageLink=Prepayment Order No.=FIELD(No.);
+                      Visible=FALSE;
                       Image=PrepaymentInvoice }
       { 1102601012;2 ;Action    ;
                       CaptionML=[ENU=Prepayment Credi&t Memos;
@@ -116,10 +129,12 @@ OBJECT Page 9305 Sales Order List
                       RunObject=Page 144;
                       RunPageView=SORTING(Prepayment Order No.);
                       RunPageLink=Prepayment Order No.=FIELD(No.);
+                      Visible=FALSE;
                       Image=PrepaymentCreditMemo }
       { 10      ;1   ;ActionGroup;
                       CaptionML=[ENU=Warehouse;
                                  FRA=Entrep“t];
+                      Visible=FALSE;
                       Image=Warehouse }
       { 1102601016;2 ;Action    ;
                       CaptionML=[ENU=Whse. Shipment Lines;
@@ -129,6 +144,7 @@ OBJECT Page 9305 Sales Order List
                       RunPageLink=Source Type=CONST(37),
                                   Source Subtype=FIELD(Document Type),
                                   Source No.=FIELD(No.);
+                      Visible=FALSE;
                       Image=ShipmentLines }
       { 1102601017;2 ;Action    ;
                       CaptionML=[ENU=In&vt. Put-away/Pick Lines;
@@ -137,6 +153,7 @@ OBJECT Page 9305 Sales Order List
                       RunPageView=SORTING(Source Document,Source No.,Location Code);
                       RunPageLink=Source Document=CONST(Sales Order),
                                   Source No.=FIELD(No.);
+                      Visible=FALSE;
                       Image=PickLines }
       { 32      ;1   ;ActionGroup;
                       Name=ActionGroupCRM;
@@ -223,6 +240,7 @@ OBJECT Page 9305 Sales Order List
                       AccessByPermission=TableData 410=R;
                       CaptionML=[ENU=Send IC Sales Order Cnfmn.;
                                  FRA=Confirmation envoi commande vente IC];
+                      Visible=FALSE;
                       Image=IntercompanyOrder;
                       OnAction=VAR
                                  ICInOutboxMgt@1000 : Codeunit 427;
@@ -379,6 +397,7 @@ OBJECT Page 9305 Sales Order List
                       Ellipsis=Yes;
                       CaptionML=[ENU=Work Order;
                                  FRA=Ordre de fabrication];
+                      Visible=FALSE;
                       Image=Print;
                       OnAction=BEGIN
                                  DocPrint.PrintSalesOrder(Rec,Usage::"Work Order");
@@ -423,6 +442,7 @@ OBJECT Page 9305 Sales Order List
                                  FRA=Dispo. r‚servation vente];
                       RunObject=Report 209;
                       Promoted=Yes;
+                      Visible=FALSE;
                       Image=Report;
                       PromotedCategory=Report }
     }
@@ -435,6 +455,15 @@ OBJECT Page 9305 Sales Order List
     { 1   ;1   ;Group     ;
                 GroupType=Repeater }
 
+    { 1180250001;2;Field  ;
+                Name=Comment;
+                SourceExpr=Comment;
+                Style=Attention;
+                StyleExpr=TRUE }
+
+    { 1180250002;2;Field  ;
+                SourceExpr="Order Reference Customer" }
+
     { 2   ;2   ;Field     ;
                 SourceExpr="No." }
 
@@ -446,6 +475,9 @@ OBJECT Page 9305 Sales Order List
 
     { 17  ;2   ;Field     ;
                 SourceExpr="External Document No." }
+
+    { 1180250003;2;Field  ;
+                SourceExpr="Your Reference" }
 
     { 33  ;2   ;Field     ;
                 SourceExpr="Sell-to Post Code";
@@ -467,6 +499,18 @@ OBJECT Page 9305 Sales Order List
                 SourceExpr="Bill-to Name";
                 Visible=FALSE }
 
+    { 1000000002;2;Field  ;
+                SourceExpr="Bill-to Name 2" }
+
+    { 1000000003;2;Field  ;
+                SourceExpr="Bill-to Address" }
+
+    { 1000000004;2;Field  ;
+                SourceExpr="Bill-to Address 2" }
+
+    { 1000000005;2;Field  ;
+                SourceExpr="Bill-to City" }
+
     { 39  ;2   ;Field     ;
                 SourceExpr="Bill-to Post Code";
                 Visible=FALSE }
@@ -479,6 +523,18 @@ OBJECT Page 9305 Sales Order List
                 SourceExpr="Bill-to Contact";
                 Visible=FALSE }
 
+    { 1000000014;2;Field  ;
+                SourceExpr="Sell-to Address" }
+
+    { 1000000015;2;Field  ;
+                SourceExpr="Sell-to Address 2" }
+
+    { 1000000017;2;Field  ;
+                SourceExpr="Sell-to County" }
+
+    { 1000000016;2;Field  ;
+                SourceExpr="Sell-to City" }
+
     { 155 ;2   ;Field     ;
                 SourceExpr="Ship-to Code";
                 Visible=FALSE }
@@ -486,6 +542,18 @@ OBJECT Page 9305 Sales Order List
     { 153 ;2   ;Field     ;
                 SourceExpr="Ship-to Name";
                 Visible=FALSE }
+
+    { 1000000006;2;Field  ;
+                SourceExpr="Ship-to Name 2" }
+
+    { 1000000007;2;Field  ;
+                SourceExpr="Ship-to Address" }
+
+    { 1000000008;2;Field  ;
+                SourceExpr="Ship-to Address 2" }
+
+    { 1000000009;2;Field  ;
+                SourceExpr="Ship-to City" }
 
     { 27  ;2   ;Field     ;
                 SourceExpr="Ship-to Post Code";
@@ -499,13 +567,14 @@ OBJECT Page 9305 Sales Order List
                 SourceExpr="Ship-to Contact";
                 Visible=FALSE }
 
-    { 139 ;2   ;Field     ;
-                SourceExpr="Posting Date";
-                Visible=FALSE }
+    { 1180250005;2;Field  ;
+                SourceExpr="Order Date" }
+
+    { 1180250004;2;Field  ;
+                SourceExpr="Amount Order" }
 
     { 121 ;2   ;Field     ;
-                SourceExpr="Shortcut Dimension 1 Code";
-                Visible=FALSE }
+                SourceExpr="Shortcut Dimension 1 Code" }
 
     { 119 ;2   ;Field     ;
                 SourceExpr="Shortcut Dimension 2 Code";
@@ -513,14 +582,15 @@ OBJECT Page 9305 Sales Order List
 
     { 123 ;2   ;Field     ;
                 SourceExpr="Location Code";
-                Visible=TRUE }
+                Visible=FALSE }
 
     { 99  ;2   ;Field     ;
                 SourceExpr="Salesperson Code";
                 Visible=FALSE }
 
     { 21  ;2   ;Field     ;
-                SourceExpr="Assigned User ID" }
+                SourceExpr="Assigned User ID";
+                Visible=FALSE }
 
     { 11  ;2   ;Field     ;
                 SourceExpr="Currency Code";
@@ -565,16 +635,67 @@ OBJECT Page 9305 Sales Order List
                 SourceExpr="Shipment Date";
                 Visible=FALSE }
 
+    { 1000000027;2;Field  ;
+                SourceExpr="Vendor Shipment No." }
+
+    { 1000000000;2;Field  ;
+                SourceExpr="Completely Shipped" }
+
     { 1102601037;2;Field  ;
                 SourceExpr="Shipping Advice";
                 Visible=FALSE }
 
-    { 16  ;2   ;Field     ;
-                SourceExpr="Completely Shipped" }
-
     { 5   ;2   ;Field     ;
                 SourceExpr="Job Queue Status";
                 Visible=JobQueueActive }
+
+    { 1000000010;2;Field  ;
+                SourceExpr="Last EDI Code for Batch" }
+
+    { 1000000011;2;Field  ;
+                SourceExpr="Last EDI DT for Batch" }
+
+    { 1000000012;2;Field  ;
+                SourceExpr="Amount Including VAT" }
+
+    { 1000000013;2;Field  ;
+                SourceExpr="EDI Add. Info. 1" }
+
+    { 1000000018;2;Field  ;
+                SourceExpr="EDI Add. Info. 2" }
+
+    { 1000000019;2;Field  ;
+                SourceExpr="EDI Add. Info. 3" }
+
+    { 1000000020;2;Field  ;
+                SourceExpr="EDI Add. Info. 4" }
+
+    { 1000000021;2;Field  ;
+                SourceExpr=TRS_ID_AUTORISATION }
+
+    { 1000000022;2;Field  ;
+                SourceExpr="EDI Add. Info. 5" }
+
+    { 1000000023;2;Field  ;
+                SourceExpr="EDI Add. Info. 6" }
+
+    { 1000000024;2;Field  ;
+                SourceExpr="Order Type" }
+
+    { 1000000025;2;Field  ;
+                SourceExpr="Ship. Agent Instruction Line" }
+
+    { 1000000026;2;Field  ;
+                SourceExpr="Ship. Agent Instruction Line 2" }
+
+    { 1000000028;2;Field  ;
+                SourceExpr="Quote No." }
+
+    { 1000000029;2;Field  ;
+                SourceExpr="Use Shipment Address" }
+
+    { 1000000030;2;Field  ;
+                SourceExpr="Ship-to County" }
 
     { 1900000007;0;Container;
                 ContainerType=FactBoxArea }

@@ -4,6 +4,7 @@ OBJECT Page 9072 IT Operations Activities
   {
     Date=07/09/12;
     Time=12:00:00;
+    Modified=Yes;
     Version List=NAVW17.00;
   }
   PROPERTIES
@@ -21,6 +22,8 @@ OBJECT Page 9072 IT Operations Activities
 
                  SETFILTER("Date Filter2",'<=%1',CREATEDATETIME(TODAY,0T));
                  SETFILTER("Date Filter3",'>%1',CREATEDATETIME(TODAY,0T));
+                 //AC1.00
+                 SETFILTER("Date Filter (Yesterday Today)",'>=%1',CREATEDATETIME(WORKDATE-1,0T));
                END;
 
   }
@@ -61,6 +64,84 @@ OBJECT Page 9072 IT Operations Activities
     { 10  ;2   ;Field     ;
                 SourceExpr="No. Series Period";
                 DrillDownPageID=No. Series Lines }
+
+    { 1180250001;1;Group  ;
+                CaptionML=FRA=Trace E.D.I. - hier & aujourd'hui;
+                GroupType=CueGroup }
+
+    { 1180250002;2;Field  ;
+                SourceExpr="EDI Log on Error J - 1J";
+                DrillDownPageID=E.D.I. Log List }
+
+    { 1180250003;2;Field  ;
+                SourceExpr="EDI Log to Handle J - 1J";
+                DrillDownPageID=E.D.I. Log List }
+
+    { 1180250004;2;Field  ;
+                SourceExpr="EDI Log Saved (OK) J - 1J";
+                DrillDownPageID=E.D.I. Log List }
+
+    { 1180250005;1;Group  ;
+                CaptionML=FRA=Trace E.D.I.;
+                GroupType=CueGroup;
+                ActionList=ACTIONS
+                {
+                  { 1180250009;  ;Action    ;
+                                  Name=<Action1180250009>;
+                                  CaptionML=[ENU=Edit E.D.I. Card;
+                                             FRA=Modifier fiche E.D.I. projets];
+                                  RunObject=Page 50004 }
+                }
+                 }
+
+    { 1180250006;2;Field  ;
+                SourceExpr="EDI Log on Error";
+                DrillDownPageID=E.D.I. Log List }
+
+    { 1180250007;2;Field  ;
+                SourceExpr="EDI Log to Handle";
+                DrillDownPageID=E.D.I. Log List }
+
+    { 1180250008;2;Field  ;
+                SourceExpr="EDI Log Saved (OK)";
+                DrillDownPageID=E.D.I. Log List }
+
+    { 1180250010;1;Group  ;
+                CaptionML=FRA=PDF Creator;
+                GroupType=CueGroup;
+                ActionList=ACTIONS
+                {
+                  { 1180250015;0 ;Action    ;
+                                  Name=<Action1180250016>;
+                                  Ellipsis=Yes;
+                                  CaptionML=[ENU=Combine Sales Doc. to Send;
+                                             FRA=Regrouper doc. vente … envoyer];
+                                  RunObject=Report 50032;
+                                  Promoted=Yes;
+                                  PromotedIsBig=Yes;
+                                  Image=GetSourceDoc;
+                                  PromotedCategory=Process }
+                  { 1180250014;0 ;Action    ;
+                                  Name=<Action1180250017>;
+                                  Ellipsis=Yes;
+                                  CaptionML=[ENU=Sent Document;
+                                             FRA=Envoyer Document];
+                                  RunObject=Report 50033;
+                                  Promoted=Yes;
+                                  PromotedIsBig=Yes;
+                                  Image=Send;
+                                  PromotedCategory=Process }
+                }
+                 }
+
+    { 1180250011;2;Field  ;
+                SourceExpr="Nbr. of  Document to Send" }
+
+    { 1180250012;2;Field  ;
+                SourceExpr="Nbr. of  Document Sent" }
+
+    { 1180250013;2;Field  ;
+                SourceExpr="Nbr. of  Document on Error" }
 
   }
   CODE

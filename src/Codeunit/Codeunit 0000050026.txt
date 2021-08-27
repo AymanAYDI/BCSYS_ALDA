@@ -1,0 +1,77 @@
+OBJECT Codeunit 50026 DF Post Sales Invoice
+{
+  OBJECT-PROPERTIES
+  {
+    Date=23/05/16;
+    Time=17:37:11;
+    Modified=Yes;
+    Version List=BC6AUTOINV;
+  }
+  PROPERTIES
+  {
+    TableNo=50018;
+    OnRun=VAR
+            DataFlowMgt@1000000000 : Codeunit 50013;
+            SalesHeader@1000000001 : Record 36;
+            BatchPostSalesInvoices@1000000002 : Report 297;
+            SalesPost@1000000003 : Codeunit 80;
+            ApprovalsMgmt@1000000004 : Codeunit 1535;
+            CounterOK@1000000005 : Integer;
+            i@1000000006 : Integer;
+            tot@1000000007 : Integer;
+            SalesHeader2@1000000008 : Record 36;
+          BEGIN
+            TESTFIELD("Source Table ID", DATABASE::"Sales Header");
+            TESTFIELD("Data Flow Code");
+
+            SalesHeader.SETVIEW(GetViewRestrictions());
+            SalesHeader.SetHideValidationDialog(TRUE);
+            IF SalesHeader.GETFILTER("Document Type") <> FORMAT(SalesHeader."Document Type"::Invoice) THEN
+              ERROR(errFilter, SalesHeader.FIELDCAPTION("Document Type"), SalesHeader."Document Type"::Invoice);
+
+            SalesHeader.SETRANGE("Document Type", SalesHeader."Document Type"::Invoice);
+
+            StateIndicator.Open();
+            StateIndicator.Start();
+            StateIndicator.UpdateDataFlowStep(Rec);
+            StateIndicator.InsertLogEntry(Rec);
+            tot := SalesHeader.COUNT;
+            IF SalesHeader.FINDSET(TRUE, FALSE) THEN
+              REPEAT
+                SalesHeader2 := SalesHeader;
+                StateIndicator.Update();
+                CLEAR(ApprovalsMgmt);
+                IF NOT ApprovalsMgmt.IsSalesApprovalsWorkflowEnabled(SalesHeader) OR (SalesHeader.Status = SalesHeader.Status::"Pending Approval") THEN BEGIN
+                  COMMIT;
+                  CLEAR(SalesPost);
+                  DataFlowMgt.StampSalesHeader(SalesHeader, Rec);
+                  //SalesPost.SetPostingDate(ReplacePostingDate,ReplaceDocumentDate,PostingDateReq);
+                  IF SalesPost.RUN(SalesHeader) THEN BEGIN
+                    CounterOK := CounterOK + 1;
+                    DataFlowMgt.StampSalesHeader(SalesHeader, Rec);
+                    IF SalesHeader.MODIFY THEN;
+                  END ELSE BEGIN
+                    SalesHeader.GET(SalesHeader2."Document Type",SalesHeader2."No.");
+                    SalesHeader."Data Flow Status No." := "Prev. Status No.";
+                    SalesHeader.MODIFY;
+                  END;
+                END;
+              UNTIL SalesHeader.NEXT = 0;
+            COMMIT;
+            StateIndicator.UpdateLogEntry(Rec, STRSUBSTNO(Text002, CounterOK, tot));
+            StateIndicator.EndUpdateDataFlowStep(Rec);
+          END;
+
+  }
+  CODE
+  {
+    VAR
+      StateIndicator@1000000000 : TEMPORARY Record 50005;
+      Text002@1000000001 : TextConst 'ENU=%1 invoices out of a total of %2 have now been posted.;FRA=%1 facture(s) sur %2 ont ‚t‚ enregistr‚e(s).';
+      errFilter@1000000002 : TextConst 'ENU=Table fliter for field ''%1'' must be ''%2''.;FRA=Le champ filtre ''%1'' doit ˆtre ''%2''.';
+
+    BEGIN
+    END.
+  }
+}
+

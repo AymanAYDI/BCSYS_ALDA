@@ -1,0 +1,43 @@
+OBJECT Page 50017 Select New Code
+{
+  OBJECT-PROPERTIES
+  {
+    Date=20/04/16;
+    Time=18:33:00;
+    Modified=Yes;
+    Version List=;
+  }
+  PROPERTIES
+  {
+    CaptionML=[ENU=Select New Code;
+               FRA=S‚lectionner nouv. code];
+  }
+  CONTROLS
+  {
+    { 1000000000;;Container;
+                Name=Code;
+                CaptionML=[ENU=Code;
+                           FRA=Code];
+                ContainerType=ContentArea }
+
+    { 1000000001;1;Field  ;
+                CaptionML=[ENU=New Code;
+                           FRA=Nouveau Code];
+                SourceExpr=NewCode }
+
+  }
+  CODE
+  {
+    VAR
+      NewCode@1000000000 : Code[20];
+
+    PROCEDURE GetNewCode@1000000004() : Code[20];
+    BEGIN
+      EXIT(NewCode);
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

@@ -4,6 +4,7 @@ OBJECT Page 53 Purchase List
   {
     Date=15/09/15;
     Time=12:00:00;
+    Modified=Yes;
     Version List=NAVW19.00;
   }
   PROPERTIES
@@ -55,6 +56,9 @@ OBJECT Page 53 Purchase List
 
     { 1   ;1   ;Group     ;
                 GroupType=Repeater }
+
+    { 1180250001;2;Field  ;
+                SourceExpr="Order Reference Customer" }
 
     { 2   ;2   ;Field     ;
                 SourceExpr="No." }

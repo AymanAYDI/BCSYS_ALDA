@@ -2,9 +2,10 @@ OBJECT Page 54 Purchase Order Subform
 {
   OBJECT-PROPERTIES
   {
-    Date=26/11/15;
-    Time=12:00:00;
-    Version List=NAVW19.00.00.43897;
+    Date=14/09/16;
+    Time=16:51:46;
+    Modified=Yes;
+    Version List=NAVW19.00.00.43897,ALDA;
   }
   PROPERTIES
   {
@@ -239,6 +240,10 @@ OBJECT Page 54 Purchase Order Subform
     { 1   ;1   ;Group     ;
                 GroupType=Repeater }
 
+    { 1000000000;2;Field  ;
+                SourceExpr="Anomaly Code";
+                Editable=FALSE }
+
     { 2   ;2   ;Field     ;
                 SourceExpr=Type;
                 OnValidate=BEGIN
@@ -397,6 +402,9 @@ OBJECT Page 54 Purchase Order Subform
                              RedistributeTotalsOnAfterValidate;
                            END;
                             }
+
+    { 1000000001;2;Field  ;
+                SourceExpr="Amount Including VAT" }
 
     { 16  ;2   ;Field     ;
                 BlankZero=Yes;
@@ -695,6 +703,9 @@ OBJECT Page 54 Purchase Order Subform
                              ValidateShortcutDimCode(8,ShortcutDimCode[8]);
                            END;
                             }
+
+    { 1180250001;2;Field  ;
+                SourceExpr="Country Dimension Code" }
 
     { 25  ;2   ;Field     ;
                 SourceExpr="Document No.";

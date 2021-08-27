@@ -1,0 +1,63 @@
+OBJECT Page 50007 ALDA - Reliquats achats
+{
+  OBJECT-PROPERTIES
+  {
+    Date=22/10/12;
+    Time=17:28:22;
+    Modified=Yes;
+    Version List=AB6.JME.001;
+  }
+  PROPERTIES
+  {
+    SourceTable=Table39;
+    SourceTableView=SORTING(Document Type,Document No.,Line No.)
+                    WHERE(Document Type=FILTER(Order),
+                          Outstanding Quantity=FILTER(<>0),
+                          Reliquat=FILTER(>0));
+    PageType=List;
+  }
+  CONTROLS
+  {
+    { 1180250001;0;Container;
+                ContainerType=ContentArea }
+
+    { 1180250002;1;Group  ;
+                Name=Group;
+                GroupType=Repeater }
+
+    { 1180250003;2;Field  ;
+                SourceExpr="Buy-from Vendor No." }
+
+    { 1180250004;2;Field  ;
+                SourceExpr="Document No." }
+
+    { 1180250005;2;Field  ;
+                SourceExpr=Type }
+
+    { 1180250006;2;Field  ;
+                SourceExpr="No." }
+
+    { 1180250007;2;Field  ;
+                SourceExpr=Description }
+
+    { 1180250008;2;Field  ;
+                SourceExpr=Quantity }
+
+    { 1180250009;2;Field  ;
+                SourceExpr="Outstanding Quantity" }
+
+    { 1180250010;2;Field  ;
+                SourceExpr="Cross-Reference No." }
+
+    { 1180250011;2;Field  ;
+                SourceExpr="Order Reference Customer" }
+
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

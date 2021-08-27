@@ -1,0 +1,458 @@
+OBJECT Codeunit 50089 UserAcessControlMgt
+{
+  OBJECT-PROPERTIES
+  {
+    Date=21/03/16;
+    Time=18:49:50;
+    Modified=Yes;
+    Version List=;
+  }
+  PROPERTIES
+  {
+    OnRun=BEGIN
+          END;
+
+  }
+  CODE
+  {
+    VAR
+      EntityNamesFields@1000000001 : TextConst 'ENU=Entity Code';
+      valueTooLong@1000000000 : TextConst 'ENU=%1 ''%2'' is too long to be decliened. max. allowed : 10.;FRB=%1 ''%2'' est trop long pour ˆtre d‚clin‚. max. autoris‚ : 10.';
+      UserIDSelected@1000000002 : GUID;
+      CompanyNameSelected@1000000003 : Text[30];
+      RoleIDSelected@1000000004 : Code[10];
+      RoleBuffer@1000000007 : TEMPORARY Record 50015;
+      Text001@1000000012 : TextConst 'ENU=The previous column set could not be found.;FRB=Impossible de trouver le jeu de colonne pr‚c‚dent.;NLB=De vorige kolomset is niet gevonden.';
+      Text002@1000000011 : TextConst 'ENU=The period could not be found.;FRB=Impossible de trouver la p‚riode.;NLB=De periode is niet gevonden.';
+      Text003@1000000010 : TextConst 'ENU=There are no Calendar entries within the filter.;FRB=Il n''y a pas d''‚critures calendrier dans le filtre.;NLB=De filterresultaten bevatten geen kalenderposten.';
+      CurrOffSet@1000000008 : Integer;
+      PKFirstRecInCurrSet@1000000009 : Text[1024];
+      AccessByEntity@1000000005 : Record 50015;
+      Text000@1000000013 : TextConst 'ENU=The user name %1 does not exist.;FRB=Le nom utilisateur %1 n''existe pas.;NLB=De gebruikersnaam %1 bestaat niet.';
+      errCellValue@1000000006 : TextConst 'ENU=Cell value must be ''Yes''.;FRB=La valeur de la cellule ne doit pas ˆtre ''Oui''.';
+
+    PROCEDURE LookUserID@1000000000(_UserName@1000000000 : Code[20];VAR CompanyBuffer@1000000001 : Record 50015) : Code[20];
+    VAR
+      UserID@1000000002 : GUID;
+      UserMgt@1000000003 : Codeunit 418;
+    BEGIN
+      IF NOT(UserMgt.LookupUser(_UserName, UserID))
+        THEN ERROR(_UserName);
+      SetUserID(UserID, CompanyBuffer);
+      EXIT(_UserName);
+    END;
+
+    PROCEDURE ValidateUserID@1000000003(_UserName@1000000000 : Code[20];VAR CompanyBuffer@1000000001 : Record 50015) : Code[20];
+    VAR
+      User@1000000004 : Record 2000000120;
+    BEGIN
+      IF _UserName <> '' THEN BEGIN
+        User.SETCURRENTKEY("User Name");
+        User.SETRANGE("User Name",_UserName);
+        IF NOT User.FINDFIRST THEN BEGIN
+          User.RESET;
+          IF NOT User.ISEMPTY THEN
+            ERROR(Text000,_UserName);
+        END;
+      END;
+      SetUserID(User."User Security ID", CompanyBuffer);
+      EXIT(User."User Name");
+    END;
+
+    LOCAL PROCEDURE SetUserID@1000000007(UserID@1000000002 : GUID;VAR CompanyBuffer@1000000001 : Record 50015);
+    BEGIN
+      IF UserIDSelected <> UserID THEN BEGIN
+        UserIDSelected := UserID;
+        CompanyBuffer.RESET;
+        RoleBuffer.RESET;
+
+        CompanyBuffer.DELETEALL;
+        RoleBuffer.DELETEALL;
+
+        AccessByEntity.RESET;
+        AccessByEntity.SETRANGE("User Security ID", UserID);
+        IF AccessByEntity.FIND('-') THEN
+        REPEAT
+          CompanyBuffer."Company Name" := AccessByEntity."Company Name";
+          IF CompanyBuffer.INSERT THEN;
+
+          RoleBuffer."Role ID" := AccessByEntity."Role ID";
+          IF RoleBuffer.INSERT THEN;
+
+        UNTIL AccessByEntity.NEXT = 0;
+      END;
+    END;
+
+    PROCEDURE AddRoleID@1000000005(VAR CaptionSet@1000000004 : ARRAY [12] OF Text[1024];VAR NumberOfColumns@1000000003 : Integer;ShowColumnName@1000000002 : Boolean;VAR CaptionRange@1000000001 : Text[1024]);
+    VAR
+      ModelPermissionSet@1000000000 : Record 50016;
+    BEGIN
+      IF ACTION::LookupOK = PAGE.RUNMODAL(0,ModelPermissionSet) THEN BEGIN
+        RoleBuffer.INIT;
+        RoleBuffer."Role ID" := ModelPermissionSet."Role ID";
+        IF RoleBuffer.INSERT THEN;
+        IF PKFirstRecInCurrSet = '' THEN
+           PKFirstRecInCurrSet := RoleBuffer.GETPOSITION;
+        RoleToCaptions(CaptionSet,NumberOfColumns, ShowColumnName,CaptionRange);
+      END;
+    END;
+
+    LOCAL PROCEDURE SetSecurityFilterEntityOnPermission@1000000006(VAR Permission@1000000003 : Record 2000000005;PermissionRef@1000000009 : Record 50017;_EntityCode@1000000006 : Code[20]) : Boolean;
+    VAR
+      _RecRef@1000000000 : RecordRef;
+      FieldR@1000000001 : FieldRef;
+      Field@1000000002 : Record 2000000041;
+      GLSetup@1000000004 : Record 98;
+      FieldNameFilter@1000000005 : Text;
+      Filters@1000000007 : Text;
+      nbFilter@1000000008 : Integer;
+      TableFilter@1000000011 : Record 9805;
+      TableFilterPage@1000000010 : Page 9805;
+    BEGIN
+      WITH PermissionRef DO BEGIN
+        CLEAR(TableFilter);
+        CLEAR(TableFilterPage);
+        TableFilter.FILTERGROUP(2);
+        TableFilter.SETRANGE("Table Number","Object ID");
+        TableFilter.FILTERGROUP(0);
+        TableFilterPage.SETTABLEVIEW(TableFilter);
+        TableFilterPage.SetSourceTable(FORMAT("Security Filter"),"Object ID","Object Name");
+        EVALUATE(Permission."Security Filter",STRSUBSTNO(TableFilterPage.CreateTextTableFilter(FALSE), _EntityCode));
+      END;
+      EXIT(TRUE);
+    END;
+
+    PROCEDURE PublishPermisionSet@1000000019(_PermissionSet@1000000000 : Record 50016);
+    VAR
+      PermissionSet@1000000002 : Record 2000000004;
+      Permission@1000000001 : Record 2000000005;
+      PermissionRef@1000000004 : Record 50017;
+      AccessByEntity@1000000003 : Record 50015;
+    BEGIN
+      _PermissionSet.TESTFIELD("Role ID Published");
+      PermissionRef.SETRANGE("Role ID", _PermissionSet."Role ID");
+      IF PermissionRef.FINDSET THEN BEGIN
+        PermissionSet."Role ID" := GetRoleID(_PermissionSet."Role ID Published",'');
+        PermissionSet.Name := COPYSTR(STRSUBSTNO('%1-%2','MODEL', _PermissionSet.Name), 1, MAXSTRLEN(PermissionSet.Name));
+        IF PermissionSet.INSERT(TRUE) THEN;
+        Permission.SETRANGE("Role ID", PermissionSet."Role ID");
+        Permission.DELETEALL;
+        REPEAT
+          Permission.TRANSFERFIELDS(PermissionRef);
+          Permission."Role ID" := PermissionSet."Role ID";
+          SetSecurityFilterEntityOnPermission(Permission, PermissionRef,'*');
+          IF Permission.INSERT(TRUE) THEN;
+        UNTIL PermissionRef.NEXT = 0;
+      END;
+
+
+      AccessByEntity.RESET;
+      AccessByEntity.SETRANGE("Role ID", _PermissionSet."Role ID");
+      AccessByEntity.SETFILTER("Entity Code", '<>%1', '');
+      IF AccessByEntity.FIND('-') THEN
+      REPEAT
+        DeclinePermisionSetforEntity(_PermissionSet,AccessByEntity."Dimension Code Filter", AccessByEntity."Entity Code");
+      UNTIL AccessByEntity.NEXT = 0;
+    END;
+
+    PROCEDURE DeclinePermisionSetforEntity@1000000016(_PermissionSet@1000000000 : Record 50016;DimCode@1000000003 : Code[10];DimValCode@1000000006 : Code[20]);
+    VAR
+      PermissionSet@1000000002 : Record 2000000004;
+      Permission@1000000001 : Record 2000000005;
+      PermissionRef@1000000004 : Record 50017;
+      Salesperson@1000000007 : Record 13;
+    BEGIN
+      _PermissionSet.TESTFIELD("Role ID Published");
+      Salesperson.SETFILTER(Code, DimValCode + '*');
+      IF NOT Salesperson.ISEMPTY THEN BEGIN
+        PermissionRef.SETRANGE("Role ID", _PermissionSet."Role ID");
+        IF PermissionRef.FINDSET THEN BEGIN
+          IF STRLEN(DimValCode) <= 10 THEN BEGIN
+            PermissionSet."Role ID" := GetRoleID(_PermissionSet."Role ID Published", DimValCode);
+            PermissionSet.Name := COPYSTR(STRSUBSTNO('%1-%2',DimValCode, _PermissionSet.Name), 1, MAXSTRLEN(PermissionSet.Name));
+            IF PermissionSet.INSERT(TRUE) THEN;
+            Permission.SETRANGE("Role ID", PermissionSet."Role ID");
+            Permission.DELETEALL;
+            REPEAT
+              Permission.TRANSFERFIELDS(PermissionRef);
+              Permission."Role ID" := PermissionSet."Role ID";
+              CLEAR(Permission."Security Filter");
+              SetSecurityFilterEntityOnPermission(Permission, PermissionRef,DimValCode);
+              IF Permission.INSERT(TRUE) THEN;
+            UNTIL PermissionRef.NEXT = 0;
+          END;
+        END;
+      END;
+    END;
+
+    PROCEDURE DeleteDeclinedPermisionSetbyEntity@1000000010(_PermissionSet@1000000006 : Record 50016;forRefresh@1000000008 : Boolean;DimCode@1000000010 : Code[10];DimValCode@1000000009 : Code[20]);
+    VAR
+      PermissionSet@1000000002 : Record 2000000004;
+      Permission@1000000001 : Record 2000000005;
+      Salesperson@1000000003 : Record 13;
+    BEGIN
+      Salesperson.SETFILTER(Code, DimValCode + '*');
+      IF NOT Salesperson.ISEMPTY THEN BEGIN
+        IF STRLEN(DimValCode) <= 10 THEN BEGIN
+          PermissionSet."Role ID" := GetRoleID(_PermissionSet."Role ID Published", DimValCode);
+          IF PermissionSet.FIND THEN BEGIN
+            Permission.SETRANGE("Role ID", PermissionSet."Role ID");
+            Permission.DELETEALL;
+            IF NOT forRefresh THEN
+              PermissionSet.DELETE;
+          END;
+        END;
+      END;
+    END;
+
+    PROCEDURE SaveAndPublish@1000000009();
+    VAR
+      ModelPermissionSet@1000000000 : Record 50016;
+      AccessControl@1000000001 : Record 2000000053;
+      PermissionSet@1000000002 : Record 2000000004;
+    BEGIN
+      AccessControl.SETRANGE("User Security ID", UserIDSelected);
+      AccessControl.SETFILTER("Role ID", '<>SUPER');
+      AccessControl.DELETEALL;
+      IF RoleBuffer.FIND('-') THEN
+      REPEAT
+        AccessByEntity.RESET;
+        AccessByEntity.SETRANGE("User Security ID", UserIDSelected);
+        AccessByEntity.SETRANGE("Role ID", RoleBuffer."Role ID");
+        IF AccessByEntity.FIND('-') AND ModelPermissionSet.GET(AccessByEntity."Role ID") THEN BEGIN
+          REPEAT
+            AccessControl.INIT;
+            AccessControl."User Security ID" := AccessByEntity."User Security ID";
+            AccessControl."Role ID" := GetRoleID(ModelPermissionSet."Role ID Published", AccessByEntity."Entity Code");
+            IF NOT PermissionSet.GET(AccessControl."Role ID") THEN
+              PublishPermisionSet(ModelPermissionSet);
+            AccessControl."Company Name" := AccessByEntity."Company Name";
+            AccessControl.INSERT;
+          UNTIL AccessByEntity.NEXT = 0;
+        END;
+      UNTIL RoleBuffer.NEXT = 0;
+    END;
+
+    PROCEDURE GetCellValue@1000000004(_CompanyName@1000000001 : Text[30];_RoleID@1000000002 : Code[20]) : Integer;
+    VAR
+      Result@1000000000 : ' ,Yes,Limited';
+    BEGIN
+      AccessByEntity.RESET;
+      AccessByEntity.SETRANGE("User Security ID", UserIDSelected);
+      AccessByEntity.SETRANGE("Role ID", _RoleID);
+      AccessByEntity.SETRANGE("Company Name", _CompanyName);
+      IF AccessByEntity.ISEMPTY THEN
+        EXIT(Result::" ");
+
+      AccessByEntity.SETFILTER("Entity Code", '%1', '');
+      IF NOT AccessByEntity.ISEMPTY THEN
+        EXIT(Result::Yes)
+      ELSE
+        EXIT(Result::Limited);
+    END;
+
+    PROCEDURE SetCellValue@1000000025(Result@1000000000 : ' ,Yes,Limited';_CompanyName@1000000002 : Text[30];_RoleID@1000000001 : Code[20];VAR EntityBuffer@1000000005 : TEMPORARY Record 50015) : Integer;
+    BEGIN
+      IF _RoleID = '' THEN EXIT(Result::" ");
+
+      IF (Result = Result::Limited) AND (EntityBuffer.ISEMPTY) THEN
+        EXIT(Result);
+
+      IF (Result = Result::" ") AND (NOT EntityBuffer.ISEMPTY) THEN
+        Result := Result::Limited;
+
+      AccessByEntity.RESET;
+      AccessByEntity.SETRANGE("User Security ID", UserIDSelected);
+      AccessByEntity.SETRANGE("Role ID", _RoleID);
+      AccessByEntity.SETRANGE("Company Name", _CompanyName);
+      AccessByEntity.DELETEALL;
+
+
+      IF Result = Result::Yes THEN BEGIN
+        AccessByEntity.INIT;
+        AccessByEntity."User Security ID" := UserIDSelected;
+        AccessByEntity."Role ID" := _RoleID;
+        AccessByEntity."Company Name" := _CompanyName;
+        AccessByEntity."Entity Code"  := '';
+        AccessByEntity.TESTFIELD("User Security ID");
+        AccessByEntity.INSERT;
+      END;
+
+      IF Result = Result::Limited THEN BEGIN
+        IF EntityBuffer.FINDSET THEN
+        REPEAT
+          AccessByEntity.INIT;
+          AccessByEntity."User Security ID" := UserIDSelected;
+          AccessByEntity."Role ID" := _RoleID;
+          AccessByEntity."Company Name" := _CompanyName;
+          AccessByEntity."Entity Code"  := EntityBuffer."Entity Code";
+          AccessByEntity."Dimension Code Filter" := EntityBuffer."Dimension Code Filter";
+          AccessByEntity.TESTFIELD("User Security ID");
+          AccessByEntity.INSERT;
+        UNTIL EntityBuffer.NEXT = 0;
+      END;
+      EXIT(Result);
+    END;
+
+    PROCEDURE SetRoleColumnSet@17(Filter@1002 : Text[1024];SetWanted@1008 : 'Initial,Previous,Same,Next,PreviousColumn,NextColumn';NoOfColumns@1004 : Integer);
+    VAR
+      TmpFirstColumn@1001 : Text[1024];
+      TmpLastColumn@1000 : Text[1024];
+      TmpSteps@1009 : Integer;
+    BEGIN
+      IF Filter <> '' THEN
+        RoleBuffer.SETFILTER("Role ID",Filter);
+
+      CASE SetWanted OF
+        SetWanted::Initial:
+          BEGIN
+            IF RoleBuffer.FIND('-') THEN BEGIN
+              PKFirstRecInCurrSet := RoleBuffer.GETPOSITION;
+              TmpSteps := RoleBuffer.NEXT(NoOfColumns - 1);
+            END;
+          END;
+        SetWanted::Same:
+          BEGIN
+            IF PKFirstRecInCurrSet <> '' THEN BEGIN
+              RoleBuffer.SETPOSITION(PKFirstRecInCurrSet);
+              RoleBuffer.FIND('=');
+              TmpSteps := RoleBuffer.NEXT(NoOfColumns - 1);
+            END;
+          END;
+        SetWanted::Next:
+          BEGIN
+            IF PKFirstRecInCurrSet <> '' THEN BEGIN
+              RoleBuffer.SETPOSITION(PKFirstRecInCurrSet);
+              RoleBuffer.FIND('=');
+              IF RoleBuffer.NEXT(NoOfColumns) <> 0 THEN BEGIN
+                PKFirstRecInCurrSet := RoleBuffer.GETPOSITION;
+                TmpSteps := RoleBuffer.NEXT(NoOfColumns - 1);
+              END ELSE
+                SetRoleColumnSet(Filter,SetWanted::Same, NoOfColumns);
+            END;
+          END;
+        SetWanted::Previous:
+          BEGIN
+            IF PKFirstRecInCurrSet <> '' THEN BEGIN
+              RoleBuffer.SETPOSITION(PKFirstRecInCurrSet);
+              RoleBuffer.FIND('=');
+              IF RoleBuffer.NEXT(-1) <> 0 THEN BEGIN
+                TmpLastColumn := RoleBuffer."Role ID";
+                TmpSteps := RoleBuffer.NEXT(-NoOfColumns + 1);
+                PKFirstRecInCurrSet := RoleBuffer.GETPOSITION;
+                TmpFirstColumn := RoleBuffer."Role ID";
+              END ELSE
+                SetRoleColumnSet(Filter,SetWanted::Same, NoOfColumns);
+            END;
+          END;
+        SetWanted::NextColumn:
+          BEGIN
+            IF PKFirstRecInCurrSet <> '' THEN BEGIN
+              RoleBuffer.SETPOSITION(PKFirstRecInCurrSet);
+              RoleBuffer.FIND('=');
+              IF RoleBuffer.NEXT <> 0 THEN BEGIN
+                PKFirstRecInCurrSet := RoleBuffer.GETPOSITION;
+                TmpFirstColumn := RoleBuffer."Role ID";
+                TmpSteps := RoleBuffer.NEXT(NoOfColumns - 1);
+                TmpLastColumn := RoleBuffer."Role ID";
+              END ELSE
+                SetRoleColumnSet(Filter,SetWanted::Same, NoOfColumns);
+            END;
+          END;
+        SetWanted::PreviousColumn:
+          BEGIN
+            IF PKFirstRecInCurrSet <> '' THEN BEGIN
+              RoleBuffer.SETPOSITION(PKFirstRecInCurrSet);
+              RoleBuffer.FIND('=');
+              IF RoleBuffer.NEXT(-1) <> 0 THEN BEGIN
+                PKFirstRecInCurrSet := RoleBuffer.GETPOSITION;
+                TmpFirstColumn := RoleBuffer."Role ID";
+                TmpSteps := RoleBuffer.NEXT(NoOfColumns - 1);
+                TmpLastColumn := RoleBuffer."Role ID";
+              END ELSE
+                SetRoleColumnSet(Filter,SetWanted::Same,NoOfColumns);
+            END;
+          END;
+      END;
+
+      IF ABS(TmpSteps) <> NoOfColumns THEN
+        NoOfColumns := ABS(TmpSteps);
+    END;
+
+    PROCEDURE RoleToCaptions@9(VAR CaptionSet@1000 : ARRAY [12] OF Text[1024];VAR NumberOfColumns@1006 : Integer;ShowColumnName@1008 : Boolean;VAR CaptionRange@1009 : Text[1024]);
+    VAR
+      i@1005 : Integer;
+    BEGIN
+      CLEAR(CaptionSet);
+      CLEAR(CaptionRange);
+      IF PKFirstRecInCurrSet <> '' THEN BEGIN
+        RoleBuffer.SETPOSITION(PKFirstRecInCurrSet);
+        i := 0;
+        IF RoleBuffer.FINDSET THEN
+          REPEAT
+            i := i + 1;
+            RoleBuffer.CALCFIELDS("Role Name");
+            IF ShowColumnName THEN
+              CaptionSet[i] := RoleBuffer."Role Name"
+            ELSE
+              CaptionSet[i] := RoleBuffer."Role ID"
+          UNTIL (i = ARRAYLEN(CaptionSet)) OR (RoleBuffer.NEXT = 0);
+
+        NumberOfColumns := i;
+
+        IF NumberOfColumns > 1 THEN
+          CaptionRange := COPYSTR(CaptionSet[1] + '..' + CaptionSet[NumberOfColumns],1,MAXSTRLEN(CaptionRange))
+        ELSE
+          CaptionRange := CaptionSet[1];
+      END;
+    END;
+
+    PROCEDURE AssistEditEntity@1000000008(ActualCellValue@1000000004 : ' ,Yes,Limited';_CompanyName@1000000003 : Text[30];_RoleID@1000000002 : Code[20];VAR _EntityBuffer@1000000000 : Record 50015) : Boolean;
+    VAR
+      PageAccessCtrlByEntity@1000000001 : Page 50083;
+      GLSetup@1000000005 : Record 98;
+    BEGIN
+      IF _RoleID = '' THEN EXIT;
+      IF NOT (ActualCellValue IN [ActualCellValue::Limited, ActualCellValue::" "]) THEN
+        ERROR(errCellValue);
+      AccessByEntity.RESET;
+      AccessByEntity.SETRANGE("User Security ID", UserIDSelected);
+      AccessByEntity.SETRANGE("Role ID", _RoleID);
+      AccessByEntity.SETRANGE("Company Name", _CompanyName);
+      AccessByEntity.SETFILTER("Entity Code", '<>%1', '');
+      GLSetup.CHANGECOMPANY(_CompanyName);
+      GLSetup.GET;
+      IF AccessByEntity.FIND('-') THEN
+      REPEAT
+        _EntityBuffer.INIT;
+        _EntityBuffer := AccessByEntity;
+        _EntityBuffer."Dimension Code Filter" := GLSetup."Shortcut Dimension 3 Code";
+        _EntityBuffer.INSERT;
+      UNTIL AccessByEntity.NEXT = 0;
+
+      PageAccessCtrlByEntity.SetBuffer(_EntityBuffer);
+      PageAccessCtrlByEntity.SetMode(2);
+      PageAccessCtrlByEntity.LOOKUPMODE := TRUE;
+      PageAccessCtrlByEntity.SetDefaultDimCode(GLSetup."Shortcut Dimension 3 Code");
+      IF ACTION::LookupOK = PageAccessCtrlByEntity.RUNMODAL() THEN BEGIN
+        PageAccessCtrlByEntity.GetBuffer(_EntityBuffer);
+        EXIT(TRUE);
+      END ELSE BEGIN
+        _EntityBuffer.RESET;
+        _EntityBuffer.DELETEALL;
+        EXIT(FALSE)
+      END;
+    END;
+
+    LOCAL PROCEDURE GetRoleID@1000000020(_IDPublished@1000000000 : Code[10];_EntityCode@1000000001 : Code[10]) : Code[20];
+    BEGIN
+      IF _EntityCode = '' THEN
+      EXIT(STRSUBSTNO('%1%2',COPYSTR(PADSTR(_IDPublished,10,' '),1,10), '------'));
+      EXIT(STRSUBSTNO('%1%2',COPYSTR(PADSTR(_IDPublished,10,' '),1,10), _EntityCode));
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

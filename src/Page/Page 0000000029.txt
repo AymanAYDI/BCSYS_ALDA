@@ -4,7 +4,8 @@ OBJECT Page 29 Vendor Ledger Entries
   {
     Date=15/09/15;
     Time=12:00:00;
-    Version List=NAVW19.00;
+    Modified=Yes;
+    Version List=NAVW19.00,ALDA;
   }
   PROPERTIES
   {
@@ -244,6 +245,9 @@ OBJECT Page 29 Vendor Ledger Entries
                 Visible=FALSE;
                 Editable=FALSE }
 
+    { 1180250003;2;Field  ;
+                SourceExpr="Country Dimension Code" }
+
     { 70  ;2   ;Field     ;
                 SourceExpr="IC Partner Code";
                 Visible=FALSE;
@@ -279,6 +283,12 @@ OBJECT Page 29 Vendor Ledger Entries
     { 12  ;2   ;Field     ;
                 SourceExpr=Amount;
                 Editable=FALSE }
+
+    { 1180250001;2;Field  ;
+                SourceExpr="Debit Amount" }
+
+    { 1180250002;2;Field  ;
+                SourceExpr="Credit Amount" }
 
     { 47  ;2   ;Field     ;
                 SourceExpr="Amount (LCY)";
@@ -336,7 +346,7 @@ OBJECT Page 29 Vendor Ledger Entries
 
     { 79  ;2   ;Field     ;
                 SourceExpr="Source Code";
-                Visible=FALSE;
+                Visible=TRUE;
                 Editable=FALSE }
 
     { 81  ;2   ;Field     ;

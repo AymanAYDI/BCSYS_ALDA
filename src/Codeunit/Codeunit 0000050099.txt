@@ -1,0 +1,214 @@
+OBJECT Codeunit 50099 Bullzip PDF Management
+{
+  OBJECT-PROPERTIES
+  {
+    Date=14/08/13;
+    Time=00:05:48;
+    Modified=Yes;
+    Version List=ALDA;
+  }
+  PROPERTIES
+  {
+    OnRun=BEGIN
+          END;
+
+  }
+  CODE
+  {
+    VAR
+      PrinterToRestoreUserID@1180250008 : Code[20];
+      PrinterToRestoreReportID@1180250007 : Integer;
+      PrinterToRestorePrinterName@1180250006 : Text[80];
+      BullZipPDF@1180250005 : Automation "{61CB5BFA-AFE6-4B0F-A4BB-7F3D4999EE52} 3.2:{BEBDC1DF-D793-4F6C-B8FF-E831A1C2595C}:Unknown Automation Server.Unknown Class";
+      RunOnceFile@1180250004 : Text[1000];
+      FileDirectory@1180250003 : Text[100];
+      FileName@1180250002 : Text[100];
+      BullZipPDFPrinterName@1180250001 : Text[30];
+      Text002@1180250015 : TextConst 'FRA="Facture %1 : %2 "';
+      Text010@1180250022 : TextConst 'FRA=la facture %1 : %2 ci-jointe.';
+      Text011@1180250014 : TextConst 'FRA=Le message de le/la %1 n''a pas ‚t‚ envoy‚!\(PiŠce jointe : %2.)';
+      MailMgtMethod@1180250012 : 'Mail,SMTP Mail';
+      CompanyInfo@1180250013 : Record 79;
+      Text014@1180250021 : TextConst 'FRA=Bonjour,';
+      Text015@1180250020 : TextConst 'FRA="Veuillez trouver "';
+      Text016@1180250019 : TextConst 'FRA=Cordialement,';
+      Text017@1180250018 : TextConst 'FRA=Le Service facturation';
+      Text018@1180250017 : TextConst 'FRA=ALDA';
+      Text019@1180250016 : TextConst 'FRA=" "';
+      Text033@1180250009 : TextConst 'ENU=Printer ''%1'' was not found.;FRA=Imprimante %1 non trouv‚e';
+      Text040@1180250010 : TextConst 'ENU=No PDF Document was generated.;ESP=No se gener¢ ning£n documento del pdf.;FRA=Aucun document  pdf n''a ‚t‚ produit.;ITA=Nessun documento del pdf Š stato generato.';
+
+    PROCEDURE InitSetup@1180250006();
+    BEGIN
+      CompanyInfo.GET;
+
+      FileDirectory := CompanyInfo."File Folder" + '\';
+      BullZipPDFPrinterName := CompanyInfo."Printer Name";//'Bullzip PDF Printer';
+      MailMgtMethod := CompanyInfo."Sending Mail Mgt. Method";
+
+      CompanyInfo.TESTFIELD("E-mail for Sent Items");
+      CompanyInfo.TESTFIELD("E-Mail");
+    END;
+
+    LOCAL PROCEDURE GetPrinterByName@9(UserID@1160840000 : Code[20];ReportID@1160840001 : Integer;PrinterName@1160840002 : Text[30]);
+    VAR
+      Printer@1180250001 : Record 2000000039;
+      PrinterSelection@1180250002 : Record 78;
+      ToInsert@1180250003 : Boolean;
+    BEGIN
+      WITH Printer DO BEGIN
+        RESET;
+        SETRANGE(Name,PrinterName);
+        IF FINDSET THEN BEGIN
+          PrinterToRestoreUserID := UserID;
+          PrinterToRestoreReportID := ReportID;
+          PrinterSelection.RESET;
+          IF PrinterSelection.GET(UserID,ReportID) THEN BEGIN
+            PrinterToRestorePrinterName := PrinterSelection."Printer Name";
+            ToInsert := FALSE;
+          END ELSE BEGIN
+            PrinterToRestorePrinterName := '';
+            PrinterSelection.INIT;
+            PrinterSelection."User ID" := UserID;
+            PrinterSelection."Report ID" := ReportID;
+            ToInsert := TRUE;
+          END;
+
+          PrinterSelection."Printer Name" := Printer.ID;
+
+          IF ToInsert THEN
+            PrinterSelection.INSERT
+          ELSE
+            PrinterSelection.MODIFY;
+
+          COMMIT;
+        END ELSE BEGIN
+          ERROR(STRSUBSTNO(Text033,PrinterName));
+        END;
+      END;//WITH
+    END;
+
+    LOCAL PROCEDURE InitializeBullZipPDF@1180250001();
+    BEGIN
+      IF ISCLEAR(BullZipPDF) THEN
+        CREATE(BullZipPDF);
+
+      BullZipPDF.Init;
+      BullZipPDF.LoadSettings;
+      RunOnceFile := BullZipPDF.GetSettingsFileName(TRUE);
+      BullZipPDF.SetValue('Output',FileDirectory + FileName);
+      BullZipPDF.SetValue('Showsettings','never');
+      BullZipPDF.SetValue('ShowPDF','no');
+      BullZipPDF.SetValue('ShowProgress','no');
+      BullZipPDF.SetValue('ShowProgressFinished','no');
+      BullZipPDF.SetValue('SuppressErrors','yes');
+      BullZipPDF.SetValue('ConfirmOverwrite','yes');
+      BullZipPDF.WriteSettings(TRUE);
+    END;
+
+    LOCAL PROCEDURE RestorePrinterSelection@8();
+    VAR
+      PrinterSelection@1180250001 : Record 78;
+    BEGIN
+      WITH PrinterSelection DO BEGIN
+        IF PrinterToRestorePrinterName <> '' THEN BEGIN
+          IF GET(PrinterToRestoreUserID,PrinterToRestoreReportID) THEN BEGIN
+            "Printer Name" := PrinterToRestorePrinterName;
+            MODIFY;
+          END;
+        END ELSE BEGIN
+          IF GET(PrinterToRestoreUserID,PrinterToRestoreReportID) THEN BEGIN
+            DELETE();
+          END;
+        END;
+      END;//WITH
+
+      COMMIT;
+    END;
+
+    PROCEDURE RunTimeOut@1180250002();
+    VAR
+      TimeOut@1180250001 : Integer;
+    BEGIN
+      TimeOut := 0;
+      WHILE EXISTS(RunOnceFile) AND (TimeOut < 10) DO BEGIN
+        SLEEP(2000);
+        TimeOut := TimeOut + 1;
+      END;
+    END;
+
+    PROCEDURE CreateMailAndAttachFile@1000000001(ToName@1180250004 : Text[80];Subject@1180250003 : Text[250];Body@1180250005 : Text[250];AttachFileName@1180250006 : Text[1020]);
+    VAR
+      MailMgt@1000000000 : Codeunit 397;
+      SMTPMail@1180250002 : Codeunit 400;
+      Receipients@1180250001 : Text[250];
+    BEGIN
+      CASE MailMgtMethod OF
+        MailMgtMethod::Mail:BEGIN
+          // M‚thode de cr‚ation du mail (se base sur le codeunit 397)
+          CLEAR(MailMgt);
+          IF NOT MailMgt.NewMessage(ToName,'',Subject,Body,AttachFileName,FALSE) THEN BEGIN
+          //if MailMgt.GetErrorCode <> '' then
+          //  ERROR(FORMAT(MailMgt.GetErrorCode) + ' : ' + MailMgt.GetErrorDesc + '.');
+            MESSAGE(STRSUBSTNO(Text011,Subject,AttachFileName));
+          END;
+        END;
+        MailMgtMethod::"SMTP Mail":BEGIN
+          // M‚thode de cr‚ation du mail (se base sur le codeunit 400)
+          CLEAR(SMTPMail);
+          SMTPMail.CreateMessage(COMPANYNAME,CompanyInfo."E-Mail",ToName,Subject,Body,TRUE);
+          SMTPMail.AddBCC(CompanyInfo."E-mail for Sent Items");
+          SMTPMail.AddAttachment(AttachFileName);
+          SMTPMail.Send();
+        END;
+      END;//CASE
+    END;
+
+    PROCEDURE PrintPostedSalesInvoice@1000000000(VAR FromSalesInvHeader@1180250004 : Record 112);
+    VAR
+      SalesInvHeader@1180250007 : Record 112;
+      ReportID@1180250006 : Integer;
+      ReportSelection@1180250008 : Record 77;
+      i@1180250009 : Integer;
+      NbrOfReport@1180250010 : Integer;
+    BEGIN
+      InitSetup;
+
+      //***
+      WITH SalesInvHeader DO BEGIN
+        COPY(FromSalesInvHeader);
+        FIND('-');
+        ReportSelection.SETRANGE(Usage,ReportSelection.Usage::"S.Invoice");
+         //***
+        ReportSelection.SETFILTER("Report ID",'<>0');
+        ReportSelection.FIND('-');
+        NbrOfReport := ReportSelection.COUNT;
+
+        FileName := STRSUBSTNO('%1.pdf',"No.");
+
+        i := 0;
+        REPEAT
+          i += 1;
+          ReportID := ReportSelection."Report ID";
+          IF NbrOfReport > 1 THEN
+            FileName := STRSUBSTNO('%1_%2.pdf',"No.",i);
+          IF EXISTS(FileDirectory + FileName) THEN
+            ERASE(FileDirectory + FileName);
+          //GetPrinterByName(USERID,ReportID,BullZipPDFPrinterName);
+          InitializeBullZipPDF;
+          //***
+          REPORT.RUNMODAL(ReportID,FALSE,FALSE,SalesInvHeader);
+          //***
+          RunTimeOut;
+          //RestorePrinterSelection();
+        UNTIL ReportSelection.NEXT = 0;
+      END;
+
+      CLEAR(BullZipPDF);
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

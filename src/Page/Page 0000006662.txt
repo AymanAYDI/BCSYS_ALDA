@@ -4,7 +4,8 @@ OBJECT Page 6662 Posted Return Receipts
   {
     Date=09/09/14;
     Time=12:00:00;
-    Version List=NAVW18.00;
+    Modified=Yes;
+    Version List=NAVW18.00,AB6.JME.001;
   }
   PROPERTIES
   {
@@ -70,6 +71,7 @@ OBJECT Page 6662 Posted Return Receipts
                       CaptionML=[ENU=&Navigate;
                                  FRA=Na&viguer];
                       Promoted=Yes;
+                      Visible=FALSE;
                       Image=Navigate;
                       PromotedCategory=Process;
                       OnAction=BEGIN

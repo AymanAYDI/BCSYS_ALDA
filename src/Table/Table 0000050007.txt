@@ -1,0 +1,65 @@
+OBJECT Table 50007 Dynamic Field
+{
+  OBJECT-PROPERTIES
+  {
+    Date=03/07/18;
+    Time=16:58:50;
+    Modified=Yes;
+    Version List=AC1.00;
+  }
+  PROPERTIES
+  {
+    CaptionML=[ENU=Dynamic Field (Value/Caption);
+               FRA=Champ dynamique (valeur/caption)];
+    Description=AC1.00;
+    LookupPageID=Page50001;
+    DrillDownPageID=Page50001;
+  }
+  FIELDS
+  {
+    { 1   ;   ;Table No.           ;Integer       ;CaptionML=[ENU=Table No.;
+                                                              FRA=Nø table] }
+    { 2   ;   ;Field No.           ;Integer       ;TableRelation=Field.No. WHERE (TableNo=FIELD(Table No.));
+                                                   OnLookup=VAR
+                                                              Field@1000000000 : Record 2000000041;
+                                                            BEGIN
+                                                              //BC6 03/07/18
+                                                              IF "Table No." = DATABASE::"Sales Header" THEN BEGIN
+                                                                Field.SETRANGE(TableNo,"Table No.");
+                                                                Field.SETFILTER("No.",'50035..50041');
+                                                                IF ACTION::LookupOK = PAGE.RUNMODAL(PAGE::"Field List",Field) THEN
+                                                                  VALIDATE("Field No.",Field."No.");
+                                                              END;
+                                                            END;
+
+                                                   CaptionML=[ENU=Field No.;
+                                                              FRA=Nø champ] }
+    { 3   ;   ;Code                ;Code20        ;CaptionML=[ENU=Code;
+                                                              FRA=Code] }
+    { 4   ;   ;Description         ;Text50        ;CaptionML=[ENU=Description;
+                                                              FRA=D‚signation] }
+    { 5   ;   ;Mandatory           ;Boolean       ;CaptionML=[ENU=Mandatory;
+                                                              FRA=Obligatoire] }
+    { 6   ;   ;Field Name          ;Text50        ;FieldClass=FlowField;
+                                                   CalcFormula=Lookup(Field.FieldName WHERE (TableNo=FIELD(Table No.),
+                                                                                             No.=FIELD(Field No.)));
+                                                   Editable=No }
+    { 7   ;   ;Value               ;Text50        ;CaptionML=[ENU=Value;
+                                                              FRA=Valeur] }
+  }
+  KEYS
+  {
+    {    ;Table No.,Field No.,Code                ;Clustered=Yes }
+    {    ;Code                                     }
+  }
+  FIELDGROUPS
+  {
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

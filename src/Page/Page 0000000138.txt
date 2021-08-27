@@ -4,6 +4,7 @@ OBJECT Page 138 Posted Purchase Invoice
   {
     Date=15/09/15;
     Time=12:00:00;
+    Modified=Yes;
     Version List=NAVW19.00;
   }
   PROPERTIES
@@ -354,6 +355,26 @@ OBJECT Page 138 Posted Purchase Invoice
     { 50  ;2   ;Field     ;
                 SourceExpr="Expected Receipt Date";
                 Importance=Promoted;
+                Editable=FALSE }
+
+    { 1000000000;2;Field  ;
+                SourceExpr="Gross Weight";
+                Editable=FALSE }
+
+    { 1000000001;2;Field  ;
+                SourceExpr="Net Weight";
+                Editable=FALSE }
+
+    { 1000000002;2;Field  ;
+                SourceExpr=Volume;
+                Editable=FALSE }
+
+    { 1000000003;2;Field  ;
+                SourceExpr="Nbr. of Pallet";
+                Editable=FALSE }
+
+    { 1000000004;2;Field  ;
+                SourceExpr="Nbr. of Package per Pallet";
                 Editable=FALSE }
 
     { 1907468901;1;Group  ;

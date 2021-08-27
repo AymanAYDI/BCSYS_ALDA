@@ -2,9 +2,10 @@ OBJECT Table 17 G/L Entry
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
-    Version List=NAVW19.00,NAVFR9.00;
+    Date=09/02/16;
+    Time=16:45:05;
+    Modified=Yes;
+    Version List=NAVW19.00,NAVFR9.00,AC1.00,AB6.TAH.001,ALDA;
   }
   PROPERTIES
   {
@@ -228,11 +229,23 @@ OBJECT Table 17 G/L Entry
     { 10813;  ;Letter Date         ;Date          ;CaptionML=[ENU=Letter Date;
                                                               FRA=Date de la lettre];
                                                    Editable=No }
+    { 50002;  ;Order Reference Customer;Text35    ;CaptionML=[ENU=Order Reference Customer;
+                                                              FRA=R‚f‚rence commande client];
+                                                   Description=AC1.00 }
+    { 50003;  ;ID lettrage Sage    ;Code10        ;Description=AB6.TAH.001 }
+    { 50018;  ;Cost Center Code    ;Code20        ;CaptionML=[ENU=Cost Center Code;
+                                                              FRA=Code centre de co–t];
+                                                   Description=ACBDU 100314D }
+    { 50019;  ;Country Dimension Code;Code20      ;TableRelation=Country/Region;
+                                                   CaptionML=[ENU=Country Dimension Code;
+                                                              FRA=Code axe pays];
+                                                   Description=ALDA 171214D }
   }
   KEYS
   {
     {    ;Entry No.                               ;Clustered=Yes }
-    {    ;G/L Account No.,Posting Date,Entry Type ;SumIndexFields=Amount,Debit Amount,Credit Amount,Additional-Currency Amount,Add.-Currency Debit Amount,Add.-Currency Credit Amount }
+    {    ;G/L Account No.,Posting Date,Entry Type,Country Dimension Code;
+                                                   SumIndexFields=Amount,Debit Amount,Credit Amount,Additional-Currency Amount,Add.-Currency Debit Amount,Add.-Currency Credit Amount }
     {    ;G/L Account No.,Global Dimension 1 Code,Global Dimension 2 Code,Posting Date,Entry Type;
                                                    SumIndexFields=Amount,Debit Amount,Credit Amount,Additional-Currency Amount,Add.-Currency Debit Amount,Add.-Currency Credit Amount }
     {    ;G/L Account No.,Business Unit Code,Posting Date;
@@ -293,6 +306,27 @@ OBJECT Table 17 G/L Entry
         UNTIL GLItemLedgRelation.NEXT = 0;
 
       PAGE.RUNMODAL(0,TempValueEntry);
+    END;
+
+    PROCEDURE CountryDimCodeCodeAssistEdit@1180250001();
+    VAR
+      GLEntry@1180250001 : Record 17;
+      CountryDimCode@1180250002 : Code[20];
+      Window@1180250003 : Dialog;
+    BEGIN
+      // ALDA 171214D.Begin
+      WITH GLEntry DO BEGIN
+        COPY(Rec);
+        CLEAR(Window);
+        Window.OPEN(FIELDCAPTION("Country Dimension Code") + '#1##########');
+        Window.INPUT(1,CountryDimCode);
+        IF CountryDimCode <> '' THEN
+          VALIDATE("Country Dimension Code",CountryDimCode)
+        ELSE
+          "Country Dimension Code" := '';
+        MODIFY;
+      END;
+      // ALDA 1712/14D.End     "Country Dimension Code") + '#1##########'
     END;
 
     PROCEDURE ShowDimensions@2();
@@ -418,6 +452,11 @@ OBJECT Table 17 G/L Entry
     END;
 
     BEGIN
+    {
+      AC1.00 Ajout Field "Order Reference Customer"
+      AB6.TAH.001 - 04/09/12
+       Ajout d'un champ :50003
+    }
     END.
   }
 }

@@ -1,0 +1,240 @@
+OBJECT XMLport 50006 Import ecr comptables ALDA
+{
+  OBJECT-PROPERTIES
+  {
+    Date=23/02/16;
+    Time=14:04:27;
+    Modified=Yes;
+    Version List=MIGRATION_TOOLS_Base;
+  }
+  PROPERTIES
+  {
+    CaptionML=[ENU=Import ecr comptables ALDA;
+               FRA=Import ecr comptables ALDA];
+    Direction=Import;
+    Format=Variable Text;
+    FieldDelimiter=<None>;
+    FieldSeparator=[;];
+  }
+  ELEMENTS
+  {
+    { [{4CBB6739-6A73-4B31-97F7-CCF62AE297C7}];  ;GenJnlLines         ;Element ;Text     }
+
+    { [{17B97700-6FB0-4954-97AC-F449F26634A7}];1 ;GenJnlLine          ;Element ;Table   ;
+                                                  SourceTable=Table81;
+                                                  Import::OnBeforeInsertRecord=BEGIN
+                                                                                 WITH "Gen. Journal Line" DO BEGIN
+                                                                                   CASE TypeCpte OF
+                                                                                         '0':
+                                                                                         VALIDATE("Account Type" , "Gen. Journal Line"."Account Type"::"G/L Account");
+                                                                                        '1':
+                                                                                         VALIDATE("Account Type" , "Gen. Journal Line"."Account Type"::Customer);
+                                                                                        '2':
+                                                                                         VALIDATE("Account Type" , "Gen. Journal Line"."Account Type"::Vendor);
+                                                                                        '3':
+                                                                                         VALIDATE("Account Type" , "Gen. Journal Line"."Account Type"::"Bank Account");
+                                                                                   END;
+
+                                                                                   VALIDATE("Journal Template Name" , Format_CU.Ansi2Ascii(JnlTemplate));
+                                                                                   VALIDATE("Journal Batch Name" , Format_CU.Ansi2Ascii(JnlBatch));
+                                                                                   IF STRLEN(IDLettrageSage) > 10 THEN BEGIN
+                                                                                      ERROR(STRSUBSTNO('%1  %2',"Line No.",IDLettrageSage));
+                                                                                   END;
+                                                                                   VALIDATE("ID lettrage Sage" , COPYSTR(IDLettrageSage, 1,10));
+                                                                                   IF STRLEN(Zone50 ) > 20 THEN  BEGIN
+                                                                                      //MESSAGE('la longueur du num‚ro de compte : '+FORMAT(Zone50 ));
+                                                                                      //MESSAGE(COPYSTR(Zone50 , 1,20));
+                                                                                   END;
+
+                                                                                   AccountNo :=  COPYSTR(Zone50 , 1,20);
+
+                                                                                   VALIDATE("Account No."  , AccountNo);
+
+
+                                                                                   Libell‚ := COPYSTR(Format_CU.Ansi2Ascii(Libell‚), 1,50);
+                                                                                   IF Libell‚ <> '' THEN
+                                                                                      VALIDATE(Description  , Libell‚);
+                                                                                   VALIDATE(Amount  , Amount);
+                                                                                   //IF (UPPERCASE(Devise) <> 'EUR') AND (Devise <> '') THEN BEGIN
+                                                                                       VALIDATE("Currency Code"   , Devise);
+                                                                                       IF FactDevise <> '0' THEN BEGIN
+                                                                                         IF EVALUATE("Currency Factor" , FactDevise) THEN
+                                                                                           VALIDATE("Currency Factor");
+                                                                                       END;
+                                                                                   //END;
+                                                                                   IF (UPPERCASE(Devise) <> 'EUR') AND (Devise <> '') THEN BEGIN
+                                                                                       VALIDATE("Currency Code"   ,  '');
+                                                                                       VALIDATE("Currency Factor" , 0);
+                                                                                   END;
+                                                                                   Line_No := "Gen. Journal Line"."Line No.";
+                                                                                   Cpt += 1;
+
+                                                                                   EVALUATE(DueDate , DateEcheance);
+                                                                                   VALIDATE("Due Date",DueDate);
+                                                                                   IF NumdocExt <> '' THEN
+                                                                                      VALIDATE("External Document No."  , COPYSTR(NumdocExt, 1,20));
+                                                                                 END;
+                                                                               END;
+
+                                                  Export::OnPreXMLItem=BEGIN
+
+                                                                         Axe1 := 'PARC MACHINE';
+                                                                         Axe2 := 'CENTRE DE CHARGE';
+                                                                         Axe3 := 'LIGNE';
+                                                                         ParametreCompta.GET;
+                                                                         Cpt := 0;
+                                                                       END;
+                                                                        }
+
+    { [{A949FAEF-B66A-4998-90EB-60371D18E40D}];2 ;LineNo              ;Element ;Field   ;
+                                                  DataType=Integer;
+                                                  SourceField=Gen. Journal Line::Line No. }
+
+    { [{FB936364-C8B9-4630-9ADB-59E3E02E717D}];2 ;JnlTemplate         ;Element ;Text     }
+
+    { [{EBE68473-356E-4E3B-8313-2921B8CD77AD}];2 ;JnlBatch            ;Element ;Text     }
+
+    { [{82EEFB76-AE68-4B5A-87D2-CFF76DC6310A}];2 ;SourceCode          ;Element ;Field   ;
+                                                  DataType=Code;
+                                                  SourceField=Gen. Journal Line::Source Code }
+
+    { [{98C8453C-20EE-4228-A52F-76367446280B}];2 ;TypeCpte            ;Element ;Text     }
+
+    { [{F97A2557-6C55-4306-B661-6482744BEC6A}];2 ;Zone50              ;Element ;Text     }
+
+    { [{76BE4E60-6B13-4BAB-92E3-69BABCE60173}];2 ;PostingDate         ;Element ;Field   ;
+                                                  DataType=Date;
+                                                  SourceField=Gen. Journal Line::Posting Date }
+
+    { [{0798F358-8A58-4F48-BF20-524A57255D7E}];2 ;DocumentNo          ;Element ;Field   ;
+                                                  DataType=Code;
+                                                  SourceField=Gen. Journal Line::Document No. }
+
+    { [{10C1AE86-BCC0-480E-B0A8-63721D8743D5}];2 ;NumdocExt           ;Element ;Text     }
+
+    { [{F23C9038-AE15-4662-9A19-D525652AB767}];2 ;Libell‚             ;Element ;Text     }
+
+    { [{CE402A87-5393-4608-8755-C34184D20DB2}];2 ;Devise              ;Element ;Text     }
+
+    { [{DC51E740-E533-4E5C-AB7E-F609BD3983A2}];2 ;FactDevise          ;Element ;Text     }
+
+    { [{19EC1AA3-5C08-449F-8F86-9D86DF3581CD}];2 ;Amount              ;Element ;Text     }
+
+    { [{C136F39A-2692-4B31-A7FE-6BD36A6550A3}];2 ;DateEcheance        ;Element ;Text     }
+
+    { [{F9A7D005-F84E-4582-915A-689F876F3F40}];2 ;IDLettrageSage      ;Element ;Text     }
+
+  }
+  EVENTS
+  {
+  }
+  REQUESTPAGE
+  {
+    PROPERTIES
+    {
+    }
+    CONTROLS
+    {
+    }
+  }
+  CODE
+  {
+    VAR
+      DateCompta@1000000033 : Text[30];
+      Champ@1000000031 : Text[50];
+      NomFeuille@1000000030 : Code[20];
+      Rec_ParamComp@1000000028 : Record 98;
+      MontTVA@1000000027 : Decimal;
+      TypeLettrage@1000000026 : Text[30];
+      DatDocument@1000000025 : Text[30];
+      AccountNo@1000000023 : Code[20];
+      PostingGrpe@1000000022 : Code[20];
+      ValAxe1@1000000021 : Code[20];
+      ValAxe2@1000000020 : Code[20];
+      ValAxe3@1000000019 : Code[20];
+      Format_CU@1000000016 : Codeunit 50008;
+      Axe1@1000000012 : Code[20];
+      Axe2@1000000011 : Code[20];
+      Axe3@1000000010 : Code[20];
+      Rec_DimVal@1000000009 : Record 349;
+      Line_No@1000000008 : Integer;
+      Cpt@1000000007 : Integer;
+      ParametreCompta@1000000006 : Record 98;
+      "Libell‚Sage"@1000000005 : Text[250];
+      NumCpteSage@1000000002 : Code[100];
+      DueDate@1000000000 : Date;
+      DimMgt@1000000001 : Codeunit 408;
+      DimSetEntry@1000000003 : TEMPORARY Record 480;
+
+    PROCEDURE InsertRealDim@1000000002(L_JnlTemplateName@1000000004 : Code[10];L_JnlBatchName@1000000005 : Code[10];LineNo@1000000002 : Integer;CodeAxe@1000000001 : Code[20];ValAxe@1000000000 : Code[20]);
+    VAR
+      Rec_LigneFeuille@1180250003 : Record 81;
+      DimSetEntry2@1000000003 : TEMPORARY Record 480;
+      found@1000000006 : Boolean;
+    BEGIN
+      IF DELCHR(ValAxe) <> '' THEN BEGIN
+
+
+          Rec_DimVal.GET(CodeAxe , ValAxe);
+          ParametreCompta.GET;
+          DimMgt.GetDimensionSet(DimSetEntry, "Gen. Journal Line"."Dimension Set ID");
+          IF DimSetEntry.FINDSET THEN BEGIN
+            REPEAT
+              DimSetEntry2 := DimSetEntry;
+              IF CodeAxe = DimSetEntry."Dimension Code" THEN BEGIN
+                DimSetEntry2."Dimension Value Code" := ValAxe;
+                found := TRUE;
+                IF DimSetEntry."Dimension Value Code" = ValAxe THEN
+                  EXIT;
+              END;
+              DimSetEntry2.INSERT;
+            UNTIL DimSetEntry.NEXT=0;
+          END;
+
+          IF NOT found THEN BEGIN
+            DimSetEntry2.INIT;
+            DimSetEntry2."Dimension Code":= CodeAxe;
+            DimSetEntry2."Dimension Value Code" := ValAxe;
+            DimSetEntry2."Dimension Value ID" := Rec_DimVal."Dimension Value ID";
+            DimSetEntry2.INSERT;
+          END;
+          "Gen. Journal Line"."Dimension Set ID" := DimMgt.GetDimensionSetID(DimSetEntry2);
+          DimMgt.UpdateGlobalDimFromDimSetID("Gen. Journal Line"."Dimension Set ID", "Gen. Journal Line"."Shortcut Dimension 1 Code", "Gen. Journal Line"."Shortcut Dimension 2 Code");
+         {
+         Glb_GenLineDim.SETRANGE("Table ID"               , 81);
+         Glb_GenLineDim.SETRANGE("Journal Template Name"  , L_JnlTemplateName);
+         Glb_GenLineDim.SETRANGE("Journal Batch Name"     , L_JnlBatchName);
+         Glb_GenLineDim.SETRANGE("Journal Line No."       , LineNo);
+         Glb_GenLineDim.SETRANGE("Dimension Code"         , CodeAxe);
+         IF NOT Glb_GenLineDim.FIND('-') THEN  BEGIN
+            Glb_GenLineDim.INIT;
+            Glb_GenLineDim."Table ID"  := 81;
+            Glb_GenLineDim."Journal Template Name" := L_JnlTemplateName;
+            Glb_GenLineDim."Journal Batch Name"    := L_JnlBatchName;
+            Glb_GenLineDim."Journal Line No."      := LineNo;
+            Glb_GenLineDim.VALIDATE("Dimension Code"        , CodeAxe);
+            Glb_GenLineDim.VALIDATE("Dimension Value Code"   , ValAxe);
+            IF Glb_GenLineDim.INSERT(TRUE) THEN;
+         END ELSE BEGIN
+             Glb_GenLineDim.VALIDATE("Dimension Value Code"  , ValAxe);
+             Glb_GenLineDim.MODIFY;
+         END;
+
+         IF ParametreCompta."Global Dimension 1 Code" = CodeAxe THEN BEGIN
+             Glb_GenLineDim.VALIDATE("Dimension Value Code"  , ValAxe);
+         END;
+         IF ParametreCompta."Global Dimension 2 Code" = CodeAxe THEN BEGIN
+            Glb_GenLineDim.VALIDATE("Dimension Value Code"  , ValAxe);
+         END;
+         }
+      END;
+
+
+      //INIT IF THEN ELSE !!!;
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

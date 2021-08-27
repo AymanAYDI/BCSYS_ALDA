@@ -2,9 +2,10 @@ OBJECT Table 38 Purchase Header
 {
   OBJECT-PROPERTIES
   {
-    Date=23/10/15;
-    Time=12:00:00;
-    Version List=NAVW19.00.00.43402;
+    Date=21/03/16;
+    Time=11:37:52;
+    Modified=Yes;
+    Version List=NAVW19.00.00.43402,AC1.00,ALDA;
   }
   PROPERTIES
   {
@@ -1852,6 +1853,56 @@ OBJECT Table 38 Purchase Header
                                                                                              Status=FILTER(Open|Created)));
                                                    CaptionML=[ENU=Pending Approvals;
                                                               FRA=Approbations en attente] }
+    { 50002;  ;Order Reference Customer;Text35    ;OnValidate=BEGIN
+                                                                IF OrdersPostedExists THEN
+                                                                  ERROR(STRSUBSTNO(Text50001,FIELDCAPTION("Order Reference Customer")));
+                                                                //MIG 2016 >>
+                                                                //UpdatePurchLines(FIELDCAPTION("Order Reference Customer"));
+                                                                UpdatePurchLines(FIELDCAPTION("Order Reference Customer"),TRUE);
+                                                                //MIG 2016 <<
+                                                                UpdateSalesOrder(FIELDCAPTION("Order Reference Customer"));
+                                                              END;
+
+                                                   CaptionML=[ENU=Order Reference Customer;
+                                                              FRA=R‚f‚rence commande client];
+                                                   Description=AC1.00 }
+    { 50007;  ;Gross Weight        ;Decimal       ;CaptionML=[ENU=Gross Weight;
+                                                              FRA=Poids brut];
+                                                   DecimalPlaces=0:5;
+                                                   Description=AC1.00 }
+    { 50008;  ;Net Weight          ;Decimal       ;CaptionML=[ENU=Net Weight;
+                                                              FRA=Poids net];
+                                                   DecimalPlaces=0:5;
+                                                   Description=AC1.00 }
+    { 50009;  ;Volume              ;Decimal       ;CaptionML=[ENU=Volume;
+                                                              FRA=Volume];
+                                                   Description=AC1.00 }
+    { 50010;  ;Nbr. of Pallet      ;Integer       ;CaptionML=[ENU=Nbr. of Pallet;
+                                                              FRA=Nb. de palette];
+                                                   Description=AC1.00 }
+    { 50011;  ;Nbr. of Package     ;Integer       ;CaptionML=[ENU=Nbr. of Package;
+                                                              FRA=Nb. de colis];
+                                                   Description=AC1.00 }
+    { 50012;  ;Nbr. of Package per Pallet;Integer ;CaptionML=[ENU=Nbr. of Package per Pallet;
+                                                              FRA=Nb. de colis par palette];
+                                                   Description=AC1.00 }
+    { 50016;  ;Last EDI Code for Batch;Code10      }
+    { 50017;  ;Last EDI DT for Batch;DateTime      }
+    { 50030;  ;Country Dimension Code;Code20      ;TableRelation=Country/Region;
+                                                   OnValidate=BEGIN
+                                                                // ALDA 171214D
+                                                                //MIG 2016 >>
+                                                                //UpdatePurchLines(FIELDCAPTION("Country Dimension Code"));
+                                                                UpdatePurchLines(FIELDCAPTION("Country Dimension Code"),TRUE);
+                                                                //MIG 2016 <<
+                                                              END;
+
+                                                   CaptionML=[ENU=Country Dimension Code;
+                                                              FRA=Code axe pays];
+                                                   Description=ALDA 171214D }
+    { 50033;  ;Micro Order No.     ;Code20        ;CaptionML=[ENU=Micro Order No.;
+                                                              FRA=Nø commande micro];
+                                                   Description=ALDA 061015D }
   }
   KEYS
   {
@@ -1860,7 +1911,9 @@ OBJECT Table 38 Purchase Header
     {    ;Document Type,Buy-from Vendor No.        }
     {    ;Document Type,Pay-to Vendor No.          }
     {    ;Buy-from Vendor No.                      }
+    {    ;Last EDI Code for Batch,Last EDI DT for Batch }
     {    ;Incoming Document Entry No.              }
+    {    ;Document Type,Status                     }
   }
   FIELDGROUPS
   {
@@ -1957,6 +2010,8 @@ OBJECT Table 38 Purchase Header
       Text046@1087 : TextConst 'ENU=Deleting this document will cause a gap in the number series for prepayment credit memos. An empty prepayment credit memo %1 will be created to fill this gap in the number series.\\Do you want to continue?;FRA=La suppression de ce document va engendrer une discontinuit‚ dans la souche des avoirs acompte. Un avoir acompte vide %1 va ˆtre cr‚‚ pour ‚viter une discontinuit‚ dans la souche de num‚ros.\\Voulez-vous continuerÿ?';
       Text049@1092 : TextConst 'ENU=%1 is set up to process from %2 %3 only.;FRA=%1 est param‚tr‚ pour traiter uniquement … partir de %2 %3.';
       Text050@1067 : TextConst 'ENU=Reservations exist for this order. These reservations will be canceled if a date conflict is caused by this change.\\;FRA=Il existe des r‚servations pour cette commande. Ces r‚servations seront annul‚es si cette modification entraŒne un conflit de dates.\\';
+      Text50000@1180250001 : TextConst 'ENU=Do you want to update the lines?;FRA=(de(s) commande(s) de vente associ‚e(s))';
+      Text50001@1180250002 : TextConst 'ENU=You cannot change %1 because the order and/or one or more sales associated order(s) is(are) partially or completely posted.;FRA=Vous ne pouvez pas modifier %1 car la commande et/ou une ou plusieurs commande(s) vente associ‚e est(sont) partiellement ou totalement valid‚e(s).';
       Text051@1025 : TextConst 'ENU=You may have changed a dimension.\\Do you want to update the lines?;FRA=Vous avez probablement modifi‚ un axe analytique.\\Souhaitez-vous mettre … jour les lignesÿ?';
       Text052@1091 : TextConst 'ENU=The %1 field on the purchase order %2 must be the same as on sales order %3.;FRA=Le champ %1 sur la commande achat %2 doit ˆtre identique … celui de la commande vente %3.';
       NameAddressDetails@1093 : Text[512];
@@ -2525,9 +2580,33 @@ OBJECT Table 38 Purchase Header
               FIELDCAPTION("Lead Time Calculation"),
               FIELDCAPTION("Inbound Whse. Handling Time"):
                 ConfirmResvDateConflict;
-            END
+
+              //AC1.00 BEGIN
+              //MIG 2016 FIELDCAPTION("Order Reference Customer"):
+              //MIG 2016  UpdateConfirmed := TRUE;
+                //  CONFIRM(
+                //    STRSUBSTNO(
+                //      Text032 +
+                //      Text033,ChangedFieldName));
+              //AC1.00 END
+              // ALDA 171214D.Begin
+              //Modif Mig 2016 >>
+              FIELDCAPTION("Country Dimension Code"):
+                IF NOT CONFIRM(
+                  STRSUBSTNO(
+                    Text032 +
+                    Text033,ChangedFieldName)) THEN
+                    ERROR('');
+      //          UpdateConfirmed :=
+      //            CONFIRM(
+      //              STRSUBSTNO(
+      //                Text032 +
+      //                Text033,ChangedFieldName));
+              //Modif Mig 2016 <<
+              // ALDA 171214D.End
           ELSE
             EXIT;
+          END
       END;
 
       PurchLine.LOCKTABLE;
@@ -2574,6 +2653,20 @@ OBJECT Table 38 Purchase Header
             PurchLine.FIELDCAPTION("Deferral Code"):
               IF PurchLine."No." <> '' THEN
                 PurchLine.VALIDATE("Deferral Code");
+            //AC1.00 BEGIN
+            FIELDCAPTION("Order Reference Customer"):
+            //MIG 2016 >>
+            //IF UpdateConfirmed AND (PurchLine."No." <> '') THEN
+            IF PurchLine."No." <> '' THEN
+            //MIG 2016 <<
+              PurchLine.VALIDATE("Order Reference Customer","Order Reference Customer");
+            //AC1.00 END
+            // ALDA 171214D.Begin
+            FIELDCAPTION("Country Dimension Code"):
+            //  IF UpdateConfirmed AND (PurchLine."No." <> '') THEN //MIG 2016
+            IF PurchLine."No." <> '' THEN
+              PurchLine.VALIDATE("Country Dimension Code","Country Dimension Code");
+            // ALDA 171214D.End
           END;
           PurchLine.MODIFY(TRUE);
           PurchLineReserve.VerifyChange(PurchLine,xPurchLine);
@@ -3030,6 +3123,134 @@ OBJECT Table 38 Purchase Header
         PurchaseInvDisc.CalculateIncDiscForHeader(Rec);
     END;
 
+    PROCEDURE UpdateSalesOrder@1180250008(ChangedFieldName@1000 : Text[100]);
+    VAR
+      UpdateConfirmed@1002 : Boolean;
+      SalesHeader@1180250001 : Record 36;
+      SalesLine@1180250002 : Record 37;
+    BEGIN
+      //AC1.00
+
+      IF NOT SalesOrderExist THEN
+        EXIT;
+
+      IF OrdersPostedExists THEN
+        EXIT;
+
+      IF NOT GUIALLOWED THEN
+        UpdateConfirmed := TRUE
+      ELSE
+        CASE ChangedFieldName OF
+          FIELDCAPTION("Order Reference Customer"):
+            UpdateConfirmed :=
+              //CONFIRM(
+              //  STRSUBSTNO(
+              //    Text033 + '\\' +
+              //    Text50000,ChangedFieldName));
+              TRUE;
+        END;//CASE
+
+      SalesHeader.LOCKTABLE;
+      SalesLine.LOCKTABLE;
+      SalesHeader.RESET;
+      SalesHeader.SETRANGE("Document Type",SalesHeader."Document Type"::Order);
+      SalesHeader.SETRANGE("Order Reference Customer",xRec."Order Reference Customer");
+      IF SalesHeader.FINDSET THEN
+        REPEAT
+          CASE ChangedFieldName OF
+            FIELDCAPTION("Order Reference Customer"):BEGIN
+              IF UpdateConfirmed THEN
+                IF (SalesHeader."Document Type" = SalesHeader."Document Type"::Order) AND (SalesHeader."No." <> '') THEN BEGIN
+                  SalesHeader."Order Reference Customer" := "Order Reference Customer";
+                  SalesLine.RESET;
+                  SalesLine.SETRANGE("Document Type",SalesHeader."Document Type");
+                  SalesLine.SETRANGE("Document No.",SalesHeader."No.");
+                  IF SalesLine.FIND('-') THEN
+                    REPEAT
+                      SalesLine."Order Reference Customer" := "Order Reference Customer";
+                      SalesLine.MODIFY;
+                    UNTIL SalesLine.NEXT = 0;
+              END;
+            END;
+          END;//CASE
+          SalesHeader.MODIFY(TRUE);
+        UNTIL SalesHeader.NEXT = 0;
+    END;
+
+    PROCEDURE SalesOrderExist@1180250001() : Boolean;
+    VAR
+      SalesHeader@1180250001 : Record 36;
+    BEGIN
+      //AC1.00
+
+      IF xRec."Order Reference Customer" = '' THEN
+        EXIT(FALSE);
+
+      SalesHeader.RESET;
+      IF "Micro Order No." = '' THEN BEGIN
+        SalesHeader.SETRANGE("Document Type",SalesHeader."Document Type"::Order);
+        SalesHeader.SETRANGE("Order Reference Customer",xRec."Order Reference Customer");
+      END ELSE BEGIN
+        SalesHeader.SETRANGE("Document Type",SalesHeader."Document Type"::Order);
+        SalesHeader.SETRANGE("Micro Order No.",xRec."Micro Order No.");
+      END;
+      EXIT(SalesHeader.FINDFIRST);
+    END;
+
+    PROCEDURE OrdersPostedExists@1180250002() : Boolean;
+    VAR
+      SalesLine@1180250001 : Record 37;
+      PurchLine@1180250002 : Record 39;
+    BEGIN
+      //AC1.00
+
+      IF xRec."Order Reference Customer" = '' THEN
+        EXIT(FALSE);
+
+      PurchLine.RESET;
+      IF xRec."Micro Order No." = '' THEN BEGIN
+        PurchLine.SETRANGE("Document Type",PurchLine."Document Type"::Order);
+        PurchLine.SETRANGE("Order Reference Customer",xRec."Order Reference Customer");
+      END ELSE BEGIN
+        PurchLine.SETRANGE("Document Type",PurchLine."Document Type"::Order);
+        PurchLine.SETRANGE("Micro Order No.",xRec."Micro Order No.");
+      END;
+      PurchLine.SETFILTER("Quantity Received",'<>%1',0);
+      EXIT(PurchLine.FINDFIRST);
+
+      SalesLine.RESET;
+      IF xRec."Micro Order No." = '' THEN BEGIN
+        SalesLine.SETRANGE("Document Type",SalesLine."Document Type"::Order);
+        SalesLine.SETRANGE("Order Reference Customer",xRec."Order Reference Customer");
+      END ELSE BEGIN
+        SalesLine.SETRANGE("Document Type",SalesLine."Document Type"::Order);
+        SalesLine.SETRANGE("Micro Order No.",xRec."Micro Order No.");
+      END;
+      SalesLine.SETFILTER("Quantity Shipped",'<>%1',0);
+
+      IF PurchLine.FINDFIRST AND SalesLine.FINDFIRST THEN
+        EXIT(TRUE)
+      ELSE
+        EXIT(FALSE);
+    END;
+
+    PROCEDURE ShowSalesOrder@1180250003();
+    VAR
+      SalesHeader@1180250002 : Record 36;
+    BEGIN
+      SalesHeader.RESET;
+
+      IF "Micro Order No." = '' THEN BEGIN
+        TESTFIELD("Order Reference Customer");
+        SalesHeader.SETRANGE("Document Type",SalesHeader."Document Type"::Order);
+        SalesHeader.SETRANGE("Order Reference Customer","Order Reference Customer");
+      END ELSE BEGIN
+        SalesHeader.SETRANGE("Document Type",SalesHeader."Document Type"::Order);
+        SalesHeader.SETRANGE("Micro Order No.","Micro Order No.");
+      END;
+      PAGE.RUNMODAL(PAGE::"Sales Order",SalesHeader);
+    END;
+
     PROCEDURE AddShipToAddress@46(SalesHeader@1000 : Record 36;ShowError@1001 : Boolean);
     VAR
       PurchLine2@1002 : Record 39;
@@ -3357,6 +3578,12 @@ OBJECT Table 38 Purchase Header
     END;
 
     BEGIN
+    {
+      AC1.00 Ajout Field "Order Reference Customer"
+                   C/AL UpdatePurchLine() PurchOrderExist() OrdersPostedExists();
+                   Function UpdateSalesOrder()
+      MIG 2016 : lines 1704 - 1746 - 2263 - 2271 - 2336 - 2344
+    }
     END.
   }
 }

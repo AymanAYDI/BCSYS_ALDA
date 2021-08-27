@@ -1,0 +1,149 @@
+OBJECT Page 50009 Liste des BL non factur‚s
+{
+  OBJECT-PROPERTIES
+  {
+    Date=22/05/18;
+    Time=15:08:51;
+    Modified=Yes;
+    Version List=AB6.JME.001;
+  }
+  PROPERTIES
+  {
+    Editable=No;
+    CaptionML=FRA=Liste des BL non factur‚s;
+    SourceTable=Table110;
+    PageType=List;
+    SourceTableTemporary=Yes;
+    CardPageID=Posted Sales Shipment;
+    PromotedActionCategoriesML=[ENU=New,Process,Report,Documents;
+                                FRA=Nouveau,Processus,Etat,Documents];
+    OnOpenPage=BEGIN
+                 //CALCFIELDS("Montant BL","Quantit‚ … facturer");
+
+                 //FILTERGROUP(2);
+                 //SETFILTER("Quantit‚ … facturer",'<>0');
+                 //FILTERGROUP(0);
+                 FillTempTable;
+               END;
+
+    ActionList=ACTIONS
+    {
+      { 1000000002;  ;ActionContainer;
+                      ActionContainerType=ActionItems }
+      { 1000000003;1 ;Action    ;
+                      Name=RefreshData;
+                      CaptionML=[ENU=Refresh Data;
+                                 FRA=Rafraichir donn‚es];
+                      Promoted=Yes;
+                      PromotedIsBig=Yes;
+                      Image=RefreshLines;
+                      PromotedCategory=Process;
+                      OnAction=BEGIN
+                                 FillTempTable;
+                               END;
+                                }
+      { 1000000000;  ;ActionContainer;
+                      ActionContainerType=RelatedInformation }
+      { 1000000001;1 ;Action    ;
+                      Name=SalesOrder;
+                      CaptionML=[ENU=Sales Order;
+                                 FRA=Commande vente];
+                      RunObject=Page 42;
+                      RunPageView=WHERE(Document Type=CONST(Order));
+                      RunPageLink=No.=FIELD(Order No.);
+                      Promoted=Yes;
+                      PromotedIsBig=Yes;
+                      Image=Order;
+                      PromotedCategory=Category4 }
+    }
+  }
+  CONTROLS
+  {
+    { 1180250002;;Container;
+                ContainerType=ContentArea }
+
+    { 1180250005;1;Group  ;
+                GroupType=Repeater }
+
+    { 1180250006;2;Field  ;
+                SourceExpr="Posting Date" }
+
+    { 1180250003;2;Field  ;
+                SourceExpr="No." }
+
+    { 1180250013;2;Field  ;
+                SourceExpr="Sell-to Customer No." }
+
+    { 1180250007;2;Field  ;
+                SourceExpr="Vendor Shipment No." }
+
+    { 1180250001;2;Field  ;
+                SourceExpr="Order Reference Customer" }
+
+    { 1180250012;2;Field  ;
+                SourceExpr="External Document No." }
+
+    { 1180250011;2;Field  ;
+                SourceExpr="Your Reference" }
+
+    { 1180250004;2;Field  ;
+                SourceExpr="Bill-to Customer No." }
+
+    { 1180250008;2;Field  ;
+                SourceExpr="Shortcut Dimension 1 Code" }
+
+    { 1180250009;2;Field  ;
+                SourceExpr="Shortcut Dimension 2 Code" }
+
+    { 1180250010;2;Field  ;
+                SourceExpr="Salesperson Code" }
+
+    { 1180250014;2;Field  ;
+                SourceExpr="Quantit‚ restante … exp‚dier" }
+
+    { 1000000005;2;Field  ;
+                SourceExpr="Sell-to Customer Name" }
+
+    { 1000000006;2;Field  ;
+                SourceExpr="Bill-to Name" }
+
+    { 1000000007;2;Field  ;
+                SourceExpr="Bill-to Address" }
+
+    { 1000000008;2;Field  ;
+                SourceExpr="Bill-to Address 2" }
+
+    { 1000000009;2;Field  ;
+                SourceExpr="Applies-to Doc. No." }
+
+  }
+  CODE
+  {
+    VAR
+      SalesShpHeader@1000000000 : Record 110;
+      QSalesShpLine@1000000001 : Query 50000;
+      UserSetupMgt@1000000002 : Codeunit 5700;
+
+    LOCAL PROCEDURE FillTempTable@1000000000();
+    BEGIN
+      RESET;
+      DELETEALL;
+      QSalesShpLine.SETFILTER(Salesperson_Code, UserSetupMgt.GetSalesPersonFilter);
+      SalesShpHeader.SETPERMISSIONFILTER;
+      QSalesShpLine.OPEN;
+      WHILE(QSalesShpLine.READ) DO
+        IF SalesShpHeader.GET(QSalesShpLine.Document_No) THEN BEGIN
+          Rec := SalesShpHeader;
+          INSERT;
+        END;
+      QSalesShpLine.CLOSE;
+    END;
+
+    BEGIN
+    {
+      AB6.JME.001   18/10/12    Cr‚ation de la page
+    }
+    END.
+  }
+}
+

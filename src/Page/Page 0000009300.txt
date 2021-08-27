@@ -2,9 +2,10 @@ OBJECT Page 9300 Sales Quotes
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
-    Version List=NAVW19.00;
+    Date=13/07/16;
+    Time=15:20:42;
+    Modified=Yes;
+    Version List=NAVW19.00,AB6.JME.001;
   }
   PROPERTIES
   {
@@ -298,6 +299,12 @@ OBJECT Page 9300 Sales Quotes
                 SourceExpr="Currency Code";
                 Visible=FALSE }
 
+    { 1000000000;2;Field  ;
+                SourceExpr=Amount }
+
+    { 1000000001;2;Field  ;
+                SourceExpr="Amount Including VAT" }
+
     { 1102601001;2;Field  ;
                 SourceExpr="Document Date";
                 Visible=FALSE }
@@ -313,6 +320,9 @@ OBJECT Page 9300 Sales Quotes
     { 1102601007;2;Field  ;
                 SourceExpr=Status;
                 Visible=FALSE }
+
+    { 1000000002;2;Field  ;
+                SourceExpr="Sell-to City" }
 
     { 1900000007;0;Container;
                 ContainerType=FactBoxArea }

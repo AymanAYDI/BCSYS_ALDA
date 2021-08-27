@@ -1,0 +1,149 @@
+OBJECT Page 60001 E.D.I. Statistic
+{
+  OBJECT-PROPERTIES
+  {
+    Date=21/06/12;
+    Time=12:22:41;
+    Modified=Yes;
+    Version List=AC1.00;
+  }
+  PROPERTIES
+  {
+    CaptionML=[ENU=Electronic Data Interchange Statistic;
+               FRA=Statistique d'Çchange de DonnÇes InformatisÇ];
+    SourceTable=Table50000;
+    PageType=Card;
+    OnAfterGetRecord=BEGIN
+                       InitForm();
+                     END;
+
+  }
+  CONTROLS
+  {
+    { 1900000001;0;Container;
+                ContainerType=ContentArea }
+
+    { 1180250001;1;Group  ;
+                CaptionML=FRA=GÇnÇral;
+                Editable=FALSE }
+
+    { 1180250002;2;Field  ;
+                SourceExpr=Code }
+
+    { 1180250010;2;Group  ;
+                CaptionML=[ENU=File;
+                           FRA=Fichier] }
+
+    { 1180250011;3;Field  ;
+                CaptionML=[ENU=To Handle;
+                           FRA=A traiter];
+                SourceExpr=NbrOfFileToHandle }
+
+    { 1180250013;3;Field  ;
+                CaptionML=[ENU=On Error;
+                           FRA=En erreur];
+                SourceExpr=NbrOfFileOnErr }
+
+    { 1180250016;3;Field  ;
+                CaptionML=[ENU=Handled;
+                           FRA=TraitÇ];
+                SourceExpr=NbrOfFileHandled }
+
+    { 1180250018;2;Group  ;
+                CaptionML=[ENU=Electronic Data Interchange Entry;
+                           FRA=êcriture d'Çchange de DonnÇes InformatisÇ] }
+
+    { 1180250019;3;Field  ;
+                CaptionML=[ENU=To Handle;
+                           FRA=A traiter];
+                SourceExpr=NbrOfLineEDIToHandle }
+
+    { 1180250021;3;Field  ;
+                CaptionML=[ENU=On Error;
+                           FRA=En erreur];
+                SourceExpr=NbrOfLineEDIOnErr }
+
+    { 1180250023;3;Field  ;
+                CaptionML=[ENU=Handled;
+                           FRA=TraitÇ];
+                SourceExpr=NbrOfLineEDIHandled }
+
+  }
+  CODE
+  {
+    VAR
+      NbrOfFileToHandle@1180250001 : Integer;
+      NbrOfFileOnErr@1180250002 : Integer;
+      NbrOfFileHandled@1180250003 : Integer;
+      NbrOfLineEDIToHandle@1180250004 : Integer;
+      NbrOfLineEDIOnErr@1180250005 : Integer;
+      NbrOfLineEDIHandled@1180250006 : Integer;
+
+    PROCEDURE InitForm@1180250001();
+    VAR
+      EDIEntry@1180250003 : Record 50002;
+      FileList@1180250001 : Record 2000000022;
+      FileNameFilter@1180250002 : Text[30];
+    BEGIN
+      FileList.RESET;
+      FileList.SETFILTER(Path,"Files Imp. Path");
+      FileList.SETFILTER(Name,"Filename Filter");
+      FileList.SETRANGE("Is a file", TRUE);
+      IF FileList.FINDSET THEN
+        NbrOfFileToHandle := FileList.COUNT
+      ELSE
+        NbrOfFileToHandle := 0;
+
+      FileNameFilter := COPYSTR("Filename Filter",1,3);
+
+      FileList.RESET;
+      FileList.SETFILTER(Path,"File Imp. Path (Err.)");
+      FileList.SETFILTER(Name,'%1..',FileNameFilter);
+      FileList.SETRANGE("Is a file", TRUE);
+      IF FileList.FINDSET THEN
+        NbrOfFileOnErr := FileList.COUNT
+      ELSE
+        NbrOfFileOnErr := 0;
+
+      FileList.RESET;
+      FileList.SETFILTER(Path,"File Imp. Path (Saved)");
+      FileList.SETFILTER(Name,'%1..',FileNameFilter);
+      FileList.SETRANGE("Is a file", TRUE);
+      IF FileList.FINDSET THEN
+        NbrOfFileHandled := FileList.COUNT
+      ELSE
+        NbrOfFileHandled := 0;
+
+      EDIEntry.RESET;
+      EDIEntry.SETRANGE("EDI Code",Code);
+      EDIEntry.SETRANGE(Error,FALSE);
+      EDIEntry.SETRANGE(Handled,FALSE);
+      IF EDIEntry.FINDSET THEN
+        NbrOfLineEDIToHandle := EDIEntry.COUNT
+      ELSE
+        NbrOfLineEDIToHandle := 0;
+
+      EDIEntry.RESET;
+      EDIEntry.SETRANGE("EDI Code",Code);
+      EDIEntry.SETRANGE(Error,TRUE);
+      EDIEntry.SETRANGE(Handled,FALSE);
+      IF EDIEntry.FINDSET THEN
+        NbrOfLineEDIOnErr := EDIEntry.COUNT
+      ELSE
+        NbrOfLineEDIOnErr := 0;
+
+      EDIEntry.RESET;
+      EDIEntry.SETRANGE("EDI Code",Code);
+      EDIEntry.SETRANGE(Error,FALSE);
+      EDIEntry.SETRANGE(Handled,TRUE);
+      IF EDIEntry.FINDSET THEN
+        NbrOfLineEDIHandled := EDIEntry.COUNT
+      ELSE
+        NbrOfLineEDIHandled := 0;
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

@@ -1,0 +1,1609 @@
+OBJECT Table 50009 IMPORT Purchase Line
+{
+  OBJECT-PROPERTIES
+  {
+    Date=28/01/16;
+    Time=10:29:51;
+    Modified=Yes;
+    Version List=GIM;
+  }
+  PROPERTIES
+  {
+    OnInsert=BEGIN
+
+               CASE "GIM Document Type" OF
+                 '380' : "Document Type" := "Document Type"::Invoice;
+                 '381' : "Document Type" := "Document Type"::"Credit Memo";
+               END;
+
+               "Line No." := 0;
+
+               CheckValidLine ;
+
+               "Receipt No." := PurchRcptLine."Document No.";
+               Type := PurchRcptLine.Type;
+               "No." := PurchRcptLine."No.";
+               "Receipt Line No." := PurchRcptLine."Line No.";
+
+               "Amount Including VAT" := Amount + "VAT Amount" + "Allowance charge";
+             END;
+
+    OnModify=BEGIN
+               //IF ("Receipt No." <> '') AND ("Receipt Line No." <> '') THEN
+
+               CheckValidLine;
+               IF ("Receipt No." = '') THEN
+               BEGIN
+                 "Receipt No." := PurchRcptLine."Document No.";
+                 Type := PurchRcptLine.Type;
+                 "No." := PurchRcptLine."No.";
+                 "Receipt Line No." := PurchRcptLine."Line No.";
+               END;
+             END;
+
+    OnDelete=VAR
+               PurchCommentLine@1001 : Record 43;
+               ChargeAllowance@1180250001 : Record 50013;
+             BEGIN
+               //TESTFIELD(IsError,TRUE);
+               ChargeAllowance.SETRANGE("GIM Document Type", "GIM Document Type");
+               ChargeAllowance.SETRANGE("Document No.","Document No.");
+               ChargeAllowance.SETRANGE("Line No.", "Line No.");
+               ChargeAllowance.SETRANGE("ID Line","ID Line");
+               ChargeAllowance.DELETEALL;
+             END;
+
+    CaptionML=[ENU=Purchase Line;
+               FRA=Ligne achat];
+    PasteIsValid=No;
+    LookupPageID=Page518;
+    DrillDownPageID=Page518;
+  }
+  FIELDS
+  {
+    { 1   ;   ;Document Type       ;Option        ;CaptionML=[ENU=Document Type;
+                                                              FRA=Type document];
+                                                   OptionCaptionML=[ENU=Quote,Order,Invoice,Credit Memo,Blanket Order,Return Order;
+                                                                    FRA=Devis,Commande,Facture,Avoir,Commande ouverte,Retour];
+                                                   OptionString=Quote,Order,Invoice,Credit Memo,Blanket Order,Return Order }
+    { 2   ;   ;Buy-from Vendor No. ;Code20        ;TableRelation=Vendor;
+                                                   CaptionML=[ENU=Buy-from Vendor No.;
+                                                              FRA=Nø fournisseur];
+                                                   Editable=No }
+    { 3   ;   ;Document No.        ;Code20        ;TableRelation="IMPORT Purchase Header".No. WHERE (GIM Document Type=FIELD(GIM Document Type));
+                                                   CaptionML=[ENU=Document No.;
+                                                              FRA=Nø document] }
+    { 4   ;   ;Line No.            ;Integer       ;AutoIncrement=Yes;
+                                                   CaptionML=[ENU=Line No.;
+                                                              FRA=Nø ligne] }
+    { 5   ;   ;Type                ;Option        ;CaptionML=[ENU=Type;
+                                                              FRA=Type];
+                                                   OptionCaptionML=[ENU=" ,G/L Account,Item,,Fixed Asset,Charge (Item)";
+                                                                    FRA=" ,Compte g‚n‚ral,Article,,Immobilisation,Frais annexes"];
+                                                   OptionString=[ ,G/L Account,Item,,Fixed Asset,Charge (Item)] }
+    { 6   ;   ;No.                 ;Code20        ;TableRelation=IF (Type=CONST(" ")) "Standard Text"
+                                                                 ELSE IF (Type=CONST(G/L Account)) "G/L Account"
+                                                                 ELSE IF (Type=CONST(Item)) Item
+                                                                 ELSE IF (Type=CONST(3)) Resource
+                                                                 ELSE IF (Type=CONST(Fixed Asset)) "Fixed Asset"
+                                                                 ELSE IF (Type=CONST("Charge (Item)")) "Item Charge";
+                                                   OnValidate=VAR
+                                                                ICPartner@1000 : Record 413;
+                                                                ItemCrossReference@1001 : Record 5717;
+                                                                PrepmtMgt@1002 : Codeunit 441;
+                                                              BEGIN
+                                                              END;
+
+                                                   CaptionML=[ENU=No.;
+                                                              FRA=Nø] }
+    { 7   ;   ;Location Code       ;Code10        ;TableRelation=Location WHERE (Use As In-Transit=CONST(No));
+                                                   CaptionML=[ENU=Location Code;
+                                                              FRA=Code magasin] }
+    { 8   ;   ;Posting Group       ;Code10        ;TableRelation=IF (Type=CONST(Item)) "Inventory Posting Group"
+                                                                 ELSE IF (Type=CONST(Fixed Asset)) "FA Posting Group";
+                                                   CaptionML=[ENU=Posting Group;
+                                                              FRA=Groupe comptabilisation];
+                                                   Editable=No }
+    { 10  ;   ;Expected Receipt Date;Date         ;CaptionML=[ENU=Expected Receipt Date;
+                                                              FRA=Date de rangement] }
+    { 11  ;   ;Description         ;Text50        ;CaptionML=[ENU=Description;
+                                                              FRA=D‚signation] }
+    { 12  ;   ;Description 2       ;Text50        ;CaptionML=[ENU=Description 2;
+                                                              FRA=D‚signation 2] }
+    { 13  ;   ;Unit of Measure     ;Text10        ;CaptionML=[ENU=Unit of Measure;
+                                                              FRA=Unit‚] }
+    { 15  ;   ;Quantity            ;Decimal       ;CaptionML=[ENU=Quantity;
+                                                              FRA=Quantit‚];
+                                                   DecimalPlaces=0:5 }
+    { 16  ;   ;Outstanding Quantity;Decimal       ;CaptionML=[ENU=Outstanding Quantity;
+                                                              FRA=Quantit‚ restante];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 17  ;   ;Qty. to Invoice     ;Decimal       ;CaptionML=[ENU=Qty. to Invoice;
+                                                              FRA=Qt‚ … facturer];
+                                                   DecimalPlaces=0:5 }
+    { 18  ;   ;Qty. to Receive     ;Decimal       ;CaptionML=[ENU=Qty. to Receive;
+                                                              FRA=Qt‚ … recevoir];
+                                                   DecimalPlaces=0:5 }
+    { 22  ;   ;Direct Unit Cost    ;Decimal       ;CaptionML=[ENU=Direct Unit Cost;
+                                                              FRA=Co–t unitaire direct];
+                                                   AutoFormatType=2;
+                                                   AutoFormatExpr="Currency Code";
+                                                   CaptionClass=GetCaptionClass(FIELDNO("Direct Unit Cost")) }
+    { 23  ;   ;Unit Cost (LCY)     ;Decimal       ;CaptionML=[ENU=Unit Cost (LCY);
+                                                              FRA=Co–t unitaire DS];
+                                                   AutoFormatType=2 }
+    { 25  ;   ;VAT %               ;Decimal       ;CaptionML=[ENU=VAT %;
+                                                              FRA=% TVA];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 27  ;   ;Line Discount %     ;Decimal       ;CaptionML=[ENU=Line Discount %;
+                                                              FRA=% remise ligne];
+                                                   DecimalPlaces=0:5;
+                                                   MinValue=0;
+                                                   MaxValue=100 }
+    { 28  ;   ;Line Discount Amount;Decimal       ;CaptionML=[ENU=Line Discount Amount;
+                                                              FRA=Montant remise ligne];
+                                                   AutoFormatType=1;
+                                                   AutoFormatExpr="Currency Code" }
+    { 29  ;   ;Amount              ;Decimal       ;CaptionML=[ENU=Amount;
+                                                              FRA=Montant];
+                                                   Editable=No;
+                                                   AutoFormatType=1;
+                                                   AutoFormatExpr="Currency Code" }
+    { 30  ;   ;Amount Including VAT;Decimal       ;CaptionML=[ENU=Amount Including VAT;
+                                                              FRA=Montant TTC];
+                                                   Editable=No;
+                                                   AutoFormatType=1;
+                                                   AutoFormatExpr="Currency Code" }
+    { 31  ;   ;Unit Price (LCY)    ;Decimal       ;CaptionML=[ENU=Unit Price (LCY);
+                                                              FRA=Prix unitaire DS];
+                                                   AutoFormatType=2 }
+    { 32  ;   ;Allow Invoice Disc. ;Boolean       ;InitValue=Yes;
+                                                   CaptionML=[ENU=Allow Invoice Disc.;
+                                                              FRA=Remise facture autoris‚e] }
+    { 34  ;   ;Gross Weight        ;Decimal       ;CaptionML=[ENU=Gross Weight;
+                                                              FRA=Poids brut];
+                                                   DecimalPlaces=0:5 }
+    { 35  ;   ;Net Weight          ;Decimal       ;CaptionML=[ENU=Net Weight;
+                                                              FRA=Poids net];
+                                                   DecimalPlaces=0:5 }
+    { 36  ;   ;Units per Parcel    ;Decimal       ;CaptionML=[ENU=Units per Parcel;
+                                                              FRA=Conditionnement];
+                                                   DecimalPlaces=0:5 }
+    { 37  ;   ;Unit Volume         ;Decimal       ;CaptionML=[ENU=Unit Volume;
+                                                              FRA=Volume unitaire];
+                                                   DecimalPlaces=0:5 }
+    { 38  ;   ;Appl.-to Item Entry ;Integer       ;CaptionML=[ENU=Appl.-to Item Entry;
+                                                              FRA=Ecr. article … lettrer] }
+    { 40  ;   ;Shortcut Dimension 1 Code;Code20   ;TableRelation="Dimension Value".Code WHERE (Global Dimension No.=CONST(1));
+                                                   CaptionML=[ENU=Shortcut Dimension 1 Code;
+                                                              FRA=Code raccourci axe 1];
+                                                   CaptionClass='1,2,1' }
+    { 41  ;   ;Shortcut Dimension 2 Code;Code20   ;TableRelation="Dimension Value".Code WHERE (Global Dimension No.=CONST(2));
+                                                   CaptionML=[ENU=Shortcut Dimension 2 Code;
+                                                              FRA=Code raccourci axe 2];
+                                                   CaptionClass='1,2,2' }
+    { 45  ;   ;Job No.             ;Code20        ;TableRelation=Job;
+                                                   OnValidate=VAR
+                                                                Job@1000 : Record 167;
+                                                              BEGIN
+                                                              END;
+
+                                                   CaptionML=[ENU=Job No.;
+                                                              FRA=Nø projet] }
+    { 54  ;   ;Indirect Cost %     ;Decimal       ;CaptionML=[ENU=Indirect Cost %;
+                                                              FRA=% co–t indirect];
+                                                   DecimalPlaces=0:5;
+                                                   MinValue=0 }
+    { 57  ;   ;Outstanding Amount  ;Decimal       ;OnValidate=VAR
+                                                                Currency2@1000 : Record 4;
+                                                              BEGIN
+                                                              END;
+
+                                                   CaptionML=[ENU=Outstanding Amount;
+                                                              FRA=Montant en commande];
+                                                   Editable=No;
+                                                   AutoFormatType=1;
+                                                   AutoFormatExpr="Currency Code" }
+    { 58  ;   ;Qty. Rcd. Not Invoiced;Decimal     ;CaptionML=[ENU=Qty. Rcd. Not Invoiced;
+                                                              FRA=Qt‚ re‡ue non factur‚e];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 59  ;   ;Amt. Rcd. Not Invoiced;Decimal     ;OnValidate=VAR
+                                                                Currency2@1000 : Record 4;
+                                                              BEGIN
+                                                              END;
+
+                                                   CaptionML=[ENU=Amt. Rcd. Not Invoiced;
+                                                              FRA=Montant re‡u non factur‚];
+                                                   Editable=No;
+                                                   AutoFormatType=1;
+                                                   AutoFormatExpr="Currency Code" }
+    { 60  ;   ;Quantity Received   ;Decimal       ;CaptionML=[ENU=Quantity Received;
+                                                              FRA=Quantit‚ re‡ue];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 61  ;   ;Quantity Invoiced   ;Decimal       ;CaptionML=[ENU=Quantity Invoiced;
+                                                              FRA=Quantit‚ factur‚e];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 63  ;   ;Receipt No.         ;Code20        ;CaptionML=[ENU=Receipt No.;
+                                                              FRA=Nø bon de r‚ception];
+                                                   Editable=No }
+    { 64  ;   ;Receipt Line No.    ;Integer       ;CaptionML=[ENU=Receipt Line No.;
+                                                              FRA=Nø ligne bon de r‚ception];
+                                                   Editable=No }
+    { 67  ;   ;Profit %            ;Decimal       ;CaptionML=[ENU=Profit %;
+                                                              FRA=% marge sur vente];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 68  ;   ;Pay-to Vendor No.   ;Code20        ;TableRelation=Vendor;
+                                                   CaptionML=[ENU=Pay-to Vendor No.;
+                                                              FRA=Nø fournisseur … payer];
+                                                   Editable=No }
+    { 69  ;   ;Inv. Discount Amount;Decimal       ;CaptionML=[ENU=Inv. Discount Amount;
+                                                              FRA=Montant remise facture];
+                                                   Editable=No;
+                                                   AutoFormatType=1;
+                                                   AutoFormatExpr="Currency Code" }
+    { 70  ;   ;Vendor Item No.     ;Text20        ;CaptionML=[ENU=Vendor Item No.;
+                                                              FRA=R‚f‚rence fournisseur] }
+    { 71  ;   ;Sales Order No.     ;Code20        ;TableRelation=IF (Drop Shipment=CONST(Yes)) "Sales Header".No. WHERE (Document Type=CONST(Order));
+                                                   CaptionML=[ENU=Sales Order No.;
+                                                              FRA=Nø commande vente];
+                                                   Editable=No }
+    { 72  ;   ;Sales Order Line No.;Integer       ;TableRelation=IF (Drop Shipment=CONST(Yes)) "Sales Line"."Line No." WHERE (Document Type=CONST(Order),
+                                                                                                                              Document No.=FIELD(Sales Order No.));
+                                                   CaptionML=[ENU=Sales Order Line No.;
+                                                              FRA=Nø ligne commande vente];
+                                                   Editable=No }
+    { 73  ;   ;Drop Shipment       ;Boolean       ;CaptionML=[ENU=Drop Shipment;
+                                                              FRA=Livraison directe];
+                                                   Editable=No }
+    { 74  ;   ;Gen. Bus. Posting Group;Code10     ;TableRelation="Gen. Business Posting Group";
+                                                   CaptionML=[ENU=Gen. Bus. Posting Group;
+                                                              FRA=Groupe compta. march‚] }
+    { 75  ;   ;Gen. Prod. Posting Group;Code10    ;TableRelation="Gen. Product Posting Group";
+                                                   CaptionML=[ENU=Gen. Prod. Posting Group;
+                                                              FRA=Groupe compta. produit] }
+    { 77  ;   ;VAT Calculation Type;Option        ;CaptionML=[ENU=VAT Calculation Type;
+                                                              FRA=Mode calcul TVA];
+                                                   OptionCaptionML=[ENU=Normal VAT,Reverse Charge VAT,Full VAT,Sales Tax;
+                                                                    FRA=Normal,Intracomm.,Correctif,Sales Tax];
+                                                   OptionString=Normal VAT,Reverse Charge VAT,Full VAT,Sales Tax;
+                                                   Editable=No }
+    { 78  ;   ;Transaction Type    ;Code10        ;TableRelation="Transaction Type";
+                                                   CaptionML=[ENU=Transaction Type;
+                                                              FRA=Nature transaction] }
+    { 79  ;   ;Transport Method    ;Code10        ;TableRelation="Transport Method";
+                                                   CaptionML=[ENU=Transport Method;
+                                                              FRA=Mode de transport] }
+    { 80  ;   ;Attached to Line No.;Integer       ;TableRelation="Purchase Line"."Line No." WHERE (Document Type=FIELD(Document Type),
+                                                                                                   Document No.=FIELD(Document No.));
+                                                   CaptionML=[ENU=Attached to Line No.;
+                                                              FRA=Attach‚ … la ligne nø];
+                                                   Editable=No }
+    { 81  ;   ;Entry Point         ;Code10        ;TableRelation="Entry/Exit Point";
+                                                   CaptionML=[ENU=Entry Point;
+                                                              FRA=Pays provenance] }
+    { 82  ;   ;Area                ;Code10        ;TableRelation=Area;
+                                                   CaptionML=[ENU=Area;
+                                                              FRA=D‚pt destination/provenance] }
+    { 83  ;   ;Transaction Specification;Code10   ;TableRelation="Transaction Specification";
+                                                   CaptionML=[ENU=Transaction Specification;
+                                                              FRA=R‚gime] }
+    { 85  ;   ;Tax Area Code       ;Code20        ;TableRelation="Tax Area";
+                                                   CaptionML=[ENU=Tax Area Code;
+                                                              FRA=Code zone recouvrement] }
+    { 86  ;   ;Tax Liable          ;Boolean       ;CaptionML=[ENU=Tax Liable;
+                                                              FRA=Soumis … recouvrement] }
+    { 87  ;   ;Tax Group Code      ;Code10        ;TableRelation="Tax Group";
+                                                   CaptionML=[ENU=Tax Group Code;
+                                                              FRA=Code groupe taxes] }
+    { 88  ;   ;Use Tax             ;Boolean       ;CaptionML=[ENU=Use Tax;
+                                                              FRA=Use Tax] }
+    { 89  ;   ;VAT Bus. Posting Group;Code10      ;TableRelation="VAT Business Posting Group";
+                                                   CaptionML=[ENU=VAT Bus. Posting Group;
+                                                              FRA=Groupe compta. march‚ TVA] }
+    { 90  ;   ;VAT Prod. Posting Group;Code10     ;TableRelation="VAT Product Posting Group";
+                                                   CaptionML=[ENU=VAT Prod. Posting Group;
+                                                              FRA=Groupe compta. produit TVA] }
+    { 91  ;   ;Currency Code       ;Code10        ;TableRelation=Currency;
+                                                   CaptionML=[ENU=Currency Code;
+                                                              FRA=Code devise];
+                                                   Editable=No }
+    { 92  ;   ;Outstanding Amount (LCY);Decimal   ;CaptionML=[ENU=Outstanding Amount (LCY);
+                                                              FRA=Montant en commande DS];
+                                                   Editable=No;
+                                                   AutoFormatType=1 }
+    { 93  ;   ;Amt. Rcd. Not Invoiced (LCY);Decimal;
+                                                   CaptionML=[ENU=Amt. Rcd. Not Invoiced (LCY);
+                                                              FRA=Montant re‡u non fact. DS];
+                                                   Editable=No;
+                                                   AutoFormatType=1 }
+    { 95  ;   ;Reserved Quantity   ;Decimal       ;FieldClass=FlowField;
+                                                   CalcFormula=Sum("Reservation Entry".Quantity WHERE (Source ID=FIELD(Document No.),
+                                                                                                       Source Ref. No.=FIELD(Line No.),
+                                                                                                       Source Type=CONST(39),
+                                                                                                       Source Subtype=FIELD(Document Type),
+                                                                                                       Reservation Status=CONST(Reservation)));
+                                                   CaptionML=[ENU=Reserved Quantity;
+                                                              FRA=Quantit‚ r‚serv‚e];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 97  ;   ;Blanket Order No.   ;Code20        ;TableRelation="Purchase Header".No. WHERE (Document Type=CONST(Blanket Order));
+                                                   TestTableRelation=No;
+                                                   CaptionML=[ENU=Blanket Order No.;
+                                                              FRA=Nø commande ouverte] }
+    { 98  ;   ;Blanket Order Line No.;Integer     ;TableRelation="Purchase Line"."Line No." WHERE (Document Type=CONST(Blanket Order),
+                                                                                                   Document No.=FIELD(Blanket Order No.));
+                                                   TestTableRelation=No;
+                                                   CaptionML=[ENU=Blanket Order Line No.;
+                                                              FRA=Nø ligne cde ouverte] }
+    { 99  ;   ;VAT Base Amount     ;Decimal       ;CaptionML=[ENU=VAT Base Amount;
+                                                              FRA=Montant base TVA];
+                                                   Editable=No;
+                                                   AutoFormatType=1;
+                                                   AutoFormatExpr="Currency Code" }
+    { 100 ;   ;Unit Cost           ;Decimal       ;CaptionML=[ENU=Unit Cost;
+                                                              FRA=Co–t unitaire];
+                                                   Editable=No;
+                                                   AutoFormatType=2;
+                                                   AutoFormatExpr="Currency Code" }
+    { 101 ;   ;System-Created Entry;Boolean       ;CaptionML=[ENU=System-Created Entry;
+                                                              FRA=Ecriture systŠme];
+                                                   Editable=No }
+    { 103 ;   ;Line Amount         ;Decimal       ;CaptionML=[ENU=Line Amount;
+                                                              FRA=Montant ligne];
+                                                   AutoFormatType=1;
+                                                   AutoFormatExpr="Currency Code";
+                                                   CaptionClass=GetCaptionClass(FIELDNO("Line Amount")) }
+    { 104 ;   ;VAT Difference      ;Decimal       ;CaptionML=[ENU=VAT Difference;
+                                                              FRA=Diff‚rence TVA];
+                                                   Editable=No;
+                                                   AutoFormatType=1;
+                                                   AutoFormatExpr="Currency Code" }
+    { 105 ;   ;Inv. Disc. Amount to Invoice;Decimal;
+                                                   CaptionML=[ENU=Inv. Disc. Amount to Invoice;
+                                                              FRA=Montant rem. fact. … facturer];
+                                                   Editable=No;
+                                                   AutoFormatType=1;
+                                                   AutoFormatExpr="Currency Code" }
+    { 106 ;   ;VAT Identifier      ;Code10        ;CaptionML=[ENU=VAT Identifier;
+                                                              FRA=Identifiant TVA];
+                                                   Editable=No }
+    { 107 ;   ;IC Partner Ref. Type;Option        ;CaptionML=[ENU=IC Partner Ref. Type;
+                                                              FRA=Type de r‚f. du partenaire IC];
+                                                   OptionCaptionML=[ENU=" ,G/L Account,Item,,,Charge (Item),Cross Reference,Common Item No.,Vendor Item No.";
+                                                                    FRA=" ,Compte g‚n‚ral,Article,,,Frais annexes,R‚f‚rence externe,Nø article commun,R‚f‚rence fournisseur"];
+                                                   OptionString=[ ,G/L Account,Item,,,Charge (Item),Cross Reference,Common Item No.,Vendor Item No.] }
+    { 108 ;   ;IC Partner Reference;Code20        ;OnLookup=VAR
+                                                              ICGLAccount@1000 : Record 410;
+                                                              ItemCrossReference@1001 : Record 5717;
+                                                              ItemVendorCatalog@1003 : Record 99;
+                                                            BEGIN
+                                                            END;
+
+                                                   CaptionML=[ENU=IC Partner Reference;
+                                                              FRA=R‚f‚rence du partenaire IC] }
+    { 109 ;   ;Prepayment %        ;Decimal       ;OnValidate=VAR
+                                                                GenPostingSetup@1001 : Record 252;
+                                                                GLAcc@1000 : Record 15;
+                                                              BEGIN
+                                                              END;
+
+                                                   CaptionML=[ENU=Prepayment %;
+                                                              FRA=% acompte];
+                                                   DecimalPlaces=0:5;
+                                                   MinValue=0;
+                                                   MaxValue=100 }
+    { 110 ;   ;Prepmt. Line Amount ;Decimal       ;CaptionML=[ENU=Prepmt. Line Amount;
+                                                              FRA=Montant ligne acompte];
+                                                   MinValue=0;
+                                                   AutoFormatType=1;
+                                                   AutoFormatExpr="Currency Code";
+                                                   CaptionClass=GetCaptionClass(FIELDNO("Prepmt. Line Amount")) }
+    { 111 ;   ;Prepmt. Amt. Inv.   ;Decimal       ;CaptionML=[ENU=Prepmt. Amt. Inv.;
+                                                              FRA=Fact. montant acompte];
+                                                   Editable=No;
+                                                   AutoFormatType=1;
+                                                   AutoFormatExpr="Currency Code";
+                                                   CaptionClass=GetCaptionClass(FIELDNO("Prepmt. Amt. Inv.")) }
+    { 112 ;   ;Prepmt. Amt. Incl. VAT;Decimal     ;CaptionML=[ENU=Prepmt. Amt. Incl. VAT;
+                                                              FRA=Montant acompte TTC];
+                                                   Editable=No;
+                                                   AutoFormatType=1;
+                                                   AutoFormatExpr="Currency Code" }
+    { 113 ;   ;Prepayment Amount   ;Decimal       ;CaptionML=[ENU=Prepayment Amount;
+                                                              FRA=Montant acompte];
+                                                   Editable=No;
+                                                   AutoFormatType=1;
+                                                   AutoFormatExpr="Currency Code" }
+    { 114 ;   ;Prepmt. VAT Base Amt.;Decimal      ;CaptionML=[ENU=Prepmt. VAT Base Amt.;
+                                                              FRA=Montant base TVA acompte];
+                                                   Editable=No;
+                                                   AutoFormatType=1;
+                                                   AutoFormatExpr="Currency Code" }
+    { 115 ;   ;Prepayment VAT %    ;Decimal       ;CaptionML=[ENU=Prepayment VAT %;
+                                                              FRA=% TVA acompte];
+                                                   DecimalPlaces=0:5;
+                                                   MinValue=0;
+                                                   Editable=No }
+    { 116 ;   ;Prepmt. VAT Calc. Type;Option      ;CaptionML=[ENU=Prepmt. VAT Calc. Type;
+                                                              FRA=Mode calc. TVA acompte];
+                                                   OptionCaptionML=[ENU=Normal VAT,Reverse Charge VAT,Full VAT,Sales Tax;
+                                                                    FRA=Normal,Intracomm.,Correctif,Sales Tax];
+                                                   OptionString=Normal VAT,Reverse Charge VAT,Full VAT,Sales Tax;
+                                                   Editable=No }
+    { 117 ;   ;Prepayment VAT Identifier;Code10   ;CaptionML=[ENU=Prepayment VAT Identifier;
+                                                              FRA=Identifiant TVA acompte];
+                                                   Editable=No }
+    { 118 ;   ;Prepayment Tax Area Code;Code20    ;TableRelation="Tax Area";
+                                                   CaptionML=[ENU=Prepayment Tax Area Code;
+                                                              FRA=Code zone recouvrement acompte] }
+    { 119 ;   ;Prepayment Tax Liable;Boolean      ;CaptionML=[ENU=Prepayment Tax Liable;
+                                                              FRA=Acompte soumis … recouvrement] }
+    { 120 ;   ;Prepayment Tax Group Code;Code10   ;TableRelation="Tax Group";
+                                                   CaptionML=[ENU=Prepayment Tax Group Code;
+                                                              FRA=Code groupe taxes acompte] }
+    { 121 ;   ;Prepmt Amt to Deduct;Decimal       ;CaptionML=[ENU=Prepmt Amt to Deduct;
+                                                              FRA=Montant acompte … d‚duire];
+                                                   MinValue=0;
+                                                   AutoFormatType=1;
+                                                   AutoFormatExpr="Currency Code";
+                                                   CaptionClass=GetCaptionClass(FIELDNO("Prepmt Amt to Deduct")) }
+    { 122 ;   ;Prepmt Amt Deducted ;Decimal       ;CaptionML=[ENU=Prepmt Amt Deducted;
+                                                              FRA=Montant acompte d‚duit];
+                                                   Editable=No;
+                                                   AutoFormatType=1;
+                                                   AutoFormatExpr="Currency Code";
+                                                   CaptionClass=GetCaptionClass(FIELDNO("Prepmt Amt Deducted")) }
+    { 123 ;   ;Prepayment Line     ;Boolean       ;CaptionML=[ENU=Prepayment Line;
+                                                              FRA=Ligne acompte];
+                                                   Editable=No }
+    { 124 ;   ;Prepmt. Amount Inv. Incl. VAT;Decimal;
+                                                   CaptionML=[ENU=Prepmt. Amount Inv. Incl. VAT;
+                                                              FRA=Fact. montant acompte TTC];
+                                                   Editable=No;
+                                                   AutoFormatType=1;
+                                                   AutoFormatExpr="Currency Code" }
+    { 129 ;   ;Prepmt. Amount Inv. (LCY);Decimal  ;CaptionML=[ENU=Prepmt. Amount Inv. (LCY);
+                                                              FRA=Montant acompte factur‚ DS];
+                                                   Editable=No;
+                                                   AutoFormatType=1 }
+    { 130 ;   ;IC Partner Code     ;Code20        ;TableRelation="IC Partner";
+                                                   CaptionML=[ENU=IC Partner Code;
+                                                              FRA=Code du partenaire IC] }
+    { 135 ;   ;Prepayment VAT Difference;Decimal  ;CaptionML=[ENU=Prepayment VAT Difference;
+                                                              FRA=Diff‚rence TVA acompte];
+                                                   Editable=No;
+                                                   AutoFormatType=1;
+                                                   AutoFormatExpr="Currency Code" }
+    { 136 ;   ;Prepmt VAT Diff. to Deduct;Decimal ;CaptionML=[ENU=Prepmt VAT Diff. to Deduct;
+                                                              FRA=Diff‚rence TVA acompte … d‚duire];
+                                                   Editable=No;
+                                                   AutoFormatType=1;
+                                                   AutoFormatExpr="Currency Code" }
+    { 137 ;   ;Prepmt VAT Diff. Deducted;Decimal  ;CaptionML=[ENU=Prepmt VAT Diff. Deducted;
+                                                              FRA=Diff‚rence TVA acompte d‚duite];
+                                                   Editable=No;
+                                                   AutoFormatType=1;
+                                                   AutoFormatExpr="Currency Code" }
+    { 1001;   ;Job Task No.        ;Code20        ;TableRelation="Job Task"."Job Task No." WHERE (Job No.=FIELD(Job No.));
+                                                   CaptionML=[ENU=Job Task No.;
+                                                              FRA=Nø tƒche projet] }
+    { 1002;   ;Job Line Type       ;Option        ;CaptionML=[ENU=Job Line Type;
+                                                              FRA=Type ligne projet];
+                                                   OptionCaptionML=[ENU=" ,Schedule,Contract,Both Schedule and Contract";
+                                                                    FRA=" ,Planifi‚,Contrat,Planifi‚ et contrat"];
+                                                   OptionString=[ ,Schedule,Contract,Both Schedule and Contract] }
+    { 1003;   ;Job Unit Price      ;Decimal       ;CaptionML=[ENU=Job Unit Price;
+                                                              FRA=Prix unitaire projet];
+                                                   BlankZero=Yes }
+    { 1004;   ;Job Total Price     ;Decimal       ;CaptionML=[ENU=Job Total Price;
+                                                              FRA=Prix total projet];
+                                                   BlankZero=Yes;
+                                                   Editable=No }
+    { 1005;   ;Job Line Amount     ;Decimal       ;CaptionML=[ENU=Job Line Amount;
+                                                              FRA=Montant ligne projet];
+                                                   BlankZero=Yes;
+                                                   AutoFormatType=1;
+                                                   AutoFormatExpr="Job Currency Code" }
+    { 1006;   ;Job Line Discount Amount;Decimal   ;CaptionML=[ENU=Job Line Discount Amount;
+                                                              FRA=Montant remise ligne projet];
+                                                   BlankZero=Yes;
+                                                   AutoFormatType=1;
+                                                   AutoFormatExpr="Job Currency Code" }
+    { 1007;   ;Job Line Discount % ;Decimal       ;CaptionML=[ENU=Job Line Discount %;
+                                                              FRA=% remise ligne projet];
+                                                   DecimalPlaces=0:5;
+                                                   MinValue=0;
+                                                   MaxValue=100;
+                                                   BlankZero=Yes }
+    { 1008;   ;Job Unit Price (LCY);Decimal       ;CaptionML=[ENU=Job Unit Price (LCY);
+                                                              FRA=Prix unitaire projet DS];
+                                                   BlankZero=Yes;
+                                                   Editable=No }
+    { 1009;   ;Job Total Price (LCY);Decimal      ;CaptionML=[ENU=Job Total Price (LCY);
+                                                              FRA=Prix total projet DS];
+                                                   BlankZero=Yes;
+                                                   Editable=No }
+    { 1010;   ;Job Line Amount (LCY);Decimal      ;CaptionML=[ENU=Job Line Amount (LCY);
+                                                              FRA=Montant ligne projet DS];
+                                                   BlankZero=Yes;
+                                                   Editable=No;
+                                                   AutoFormatType=1 }
+    { 1011;   ;Job Line Disc. Amount (LCY);Decimal;CaptionML=[ENU=Job Line Disc. Amount (LCY);
+                                                              FRA=Montant remise ligne projet DS];
+                                                   BlankZero=Yes;
+                                                   Editable=No;
+                                                   AutoFormatType=1 }
+    { 1012;   ;Job Currency Factor ;Decimal       ;CaptionML=[ENU=Job Currency Factor;
+                                                              FRA=Facteur devise projet];
+                                                   BlankZero=Yes }
+    { 1013;   ;Job Currency Code   ;Code20        ;CaptionML=[ENU=Job Currency Code;
+                                                              FRA=Code devise projet] }
+    { 5401;   ;Prod. Order No.     ;Code20        ;TableRelation="Production Order".No. WHERE (Status=CONST(Released));
+                                                   ValidateTableRelation=No;
+                                                   TestTableRelation=No;
+                                                   CaptionML=[ENU=Prod. Order No.;
+                                                              FRA=Nø ordre de fabrication] }
+    { 5402;   ;Variant Code        ;Code10        ;TableRelation=IF (Type=CONST(Item)) "Item Variant".Code WHERE (Item No.=FIELD(No.));
+                                                   CaptionML=[ENU=Variant Code;
+                                                              FRA=Code variante] }
+    { 5403;   ;Bin Code            ;Code20        ;OnValidate=VAR
+                                                                WMSManagement@1000 : Codeunit 7302;
+                                                              BEGIN
+                                                              END;
+
+                                                   OnLookup=VAR
+                                                              WMSManagement@1000 : Codeunit 7302;
+                                                              BinCode@1001 : Code[20];
+                                                            BEGIN
+                                                            END;
+
+                                                   CaptionML=[ENU=Bin Code;
+                                                              FRA=Code emplacement] }
+    { 5404;   ;Qty. per Unit of Measure;Decimal   ;InitValue=1;
+                                                   CaptionML=[ENU=Qty. per Unit of Measure;
+                                                              FRA=Quantit‚ par unit‚];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 5407;   ;Unit of Measure Code;Code10        ;TableRelation=IF (Type=CONST(Item)) "Item Unit of Measure".Code WHERE (Item No.=FIELD(No.))
+                                                                 ELSE "Unit of Measure";
+                                                   OnValidate=VAR
+                                                                UnitOfMeasureTranslation@1000 : Record 5402;
+                                                              BEGIN
+                                                              END;
+
+                                                   CaptionML=[ENU=Unit of Measure Code;
+                                                              FRA=Code unit‚] }
+    { 5415;   ;Quantity (Base)     ;Decimal       ;CaptionML=[ENU=Quantity (Base);
+                                                              FRA=Quantit‚ (base)];
+                                                   DecimalPlaces=0:5 }
+    { 5416;   ;Outstanding Qty. (Base);Decimal    ;CaptionML=[ENU=Outstanding Qty. (Base);
+                                                              FRA=Quantit‚ ouverte (base)];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 5417;   ;Qty. to Invoice (Base);Decimal     ;CaptionML=[ENU=Qty. to Invoice (Base);
+                                                              FRA=Qt‚ … facturer (base)];
+                                                   DecimalPlaces=0:5 }
+    { 5418;   ;Qty. to Receive (Base);Decimal     ;CaptionML=[ENU=Qty. to Receive (Base);
+                                                              FRA=Qt‚ … recevoir (base)];
+                                                   DecimalPlaces=0:5 }
+    { 5458;   ;Qty. Rcd. Not Invoiced (Base);Decimal;
+                                                   CaptionML=[ENU=Qty. Rcd. Not Invoiced (Base);
+                                                              FRA=Qt‚ re‡ue non factur‚e (base)];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 5460;   ;Qty. Received (Base);Decimal       ;CaptionML=[ENU=Qty. Received (Base);
+                                                              FRA=Quantit‚ re‡ue (base)];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 5461;   ;Qty. Invoiced (Base);Decimal       ;CaptionML=[ENU=Qty. Invoiced (Base);
+                                                              FRA=Quantit‚ factur‚e (base)];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 5495;   ;Reserved Qty. (Base);Decimal       ;FieldClass=FlowField;
+                                                   CalcFormula=Sum("Reservation Entry"."Quantity (Base)" WHERE (Source Type=CONST(39),
+                                                                                                                Source Subtype=FIELD(Document Type),
+                                                                                                                Source ID=FIELD(Document No.),
+                                                                                                                Source Ref. No.=FIELD(Line No.),
+                                                                                                                Reservation Status=CONST(Reservation)));
+                                                   CaptionML=[ENU=Reserved Qty. (Base);
+                                                              FRA=Quantit‚ r‚serv‚e (base)];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 5600;   ;FA Posting Date     ;Date          ;CaptionML=[ENU=FA Posting Date;
+                                                              FRA=Date compta. immo.] }
+    { 5601;   ;FA Posting Type     ;Option        ;CaptionML=[ENU=FA Posting Type;
+                                                              FRA=Type compta. immo.];
+                                                   OptionCaptionML=[ENU=" ,Acquisition Cost,Maintenance";
+                                                                    FRA=" ,Co–t acquisition,Maintenance"];
+                                                   OptionString=[ ,Acquisition Cost,Maintenance] }
+    { 5602;   ;Depreciation Book Code;Code10      ;TableRelation="Depreciation Book";
+                                                   CaptionML=[ENU=Depreciation Book Code;
+                                                              FRA=Code loi d'amortissement] }
+    { 5603;   ;Salvage Value       ;Decimal       ;CaptionML=[ENU=Salvage Value;
+                                                              FRA=Valeur r‚siduelle];
+                                                   AutoFormatType=1 }
+    { 5605;   ;Depr. until FA Posting Date;Boolean;CaptionML=[ENU=Depr. until FA Posting Date;
+                                                              FRA=Amort. jusqu'… date compta.] }
+    { 5606;   ;Depr. Acquisition Cost;Boolean     ;CaptionML=[ENU=Depr. Acquisition Cost;
+                                                              FRA=Amortir co–t acquisition] }
+    { 5609;   ;Maintenance Code    ;Code10        ;TableRelation=Maintenance;
+                                                   CaptionML=[ENU=Maintenance Code;
+                                                              FRA=Code maintenance] }
+    { 5610;   ;Insurance No.       ;Code20        ;TableRelation=Insurance;
+                                                   CaptionML=[ENU=Insurance No.;
+                                                              FRA=Nø assurance] }
+    { 5611;   ;Budgeted FA No.     ;Code20        ;TableRelation="Fixed Asset";
+                                                   CaptionML=[ENU=Budgeted FA No.;
+                                                              FRA=Nø immo. budg‚t‚e] }
+    { 5612;   ;Duplicate in Depreciation Book;Code10;
+                                                   TableRelation="Depreciation Book";
+                                                   CaptionML=[ENU=Duplicate in Depreciation Book;
+                                                              FRA=Dupliquer dans lois amort.] }
+    { 5613;   ;Use Duplication List;Boolean       ;CaptionML=[ENU=Use Duplication List;
+                                                              FRA=Utiliser liste duplication] }
+    { 5700;   ;Responsibility Center;Code10       ;TableRelation="Responsibility Center";
+                                                   CaptionML=[ENU=Responsibility Center;
+                                                              FRA=Centre de gestion];
+                                                   Editable=No }
+    { 5705;   ;Cross-Reference No. ;Code20        ;OnValidate=VAR
+                                                                ReturnedCrossRef@1000 : Record 5717;
+                                                              BEGIN
+                                                              END;
+
+                                                   CaptionML=[ENU=Cross-Reference No.;
+                                                              FRA=R‚f‚rence externe] }
+    { 5706;   ;Unit of Measure (Cross Ref.);Code10;TableRelation=IF (Type=CONST(Item)) "Item Unit of Measure".Code WHERE (Item No.=FIELD(No.));
+                                                   CaptionML=[ENU=Unit of Measure (Cross Ref.);
+                                                              FRA=Unit‚ r‚f‚rence externe] }
+    { 5707;   ;Cross-Reference Type;Option        ;CaptionML=[ENU=Cross-Reference Type;
+                                                              FRA=Type r‚f‚rence externe];
+                                                   OptionCaptionML=[ENU=" ,Customer,Vendor,Bar Code";
+                                                                    FRA=" ,Client,Fournisseur,Code barre"];
+                                                   OptionString=[ ,Customer,Vendor,Bar Code] }
+    { 5708;   ;Cross-Reference Type No.;Code30    ;CaptionML=[ENU=Cross-Reference Type No.;
+                                                              FRA=Nø type r‚f‚rence externe] }
+    { 5709;   ;Item Category Code  ;Code10        ;TableRelation="Item Category";
+                                                   CaptionML=[ENU=Item Category Code;
+                                                              FRA=Code cat‚gorie article] }
+    { 5710;   ;Nonstock            ;Boolean       ;CaptionML=[ENU=Nonstock;
+                                                              FRA=Non stock‚] }
+    { 5711;   ;Purchasing Code     ;Code10        ;TableRelation=Purchasing;
+                                                   CaptionML=[ENU=Purchasing Code;
+                                                              FRA=Proc‚dure achat] }
+    { 5712;   ;Product Group Code  ;Code10        ;TableRelation="Product Group".Code WHERE (Item Category Code=FIELD(Item Category Code));
+                                                   CaptionML=[ENU=Product Group Code;
+                                                              FRA=Code groupe produits] }
+    { 5713;   ;Special Order       ;Boolean       ;CaptionML=[ENU=Special Order;
+                                                              FRA=Commande sp‚ciale] }
+    { 5714;   ;Special Order Sales No.;Code20     ;TableRelation=IF (Special Order=CONST(Yes)) "Sales Header".No. WHERE (Document Type=CONST(Order));
+                                                   CaptionML=[ENU=Special Order Sales No.;
+                                                              FRA=Nø vente cde sp‚ciale] }
+    { 5715;   ;Special Order Sales Line No.;Integer;
+                                                   TableRelation=IF (Special Order=CONST(Yes)) "Sales Line"."Line No." WHERE (Document Type=CONST(Order),
+                                                                                                                              Document No.=FIELD(Special Order Sales No.));
+                                                   CaptionML=[ENU=Special Order Sales Line No.;
+                                                              FRA=Nø ligne vente cde sp‚ciale] }
+    { 5750;   ;Whse. Outstanding Qty. (Base);Decimal;
+                                                   FieldClass=FlowField;
+                                                   CalcFormula=Sum("Warehouse Receipt Line"."Qty. Outstanding (Base)" WHERE (Source Type=CONST(39),
+                                                                                                                             Source Subtype=FIELD(Document Type),
+                                                                                                                             Source No.=FIELD(Document No.),
+                                                                                                                             Source Line No.=FIELD(Line No.)));
+                                                   CaptionML=[ENU=Whse. Outstanding Qty. (Base);
+                                                              FRA=Qt‚ restante entrep“t (base)];
+                                                   DecimalPlaces=0:5;
+                                                   BlankZero=Yes;
+                                                   Editable=No }
+    { 5752;   ;Completely Received ;Boolean       ;CaptionML=[ENU=Completely Received;
+                                                              FRA=EntiŠrement r‚ceptionn‚];
+                                                   Editable=No }
+    { 5790;   ;Requested Receipt Date;Date        ;CaptionML=[ENU=Requested Receipt Date;
+                                                              FRA=Date r‚ception demand‚e] }
+    { 5791;   ;Promised Receipt Date;Date         ;CaptionML=[ENU=Promised Receipt Date;
+                                                              FRA=Date r‚ception confirm‚e] }
+    { 5792;   ;Lead Time Calculation;DateFormula  ;CaptionML=[ENU=Lead Time Calculation;
+                                                              FRA=D‚lai de r‚appro.] }
+    { 5793;   ;Inbound Whse. Handling Time;DateFormula;
+                                                   CaptionML=[ENU=Inbound Whse. Handling Time;
+                                                              FRA=D‚lai enlogement] }
+    { 5794;   ;Planned Receipt Date;Date          ;CaptionML=[ENU=Planned Receipt Date;
+                                                              FRA=Date planifi‚e de r‚ception] }
+    { 5795;   ;Order Date          ;Date          ;CaptionML=[ENU=Order Date;
+                                                              FRA=Date commande] }
+    { 5800;   ;Allow Item Charge Assignment;Boolean;
+                                                   InitValue=Yes;
+                                                   CaptionML=[ENU=Allow Item Charge Assignment;
+                                                              FRA=Autoriser affectation frais annexes] }
+    { 5801;   ;Qty. to Assign      ;Decimal       ;FieldClass=FlowField;
+                                                   CalcFormula=Sum("Item Charge Assignment (Purch)"."Qty. to Assign" WHERE (Document Type=FIELD(Document Type),
+                                                                                                                            Document No.=FIELD(Document No.),
+                                                                                                                            Document Line No.=FIELD(Line No.)));
+                                                   CaptionML=[ENU=Qty. to Assign;
+                                                              FRA=Qt‚ … affecter];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 5802;   ;Qty. Assigned       ;Decimal       ;FieldClass=FlowField;
+                                                   CalcFormula=Sum("Item Charge Assignment (Purch)"."Qty. Assigned" WHERE (Document Type=FIELD(Document Type),
+                                                                                                                           Document No.=FIELD(Document No.),
+                                                                                                                           Document Line No.=FIELD(Line No.)));
+                                                   CaptionML=[ENU=Qty. Assigned;
+                                                              FRA=Qt‚ affect‚e];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 5803;   ;Return Qty. to Ship ;Decimal       ;CaptionML=[ENU=Return Qty. to Ship;
+                                                              FRA=Qt‚ retour … exp‚dier];
+                                                   DecimalPlaces=0:5 }
+    { 5804;   ;Return Qty. to Ship (Base);Decimal ;CaptionML=[ENU=Return Qty. to Ship (Base);
+                                                              FRA=Qt‚ retour … exp‚dier (base)];
+                                                   DecimalPlaces=0:5 }
+    { 5805;   ;Return Qty. Shipped Not Invd.;Decimal;
+                                                   CaptionML=[ENU=Return Qty. Shipped Not Invd.;
+                                                              FRA=Qt‚ ret. exp‚di‚e non factur‚e];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 5806;   ;Ret. Qty. Shpd Not Invd.(Base);Decimal;
+                                                   CaptionML=[ENU=Ret. Qty. Shpd Not Invd.(Base);
+                                                              FRA=Qt‚ ret. exp‚d. non fact. (base)];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 5807;   ;Return Shpd. Not Invd.;Decimal     ;OnValidate=VAR
+                                                                Currency2@1000 : Record 4;
+                                                              BEGIN
+                                                              END;
+
+                                                   CaptionML=[ENU=Return Shpd. Not Invd.;
+                                                              FRA=Exp‚dition retour non factur‚e];
+                                                   Editable=No;
+                                                   AutoFormatType=1;
+                                                   AutoFormatExpr="Currency Code" }
+    { 5808;   ;Return Shpd. Not Invd. (LCY);Decimal;
+                                                   CaptionML=[ENU=Return Shpd. Not Invd. (LCY);
+                                                              FRA=Exp‚dition retour non factur‚e DS];
+                                                   Editable=No;
+                                                   AutoFormatType=1 }
+    { 5809;   ;Return Qty. Shipped ;Decimal       ;CaptionML=[ENU=Return Qty. Shipped;
+                                                              FRA=Qt‚ retour exp‚di‚e];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 5810;   ;Return Qty. Shipped (Base);Decimal ;CaptionML=[ENU=Return Qty. Shipped (Base);
+                                                              FRA=Qt‚ retour exp‚di‚e (base)];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 6600;   ;Return Shipment No. ;Code20        ;CaptionML=[ENU=Return Shipment No.;
+                                                              FRA=Nø exp‚dition retour];
+                                                   Editable=No }
+    { 6601;   ;Return Shipment Line No.;Integer   ;CaptionML=[ENU=Return Shipment Line No.;
+                                                              FRA=Nø ligne exp‚dition retour];
+                                                   Editable=No }
+    { 6608;   ;Return Reason Code  ;Code10        ;TableRelation="Return Reason";
+                                                   CaptionML=[ENU=Return Reason Code;
+                                                              FRA=Code motif retour] }
+    { 50000;  ;Exported Line       ;Boolean       ;CaptionML=[ENU=Exported Line;
+                                                              FRA=Ligne export‚e];
+                                                   Description=AC1.00 }
+    { 50001;  ;Date Exported       ;DateTime      ;CaptionML=[ENU=Date Exported;
+                                                              FRA=Date export‚];
+                                                   Description=AC1.00;
+                                                   Editable=No }
+    { 50002;  ;EDI Code            ;Code10        ;TableRelation="E.D.I. Setup";
+                                                   CaptionML=[ENU=E.D.I. Code;
+                                                              FRA=Code E.D.I.];
+                                                   Description=AC1.00;
+                                                   Editable=No }
+    { 50003;  ;EDI No.             ;Code20        ;CaptionML=[ENU=EDI No.;
+                                                              FRA=Nø EDI];
+                                                   Description=AC1.00;
+                                                   Editable=No }
+    { 50006;  ;Order Reference Customer;Text35    ;CaptionML=[ENU=Order Reference Customer;
+                                                              FRA=R‚f‚rence commande client];
+                                                   Description=AC1.00;
+                                                   Editable=No }
+    { 50013;  ;Line No. Reference Customer;Integer;CaptionML=[ENU=Line No. Reference Customer;
+                                                              FRA=Nø ligne r‚f‚rence commande client];
+                                                   Description=AC1.00 }
+    { 50014;  ;Anomaly Code        ;Code10        ;CaptionML=[ENU=Anomaly Code;
+                                                              FRA=Code anomalie];
+                                                   Description=AC1.00 }
+    { 50015;  ;Reliquat            ;Decimal       ;CaptionML=FRA=Reliquat;
+                                                   Description=AB6.JME.001 }
+    { 50019;  ;Country Dimension Code;Code20      ;TableRelation=Country/Region;
+                                                   CaptionML=[ENU=Country Dimension Code;
+                                                              FRA=Code axe pays];
+                                                   Description=ALDA 171214D }
+    { 50033;  ;Micro Order No.     ;Code20        ;CaptionML=[ENU=Micro Order No.;
+                                                              FRA=Nø commande micro];
+                                                   Description=ALDA 061015D }
+    { 65002;  ;GIM Document Type   ;Code10        ;TableRelation="IMPORT Purchase Header"."GIM Document Type" }
+    { 65003;  ;ID Line             ;Integer       ;CaptionML=[ENU=ID from file;
+                                                              FRA=ID du fichier] }
+    { 65004;  ;VAT Amount          ;Decimal       ;CaptionML=[ENU=VAT Amount;
+                                                              FRA=Montant TVA] }
+    { 65005;  ;Allowance charge    ;Decimal       ;CaptionML=[ENU=Allowance charge;
+                                                              FRA=Charge allou‚e] }
+    { 65006;  ;VAT Allowance charge;Decimal       ;CaptionML=[ENU=VAT Allowance charge;
+                                                              FRA=TVA charge allou‚e] }
+    { 65007;  ;IsError             ;Boolean       ;CaptionML=[ENU=Error;
+                                                              FRA=Erreur] }
+    { 65008;  ;Error log           ;Text250       ;CaptionML=[ENU=Error Description;
+                                                              FRA=Description de l'erreur] }
+    { 65009;  ;Vend. Sales Order Line ID;Integer   }
+    { 65010;  ;Vend. Sales Order ID;Code20         }
+    { 65011;  ;Duplicate           ;Boolean       ;CaptionML=[ENU=Potential Duplicate;
+                                                              FRA=Doublon potentiel];
+                                                   Editable=No }
+    { 65012;  ;Allowance Charge Reason Filter;Code20;
+                                                   FieldClass=FlowFilter }
+    { 65013;  ;Allowance Amount    ;Decimal       ;FieldClass=FlowField;
+                                                   CalcFormula=Sum("IMPORT Purchase Line Allowance".Amount WHERE (Document Type=FIELD(Document Type),
+                                                                                                                  Document No.=FIELD(Document No.),
+                                                                                                                  ID Line=FIELD(ID Line),
+                                                                                                                  No.=FIELD(Allowance Charge Reason Filter),
+                                                                                                                  Line No.=FIELD(Line No.)));
+                                                   CaptionML=[ENU=Allowance Amount;
+                                                              FRA=Montant charge] }
+    { 67000;  ;Vendor Shipment No. ;Code20        ;CaptionML=[ENU=Vendor Shipment No.;
+                                                              FRA=Nø B.L. fournisseur] }
+    { 99000750;;Routing No.        ;Code20        ;TableRelation="Routing Header";
+                                                   CaptionML=[ENU=Routing No.;
+                                                              FRA=Nø gamme] }
+    { 99000751;;Operation No.      ;Code10        ;TableRelation="Prod. Order Routing Line"."Operation No." WHERE (Status=CONST(Released),
+                                                                                                                   Prod. Order No.=FIELD(Prod. Order No.),
+                                                                                                                   Routing No.=FIELD(Routing No.));
+                                                   OnValidate=VAR
+                                                                ProdOrderRtngLine@1000 : Record 5409;
+                                                              BEGIN
+                                                              END;
+
+                                                   CaptionML=[ENU=Operation No.;
+                                                              FRA=Nø op‚ration] }
+    { 99000752;;Work Center No.    ;Code20        ;TableRelation="Work Center";
+                                                   CaptionML=[ENU=Work Center No.;
+                                                              FRA=Nø centre de charge] }
+    { 99000753;;Finished           ;Boolean       ;CaptionML=[ENU=Finished;
+                                                              FRA=Termin‚] }
+    { 99000754;;Prod. Order Line No.;Integer      ;TableRelation="Prod. Order Line"."Line No." WHERE (Status=FILTER(Released..),
+                                                                                                      Prod. Order No.=FIELD(Prod. Order No.));
+                                                   CaptionML=[ENU=Prod. Order Line No.;
+                                                              FRA=Nø ligne O.F.] }
+    { 99000755;;Overhead Rate      ;Decimal       ;CaptionML=[ENU=Overhead Rate;
+                                                              FRA=Frais g‚n‚raux];
+                                                   DecimalPlaces=0:5 }
+    { 99000756;;MPS Order          ;Boolean       ;CaptionML=[ENU=MPS Order;
+                                                              FRA=Ordre PDP] }
+    { 99000757;;Planning Flexibility;Option       ;CaptionML=[ENU=Planning Flexibility;
+                                                              FRA=Flexibilit‚ planification];
+                                                   OptionCaptionML=[ENU=Unlimited,None;
+                                                                    FRA=Illimit‚e,Aucune];
+                                                   OptionString=Unlimited,None }
+    { 99000758;;Safety Lead Time   ;DateFormula   ;CaptionML=[ENU=Safety Lead Time;
+                                                              FRA=D‚lai de s‚curit‚] }
+    { 99000759;;Routing Reference No.;Integer     ;CaptionML=[ENU=Routing Reference No.;
+                                                              FRA=Nø r‚f‚rence gamme] }
+  }
+  KEYS
+  {
+    {    ;GIM Document Type,Document No.,ID Line,Line No.;
+                                                   SumIndexFields=Amount,Amount Including VAT,VAT Amount,Allowance charge;
+                                                   MaintainSIFTIndex=No;
+                                                   Clustered=Yes }
+    {    ;Document No.,Line No.,Document Type      }
+    {    ;Document Type,Type,No.,Variant Code,Drop Shipment,Location Code,Expected Receipt Date;
+                                                   SumIndexFields=Outstanding Qty. (Base);
+                                                   MaintainSIFTIndex=No }
+    {    ;Document Type,Pay-to Vendor No.,Currency Code;
+                                                   SumIndexFields=Outstanding Amount,Amt. Rcd. Not Invoiced,Outstanding Amount (LCY),Amt. Rcd. Not Invoiced (LCY);
+                                                   MaintainSIFTIndex=No }
+    { No ;Document Type,Type,No.,Variant Code,Drop Shipment,Shortcut Dimension 1 Code,Shortcut Dimension 2 Code,Location Code,Expected Receipt Date;
+                                                   SumIndexFields=Outstanding Qty. (Base);
+                                                   KeyGroups=Item(Dim);
+                                                   MaintainSQLIndex=No;
+                                                   MaintainSIFTIndex=No }
+    { No ;Document Type,Pay-to Vendor No.,Shortcut Dimension 1 Code,Shortcut Dimension 2 Code,Currency Code;
+                                                   SumIndexFields=Outstanding Amount,Amt. Rcd. Not Invoiced,Outstanding Amount (LCY),Amt. Rcd. Not Invoiced (LCY);
+                                                   KeyGroups=Vend(Dim);
+                                                   MaintainSQLIndex=No;
+                                                   MaintainSIFTIndex=No }
+    {    ;Document Type,Blanket Order No.,Blanket Order Line No.;
+                                                   KeyGroups=SOP(Blank) }
+    {    ;Document Type,Type,Prod. Order No.,Prod. Order Line No.,Routing No.,Operation No.;
+                                                   KeyGroups=Item(MFG) }
+    {    ;Document Type,Document No.,Location Code }
+    {    ;Document Type,Receipt No.,Receipt Line No. }
+    {    ;Type,No.,Variant Code,Drop Shipment,Location Code,Document Type,Expected Receipt Date;
+                                                   MaintainSQLIndex=No }
+    {    ;Document Type,Buy-from Vendor No.        }
+    {    ;Document Type,Job No.,Job Task No.      ;SumIndexFields=Outstanding Amount (LCY),Amt. Rcd. Not Invoiced (LCY) }
+    {    ;Vendor Item No.                          }
+    {    ;Vend. Sales Order ID,Vend. Sales Order Line ID }
+  }
+  FIELDGROUPS
+  {
+  }
+  CODE
+  {
+    VAR
+      Text000@1000 : TextConst 'ENU=You cannot rename a %1.;FRA=Vous ne pouvez pas renommer %1.';
+      Text001@1001 : TextConst 'ENU=You cannot change %1 because the order line is associated with sales order %2.;FRA=Vous ne pouvez pas modifier %1 car la commande est associ‚e … la commande vente %2.';
+      Text002@1002 : TextConst 'ENU=Prices including VAT cannot be calculated when %1 is %2.;FRA=Les prix TTC ne peuvent pas ˆtre calcul‚s quand %1 est identique … %2.';
+      Text003@1003 : TextConst 'ENU=You cannot purchase resources.;FRA=Vous ne pouvez pas acheter de ressources.';
+      Text004@1004 : TextConst 'ENU=must not be less than %1;FRA=ne doit pas ˆtre inf‚rieur(e) … %1';
+      Text006@1005 : TextConst 'ENU=You cannot invoice more than %1 units.;FRA=Vous ne pouvez pas facturer plus de %1 unit‚(s).';
+      Text007@1006 : TextConst 'ENU=You cannot invoice more than %1 base units.;FRA=Vous ne pouvez pas facturer plus de %1 unit‚(s) de base.';
+      Text008@1007 : TextConst 'ENU=You cannot receive more than %1 units.;FRA=Vous ne pouvez pas recevoir plus de %1 unit‚(s).';
+      Text009@1008 : TextConst 'ENU=You cannot receive more than %1 base units.;FRA=Vous ne pouvez pas recevoir plus de %1 unit‚(s) de base.';
+      Text010@1009 : TextConst 'ENU=You cannot change %1 when %2 is %3.;FRA=Vous ne pouvez pas modifier %1 si %2 est %3.';
+      Text011@1010 : TextConst 'ENU=" must be 0 when %1 is %2";FRA=" doit ˆtre 0 quand %1 est %2"';
+      Text012@1011 : TextConst 'ENU="must not be specified when %1 = %2";FRA="ne doit pas ˆtre sp‚cifi‚(e) quand %1 = %2"';
+      Text014@1012 : TextConst 'ENU=Change %1 from %2 to %3?;FRA=Remplacer %2 par %3 dans le champ %1 ?';
+      Text016@1014 : TextConst 'ENU="%1 is required for %2 = %3.";FRA="%1 requis(e) lorsque %2 = %3."';
+      Text017@1015 : TextConst 'ENU=\The entered information will be disregarded by warehouse operations.;FRA=\Les informations entr‚es seront ignor‚es par les op‚rations de distribution.';
+      Text018@1016 : TextConst 'ENU=%1 %2 is earlier than the work date %3.;FRA=La %1 %2 est ant‚rieure … la date de travail %3.';
+      Text020@1018 : TextConst 'ENU=You cannot return more than %1 units.;FRA=Vous ne pouvez pas retourner plus de %1 unit‚(s).';
+      Text021@1019 : TextConst 'ENU=You cannot return more than %1 base units.;FRA=Vous ne pouvez pas retourner plus de %1 unit‚(s) de base.';
+      Text022@1020 : TextConst 'ENU=You cannot change %1, if item charge is already posted.;FRA=Vous ne pouvez pas modifier %1 si les frais annexes ont ‚t‚ valid‚s.';
+      Text023@1072 : TextConst 'ENU=You cannot change the %1 when the %2 has been filled in.;FRA=Vous ne pouvez pas modifier le champ %1 lorsque le champ %2 a ‚t‚ renseign‚.';
+      Text029@1077 : TextConst 'ENU=must be positive.;FRA=doit ˆtre de signe positif.';
+      Text030@1076 : TextConst 'ENU=must be negative.;FRA=doit ˆtre de signe n‚gatif.';
+      Text031@1056 : TextConst 'ENU=You cannot define item tracking on this line because it is linked to production order %1.;FRA=Vous ne pouvez pas d‚finir de tra‡abilit‚ pour cette ligne car elle est li‚e … l''O.F. %1.';
+      Text032@1017 : TextConst 'ENU=%1 must not be greater than %2.;FRA=%1 ne doit pas ˆtre sup‚rieur(e) … %2.';
+      Text033@1078 : TextConst 'ENU="Warehouse ";FRA="Entrep“t "';
+      Text034@1079 : TextConst 'ENU="Inventory ";FRA="Stocks "';
+      Text035@1048 : TextConst 'ENU=%1 units for %2 %3 have already been returned or transferred. Therefore, only %4 units can be returned.;FRA=%1 unit‚s pour %2 %3 ont d‚j… ‚t‚ renvoy‚es ou transf‚r‚es. Seules %4 unit‚s peuvent donc ˆtre renvoy‚es.';
+      Text036@1081 : TextConst 'ENU=You must cancel the existing approval for this document to be able to change the %1 field.;FRA=Pour pouvoir modifier le champ %1, vous devez annuler l''approbation existante pour ce document.';
+      Text037@1082 : TextConst 'ENU=cannot be %1.;FRA=ne peut pas ˆtre %1.';
+      Text038@1083 : TextConst 'ENU=cannot be less than %1.;FRA=ne peut pas ˆtre inf‚rieur(e) … %1.';
+      Text039@1084 : TextConst 'ENU=cannot be more than %1.;FRA=ne peut pas ˆtre sup‚rieur(e) … %1.';
+      Text99000000@1021 : TextConst 'ENU=You cannot change %1 when the purchase order is associated to a production order.;FRA=Vous ne pouvez pas modifier %1 lorsque la commande achat est associ‚e … un O.F.';
+      PurchHeader@1022 : Record 38;
+      PurchLine2@1023 : Record 39;
+      TempPurchLine@1024 : Record 39;
+      GLAcc@1025 : Record 15;
+      Item@1026 : Record 27;
+      Currency@1027 : Record 4;
+      CurrExchRate@1028 : Record 330;
+      ItemTranslation@1029 : Record 30;
+      SalesOrderLine@1033 : Record 37;
+      VATPostingSetup@1034 : Record 325;
+      StdTxt@1035 : Record 7;
+      FA@1036 : Record 5600;
+      FADeprBook@1037 : Record 5612;
+      FASetup@1038 : Record 5603;
+      GenBusPostingGrp@1039 : Record 250;
+      GenProdPostingGrp@1040 : Record 251;
+      ReservEntry@1041 : Record 337;
+      UnitOfMeasure@1043 : Record 204;
+      ItemCharge@1044 : Record 5800;
+      ItemChargeAssgntPurch@1045 : Record 5805;
+      SKU@1046 : Record 5700;
+      WorkCenter@1047 : Record 99000754;
+      PurchasingCode@1049 : Record 5721;
+      InvtSetup@1050 : Record 313;
+      Location@1051 : Record 14;
+      GLSetup@1074 : Record 98;
+      ReturnReason@1068 : Record 6635;
+      ItemVend@1031 : Record 99;
+      CalChange@1062 : Record 7602;
+      JobJnlLine@1071 : TEMPORARY Record 210;
+      SalesTaxCalculate@1057 : Codeunit 398;
+      ReservEngineMgt@1058 : Codeunit 99000831;
+      ReservePurchLine@1059 : Codeunit 99000834;
+      UOMMgt@1060 : Codeunit 5402;
+      AddOnIntegrMgt@1061 : Codeunit 5403;
+      DimMgt@1064 : Codeunit 408;
+      DistIntegration@1065 : Codeunit 5702;
+      NonstockItemMgt@1066 : Codeunit 5703;
+      WhseValidateSourceLine@1067 : Codeunit 5777;
+      LeadTimeMgt@1069 : Codeunit 5404;
+      PurchPriceCalcMgt@1030 : Codeunit 7010;
+      CalendarMgmt@1032 : Codeunit 7600;
+      CheckDateConflict@1013 : Codeunit 99000815;
+      TrackingBlocked@1070 : Boolean;
+      StatusCheckSuspended@1073 : Boolean;
+      GLSetupRead@1075 : Boolean;
+      UnitCostCurrency@1063 : Decimal;
+      UpdateFromVAT@1087 : Boolean;
+      Text042@1088 : TextConst 'ENU=You cannot return more than the %1 units that you have received for %2 %3.;FRA=Vous ne pouvez pas retourner plus que les %1 unit‚s que vous avez re‡ues pour %2 %3.';
+      Text043@1089 : TextConst 'ENU=must be positive when %1 is not 0.;FRA=doit ˆtre de signe positif si %1 est diff‚rent de 0.';
+      Text044@1080 : TextConst 'ENU=You cannot change %1 because this purchase order is associated with %2 %3.;FRA=Impossible de modifier %1 car cette commande achat est associ‚e … %2 %3.';
+      PurchReceiptHeader@1000000000 : Record 120;
+      PurchRcptLine@1000000001 : Record 121;
+      Text050@1000000002 : TextConst 'ENU=There is more than one receiving line for item %1.;FRA=Il y a plus d''une ligne de r‚ception pour l''article %1.';
+      Text051@1000000003 : TextConst 'ENU=No receipt was found for this line;FRA=Aucune Ligne r‚ception n''a ‚t‚ trouv‚e pour cette ligne';
+      Text052@1000000004 : TextConst 'ENU=Receipt %1 is already affected.;FRA=La r‚ception %1 est d‚j… affect‚e.';
+      PurchRcptLineBuffer@1000000005 : TEMPORARY Record 121;
+      GimPurchLineBuffer@1000000006 : Record 50009;
+      Text053@1180250001 : TextConst 'ENU=No receipt was found for this line;FRA=Aucune Entˆte r‚ception n''a ‚t‚ trouv‚e pour cette ligne';
+
+    PROCEDURE InitOutstanding@16();
+    BEGIN
+    END;
+
+    PROCEDURE InitOutstandingAmount@19();
+    VAR
+      AmountInclVAT@1000 : Decimal;
+    BEGIN
+    END;
+
+    PROCEDURE InitQtyToReceive@15();
+    VAR
+      SalesHeader2@1180250001 : Record 36;
+    BEGIN
+    END;
+
+    PROCEDURE InitQtyToShip@5803();
+    BEGIN
+    END;
+
+    PROCEDURE InitQtyToInvoice@13();
+    BEGIN
+    END;
+
+    LOCAL PROCEDURE InitItemAppl@46();
+    BEGIN
+    END;
+
+    PROCEDURE MaxQtyToInvoice@18() : Decimal;
+    BEGIN
+    END;
+
+    PROCEDURE MaxQtyToInvoiceBase@17() : Decimal;
+    BEGIN
+    END;
+
+    PROCEDURE CalcInvDiscToInvoice@33();
+    VAR
+      OldInvDiscAmtToInv@1000 : Decimal;
+    BEGIN
+    END;
+
+    LOCAL PROCEDURE CalcBaseQty@14(Qty@1000 : Decimal) : Decimal;
+    BEGIN
+    END;
+
+    LOCAL PROCEDURE SelectItemEntry@7();
+    VAR
+      ItemLedgEntry@1001 : Record 32;
+    BEGIN
+    END;
+
+    PROCEDURE SetPurchHeader@12(NewPurchHeader@1000 : Record 38);
+    BEGIN
+    END;
+
+    LOCAL PROCEDURE GetPurchHeader@1();
+    BEGIN
+    END;
+
+    LOCAL PROCEDURE GetItem@4();
+    BEGIN
+    END;
+
+    LOCAL PROCEDURE UpdateDirectUnitCost@2(CalledByFieldNo@1000 : Integer);
+    BEGIN
+    END;
+
+    PROCEDURE UpdateUnitCost@5();
+    VAR
+      DiscountAmountPerQty@1000 : Decimal;
+    BEGIN
+    END;
+
+    PROCEDURE UpdateAmounts@3();
+    BEGIN
+    END;
+
+    LOCAL PROCEDURE UpdateVATAmounts@38();
+    VAR
+      PurchLine2@1000 : Record 39;
+      TotalLineAmount@1005 : Decimal;
+      TotalInvDiscAmount@1004 : Decimal;
+      TotalAmount@1001 : Decimal;
+      TotalAmountInclVAT@1002 : Decimal;
+      TotalQuantityBase@1003 : Decimal;
+    BEGIN
+    END;
+
+    LOCAL PROCEDURE UpdateSalesCost@6();
+    BEGIN
+    END;
+
+    LOCAL PROCEDURE GetFAPostingGroup@10();
+    VAR
+      LocalGLAcc@1000 : Record 15;
+      FAPostingGr@1001 : Record 5606;
+    BEGIN
+    END;
+
+    PROCEDURE UpdateUOMQtyPerStockQty@9();
+    BEGIN
+    END;
+
+    PROCEDURE ShowReservation@8();
+    BEGIN
+    END;
+
+    PROCEDURE ShowReservationEntries@21(Modal@1000 : Boolean);
+    BEGIN
+    END;
+
+    PROCEDURE GetDate@28() : Date;
+    BEGIN
+    END;
+
+    PROCEDURE Signed@20(Value@1000 : Decimal) : Decimal;
+    BEGIN
+    END;
+
+    PROCEDURE ItemAvailability@22(AvailabilityType@1000 : 'Date,Variant,Location,Bin');
+    BEGIN
+    END;
+
+    PROCEDURE BlanketOrderLookup@36();
+    BEGIN
+    END;
+
+    PROCEDURE BlockDynamicTracking@23(SetBlock@1000 : Boolean);
+    BEGIN
+    END;
+
+    PROCEDURE ShowDimensions@25();
+    BEGIN
+    END;
+
+    PROCEDURE OpenItemTrackingLines@6500();
+    BEGIN
+    END;
+
+    PROCEDURE CreateDim@26(Type1@1000 : Integer;No1@1001 : Code[20];Type2@1002 : Integer;No2@1003 : Code[20];Type3@1004 : Integer;No3@1005 : Code[20];Type4@1006 : Integer;No4@1007 : Code[20]);
+    VAR
+      SourceCodeSetup@1008 : Record 242;
+      TableID@1009 : ARRAY [10] OF Integer;
+      No@1010 : ARRAY [10] OF Code[20];
+    BEGIN
+    END;
+
+    PROCEDURE ValidateShortcutDimCode@29(FieldNumber@1000 : Integer;VAR ShortcutDimCode@1001 : Code[20]);
+    BEGIN
+    END;
+
+    PROCEDURE LookupShortcutDimCode@30(FieldNumber@1000 : Integer;VAR ShortcutDimCode@1001 : Code[20]);
+    BEGIN
+    END;
+
+    PROCEDURE ShowShortcutDimCode@27(VAR ShortcutDimCode@1000 : ARRAY [8] OF Code[20]);
+    BEGIN
+    END;
+
+    LOCAL PROCEDURE GetSKU@5806() : Boolean;
+    BEGIN
+    END;
+
+    PROCEDURE ShowItemChargeAssgnt@5801();
+    VAR
+      AssignItemChargePurch@1001 : Codeunit 5805;
+    BEGIN
+    END;
+
+    PROCEDURE UpdateItemChargeAssgnt@5807();
+    VAR
+      ShareOfVAT@1000 : Decimal;
+    BEGIN
+    END;
+
+    LOCAL PROCEDURE DeleteItemChargeAssgnt@5802(DocType@1000 : Option;DocNo@1001 : Code[20];DocLineNo@1002 : Integer);
+    BEGIN
+    END;
+
+    LOCAL PROCEDURE DeleteChargeChargeAssgnt@5804(DocType@1000 : Option;DocNo@1001 : Code[20];DocLineNo@1002 : Integer);
+    BEGIN
+    END;
+
+    PROCEDURE CheckItemChargeAssgnt@5800();
+    VAR
+      ItemChargeAssgntPurch@1000 : Record 5805;
+    BEGIN
+    END;
+
+    LOCAL PROCEDURE GetFieldCaption@31(FieldNumber@1000 : Integer) : Text[100];
+    VAR
+      Field@1001 : Record 2000000041;
+    BEGIN
+    END;
+
+    LOCAL PROCEDURE GetCaptionClass@34(FieldNumber@1000 : Integer) : Text[80];
+    BEGIN
+    END;
+
+    LOCAL PROCEDURE TestStatusOpen@37();
+    BEGIN
+    END;
+
+    PROCEDURE SuspendStatusCheck@42(Suspend@1000 : Boolean);
+    BEGIN
+    END;
+
+    PROCEDURE UpdateLeadTimeFields@11();
+    VAR
+      StartingDate@1000 : Date;
+    BEGIN
+    END;
+
+    PROCEDURE GetUpdateBasicDates@43();
+    BEGIN
+    END;
+
+    PROCEDURE UpdateDates@39();
+    BEGIN
+    END;
+
+    PROCEDURE InternalLeadTimeDays@35(PurchDate@1002 : Date) : Text[30];
+    VAR
+      SafetyLeadTime@1000 : DateFormula;
+      TotalDays@1001 : DateFormula;
+    BEGIN
+    END;
+
+    PROCEDURE UpdateVATOnLines@32(QtyType@1000 : 'General,Invoicing,Shipping';VAR PurchHeader@1001 : Record 38;VAR PurchLine@1002 : Record 39;VAR VATAmountLine@1003 : Record 290);
+    VAR
+      TempVATAmountLineRemainder@1004 : TEMPORARY Record 290;
+      Currency@1005 : Record 4;
+      ChangeLogMgt@1013 : Codeunit 423;
+      RecRef@1015 : RecordRef;
+      xRecRef@1014 : RecordRef;
+      NewAmount@1006 : Decimal;
+      NewAmountIncludingVAT@1007 : Decimal;
+      NewVATBaseAmount@1008 : Decimal;
+      VATAmount@1009 : Decimal;
+      VATDifference@1010 : Decimal;
+      InvDiscAmount@1011 : Decimal;
+      LineAmountToInvoice@1012 : Decimal;
+    BEGIN
+    END;
+
+    PROCEDURE CalcVATAmountLines@24(QtyType@1000 : 'General,Invoicing,Shipping';VAR PurchHeader@1001 : Record 38;VAR PurchLine@1002 : Record 39;VAR VATAmountLine@1003 : Record 290);
+    VAR
+      PrevVatAmountLine@1007 : Record 290;
+      Currency@1004 : Record 4;
+      Vendor@1012 : Record 23;
+      VendorPostingGroup@1013 : Record 93;
+      PurchSetup@1008 : Record 312;
+      SalesTaxCalculate@1005 : Codeunit 398;
+      QtyToHandle@1006 : Decimal;
+      RoundingLineInserted@1010 : Boolean;
+      TotalVATAmount@1011 : Decimal;
+    BEGIN
+    END;
+
+    PROCEDURE UpdateWithWarehouseReceive@41();
+    BEGIN
+    END;
+
+    LOCAL PROCEDURE CheckWarehouse@47();
+    VAR
+      Location2@1002 : Record 14;
+      WhseSetup@1000 : Record 5769;
+      ShowDialog@1001 : ' ,Message,Error';
+      DialogText@1003 : Text[50];
+    BEGIN
+    END;
+
+    LOCAL PROCEDURE GetOverheadRateFCY@40() : Decimal;
+    VAR
+      QtyPerUOM@1000 : Decimal;
+    BEGIN
+    END;
+
+    PROCEDURE GetItemTranslation@44();
+    BEGIN
+    END;
+
+    LOCAL PROCEDURE GetGLSetup@45();
+    BEGIN
+    END;
+
+    PROCEDURE AdjustDateFormula@48(DateFormulatoAdjust@1000 : DateFormula) : Text[30];
+    BEGIN
+    END;
+
+    LOCAL PROCEDURE GetLocation@7300(LocationCode@1000 : Code[10]);
+    BEGIN
+    END;
+
+    PROCEDURE RowID1@49() : Text[250];
+    VAR
+      ItemTrackingMgt@1000 : Codeunit 6500;
+    BEGIN
+    END;
+
+    LOCAL PROCEDURE GetDefaultBin@50();
+    VAR
+      WMSManagement@1000 : Codeunit 7302;
+    BEGIN
+    END;
+
+    PROCEDURE CrossReferenceNoLookUp@51();
+    VAR
+      ItemCrossReference@1000 : Record 5717;
+    BEGIN
+    END;
+
+    PROCEDURE ItemExists@52(ItemNo@1000 : Code[20]) : Boolean;
+    VAR
+      Item2@1001 : Record 27;
+    BEGIN
+    END;
+
+    LOCAL PROCEDURE GetAbsMin@56(QtyToHandle@1000 : Decimal;QtyHandled@1001 : Decimal) : Decimal;
+    BEGIN
+    END;
+
+    LOCAL PROCEDURE CheckApplToItemLedgEntry@53() : Code[10];
+    VAR
+      ItemLedgEntry@1000 : Record 32;
+      ApplyRec@1005 : Record 339;
+      QtyBase@1001 : Decimal;
+      RemainingQty@1002 : Decimal;
+      ReturnedQty@1003 : Decimal;
+      RemainingtobeReturnedQty@1004 : Decimal;
+    BEGIN
+    END;
+
+    PROCEDURE CalcPrepaymentToDeduct@59();
+    BEGIN
+    END;
+
+    PROCEDURE JobTaskIsSet@61() : Boolean;
+    BEGIN
+    END;
+
+    PROCEDURE CreateTempJobJnlLine@55(GetPrices@1001 : Boolean);
+    BEGIN
+    END;
+
+    PROCEDURE UpdatePricesFromJobJnlLine@69();
+    BEGIN
+    END;
+
+    PROCEDURE JobSetCurrencyFactor@54();
+    BEGIN
+    END;
+
+    PROCEDURE SetUpdateFromVAT@58(UpdateFromVAT2@1000 : Boolean);
+    BEGIN
+    END;
+
+    PROCEDURE InitQtyToReceive2@57();
+    VAR
+      SalesHeader2@1180250001 : Record 36;
+    BEGIN
+    END;
+
+    PROCEDURE ShowLineComments@62();
+    VAR
+      PurchCommentLine@1000 : Record 43;
+    BEGIN
+    END;
+
+    PROCEDURE SetDefaultQuantity@63();
+    VAR
+      PurchSetup@1000 : Record 312;
+    BEGIN
+    END;
+
+    LOCAL PROCEDURE UpdatePrePaymentAmounts@65();
+    VAR
+      ReceiptLine@1000 : Record 121;
+      PurchOrderLine@1001 : Record 39;
+    BEGIN
+    END;
+
+    PROCEDURE SetVendorItemNo@64();
+    BEGIN
+    END;
+
+    PROCEDURE ZeroAmountLine@66(QtyType@1000 : 'General,Invoicing,Shipping') : Boolean;
+    BEGIN
+    END;
+
+    PROCEDURE CheckValidLine@1000000000() : Boolean;
+    VAR
+      GimPurchLine@1000000000 : Record 50009;
+      DocNo@1000000001 : Code[20];
+      LineNo@1000000002 : Integer;
+      found@1180250001 : Boolean;
+    BEGIN
+      //IF ("Receipt No." <> '') AND ("Receipt Line No." <> '') THEN
+      CLEAR(PurchRcptLine);
+
+      //GimPurchLineBuffer.RESET;
+      //GimPurchLineBuffer.COPYFILTERS(Rec);
+      GimPurchLineBuffer := Rec;
+      SETRANGE("Vend. Sales Order ID","Vend. Sales Order ID");
+      SETRANGE("Vend. Sales Order Line ID","Vend. Sales Order Line ID") ;
+      IF NOT ISEMPTY THEN
+        GimPurchLineBuffer.Duplicate := TRUE;
+      //RESET;
+      //COPYFILTERS(GimPurchLineBuffer);
+      Rec := GimPurchLineBuffer ;
+      //GimPurchLineBuffer.SETCURRENTKEY("Vend. Sales Order ID","Vend. Sales Order Line ID");
+      //GimPurchLineBuffer.SETRANGE("Vend. Sales Order ID","Vend. Sales Order ID");
+      //GimPurchLineBuffer.SETRANGE("Vend. Sales Order Line ID","Vend. Sales Order Line ID") ;
+      //IF NOT GimPurchLineBuffer.ISEMPTY THEN
+      //  Duplicate := TRUE;
+
+      //GimPurchLineBuffer := GimPurchLine;
+      //GimPurchLineBuffer.INSERT;
+
+      PurchReceiptHeader.SETRANGE("Buy-from Vendor No.","Buy-from Vendor No.");
+      IF ("Receipt No." <> '') THEN
+        PurchReceiptHeader.SETRANGE("No.","Receipt No.")
+      ELSE
+        PurchReceiptHeader.SETRANGE("Vendor Shipment No.","Vendor Shipment No.");
+
+      found := FALSE;
+      IF PurchReceiptHeader.FIND('-') THEN BEGIN
+        REPEAT
+          IF NOT found THEN BEGIN
+            PurchRcptLine.SETRANGE("Document No.",PurchReceiptHeader."No.");
+            IF ("Receipt Line No." <> 0) THEN
+              PurchRcptLine.SETRANGE("Line No.","Receipt Line No.")
+            ELSE
+              PurchRcptLine.SETRANGE("Vendor Item No.","Vendor Item No.");
+            found := NOT PurchRcptLine.ISEMPTY;
+          END;
+        UNTIL PurchReceiptHeader.NEXT = 0;
+      END ELSE
+        EXIT(LogError(Text053));
+
+      IF PurchRcptLine.ISEMPTY THEN
+        EXIT(LogError(Text051));
+
+      IF PurchRcptLine.COUNT > 1 THEN
+        EXIT(LogError(STRSUBSTNO(Text050,"No.")));
+
+      PurchRcptLine.FINDFIRST ;
+      IF PurchRcptLineBuffer.GET(PurchRcptLine."Document No.",PurchRcptLine."Line No.") THEN BEGIN
+        DocNo :=PurchRcptLine."Document No.";
+        CLEAR(PurchRcptLine);
+        EXIT(LogError(STRSUBSTNO(Text052,DocNo)));
+      END;
+
+      PurchRcptLineBuffer := PurchRcptLine;
+      PurchRcptLineBuffer.INSERT;
+
+
+      IF PurchRcptLine."Qty. Rcd. Not Invoiced" < Quantity THEN
+        EXIT(LogError(STRSUBSTNO(Text006,PurchRcptLine."Qty. Rcd. Not Invoiced")));
+
+      EXIT(TRUE);
+    END;
+
+    PROCEDURE LogError@1000000001(ErrorMSg@1000000000 : Text[250]) : Boolean;
+    BEGIN
+      IsError := TRUE;
+      "Error log" := STRSUBSTNO(ErrorMSg,"No.");
+      EXIT(FALSE)
+    END;
+
+    PROCEDURE UpdatePurchRcptLineBuffer@1000000002(VAR PurchRcptLineBuffer@1000000001 : TEMPORARY Record 121);
+    VAR
+      GIMPurchLine@1000000002 : Record 50009;
+    BEGIN
+      PurchRcptLineBuffer.DELETEALL;
+      PurchRcptLine.RESET;
+      IF Rec.IsError THEN BEGIN
+        PurchRcptLine.SETRANGE("Buy-from Vendor No.","Buy-from Vendor No.");
+        PurchRcptLine.SETRANGE("Vendor Item No.","Vendor Item No.");
+        PurchRcptLine.SETFILTER("Qty. Rcd. Not Invoiced",'>0');
+        IF PurchRcptLine.FINDSET THEN
+        REPEAT
+          GIMPurchLine.SETRANGE("Receipt No.",PurchRcptLine."Document No.");
+          GIMPurchLine.SETRANGE("Receipt Line No.",PurchRcptLine."Line No.");
+          IF NOT GIMPurchLine.FINDFIRST THEN BEGIN
+            PurchRcptLineBuffer := PurchRcptLine;
+            PurchRcptLineBuffer.INSERT;
+          END;
+        UNTIL PurchRcptLine.NEXT = 0;
+      END
+      ELSE
+      BEGIN
+        PurchRcptLine.GET("Receipt No.","Receipt Line No.");
+        PurchRcptLine.SETFILTER("Qty. Rcd. Not Invoiced",'>0');
+        PurchRcptLineBuffer := PurchRcptLine;
+        PurchRcptLineBuffer.INSERT;
+      END;
+    END;
+
+    PROCEDURE GetPurchReceipt@1000000003();
+    VAR
+      PurchRcptLineBuffer@1000000001 : TEMPORARY Record 121;
+      NewGimPurchLine@1000000000 : Record 50009;
+      LPurchRcptLine@1000000002 : Record 121;
+      QtyGAP@1000000003 : Decimal;
+      QtyToInv@1000000004 : Decimal;
+    BEGIN
+
+      UpdatePurchRcptLineBuffer(PurchRcptLineBuffer);
+      IF PAGE.RUNMODAL(PAGE::"Get GIM Receipt Lines",PurchRcptLineBuffer) = ACTION::LookupOK THEN
+      BEGIN
+      //ERROR('%1',PurchRcptLineBuffer.Count);
+        PurchRcptLineBuffer.SETRANGE("Document No.",PurchRcptLineBuffer."Document No.");
+        PurchRcptLineBuffer.SETRANGE("Line No.",PurchRcptLineBuffer."Line No.");
+
+        IF PurchRcptLineBuffer.COUNT > 1 THEN BEGIN
+          LogError(STRSUBSTNO(Text050,"No."));
+          MODIFY;
+          EXIT;
+        END;
+           //"Receipt No." := PurchRcptLineBuffer."Document No.";
+           //"Receipt Line No." := PurchRcptLineBuffer."Line No." ;
+           //Type := PurchRcptLineBuffer.Type;
+           //"No." := PurchRcptLineBuffer."No.";
+
+        IF PurchRcptLineBuffer.FINDFIRST THEN BEGIN
+          IF "Receipt No."='' THEN
+          BEGIN
+            LPurchRcptLine.GET(PurchRcptLineBuffer."Document No.",PurchRcptLineBuffer."Line No.")
+          END
+          ELSE
+          BEGIN
+            LPurchRcptLine.GET("Receipt No.","Receipt Line No.");
+
+            QtyGAP := Quantity - LPurchRcptLine."Qty. Rcd. Not Invoiced";
+            IF QtyGAP >= PurchRcptLineBuffer."Qty. Rcd. Not Invoiced" THEN
+              QtyToInv := PurchRcptLineBuffer."Qty. Rcd. Not Invoiced"
+            ELSE
+              QtyToInv := QtyGAP;
+
+            "Direct Unit Cost" := Amount / Quantity;
+            InitNewGIMPurchLine(Rec,NewGimPurchLine,QtyToInv,PurchRcptLineBuffer);
+            Quantity := Quantity - QtyToInv;
+            Amount := Quantity * "Direct Unit Cost";
+          END;
+
+          IsError := FALSE;
+          "Error log" := '';
+          "Receipt No." := LPurchRcptLine."Document No.";
+          Type := LPurchRcptLine.Type;
+          "No." := LPurchRcptLine."No.";
+          "Receipt Line No." := LPurchRcptLine."Line No.";
+
+          MODIFY(TRUE);
+
+        END;
+      END;
+    END;
+
+    PROCEDURE InitNewGIMPurchLine@1000000004(VAR _Rec@1000000002 : Record 50009;VAR NewGimPurchLine@1000000003 : Record 50009;_QtyGAP@1000000001 : Decimal;_PurchRcptLine@1000000000 : Record 121);
+    BEGIN
+      NewGimPurchLine.INIT;
+      NewGimPurchLine := _Rec;
+      NewGimPurchLine."Line No." := 0;
+      NewGimPurchLine."Receipt No." := _PurchRcptLine."Document No.";
+      NewGimPurchLine."Receipt Line No." := _PurchRcptLine."Line No.";
+      NewGimPurchLine.Type := _PurchRcptLine.Type;
+      NewGimPurchLine."No." := _PurchRcptLine."No.";
+      NewGimPurchLine.Quantity := _QtyGAP;
+      NewGimPurchLine.Amount := NewGimPurchLine.Quantity * NewGimPurchLine."Direct Unit Cost";
+      NewGimPurchLine."VAT Amount" := 0;
+      NewGimPurchLine."Allowance charge" := 0;
+      NewGimPurchLine."VAT Allowance charge" := 0;
+      NewGimPurchLine.IsError := FALSE;
+      NewGimPurchLine."Error log" := '';
+      NewGimPurchLine.INSERT(TRUE);
+    END;
+
+    BEGIN
+    {
+      AC1.00 Ajout Champ "Order Reference Customer"
+    }
+    END.
+  }
+}
+

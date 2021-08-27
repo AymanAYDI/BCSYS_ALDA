@@ -2,14 +2,16 @@ OBJECT Codeunit 90 Purch.-Post
 {
   OBJECT-PROPERTIES
   {
-    Date=22/12/15;
-    Time=12:00:00;
-    Version List=NAVW19.00.00.44365,NAVFR9.00.00.44365;
+    Date=15/04/16;
+    Time=16:25:37;
+    Modified=Yes;
+    Version List=NAVW19.00.00.44365,NAVFR9.00.00.44365,1C1.00,ALDA;
   }
   PROPERTIES
   {
     TableNo=38;
-    Permissions=TableData 36=m,
+    Permissions=TableData 17=r,
+                TableData 36=m,
                 TableData 37=m,
                 TableData 39=imd,
                 TableData 49=imd,
@@ -119,7 +121,8 @@ OBJECT Codeunit 90 Purch.-Post
               "Posting from Whse. Ref." := 0;
 
               IF Invoice THEN
-                CreatePrepmtLines(PurchHeader,TempPrepmtPurchLine,TRUE);
+                CreatePrepmtLines(PurchHeader,TempPrepmtPurchLine,FALSE);
+                //CreatePrepmtLines(PurchHeader,TempPrepmtPurchLine,TRUE);
 
               CheckDim;
 
@@ -949,7 +952,7 @@ OBJECT Codeunit 90 Purch.-Post
               IF Invoice THEN BEGIN
                 // Post purchase and VAT to G/L entries from buffer
                 LineCount := 0;
-                IF InvPostingBuffer[1].FIND('+') THEN
+                IF InvPostingBuffer[1].FINDLAST THEN
                   REPEAT
                     LineCount := LineCount + 1;
                     IF GUIALLOWED THEN
@@ -1063,6 +1066,11 @@ OBJECT Codeunit 90 Purch.-Post
                   GenJnlLine."IC Partner Code" := "Pay-to IC Partner Code";
                   GenJnlLine."Allow Zero-Amount Posting" := TRUE;
                   GenJnlLine."Salespers./Purch. Code" := "Purchaser Code";
+                  // ALDA 171214D.Begin
+                  GenJnlLine."Order Reference Customer" := PurchHeader."Order Reference Customer";
+                  GenJnlLine."Country Dimension Code" := PurchHeader."Country Dimension Code";
+                  // ALDA 171214D.End
+
                   GenJnlPostLine.RunWithCheck(GenJnlLine);
                 END;
               END;
@@ -1690,6 +1698,11 @@ OBJECT Codeunit 90 Purch.-Post
         ItemJnlLine."Overhead Rate" := "Overhead Rate";
         ItemJnlLine."Shipment Method Code" := PurchHeader."Shipment Method Code";
         ItemJnlLine."Return Reason Code" := "Return Reason Code";
+        //AC1.00
+        ItemJnlLine."Order Reference Customer" := PurchHeader."Order Reference Customer";
+
+        // ALDA 171214D
+        ItemJnlLine."Country Dimension Code" := PurchLine."Country Dimension Code";
 
         CheckApplToItemEntry :=
           PurchSetup."Exact Cost Reversing Mandatory" AND
@@ -1718,7 +1731,7 @@ OBJECT Codeunit 90 Purch.-Post
 
         IF "Job No." <> '' THEN BEGIN
           ReservePurchLine2.FindReservEntry(PurchLine,ReservationEntry2);
-          IF ReservationEntry2.FIND('-') THEN
+          IF ReservationEntry2.FINDSET(FALSE,FALSE) THEN    //PERF.NIW   ReservationEntry2.FIND('-');
             REPEAT
               ReservationEntry3 := ReservationEntry2;
               ReservationEntry3.INSERT;
@@ -1757,7 +1770,7 @@ OBJECT Codeunit 90 Purch.-Post
         IF ItemJnlPostLine.CollectTrackingSpecification(TempHandlingSpecification) THEN BEGIN
           IF ItemJnlLine.Subcontracting THEN
             TempHandlingSpecification.DELETEALL;
-          IF TempHandlingSpecification.FIND('-') THEN
+          IF TempHandlingSpecification.FINDSET(FALSE,FALSE) THEN                 //PERF.NIW TempHandlingSpecification.FIND('-')
             REPEAT
               TempTrackingSpecification := TempHandlingSpecification;
               TempTrackingSpecification."Source Type" := DATABASE::"Purchase Line";
@@ -1790,7 +1803,7 @@ OBJECT Codeunit 90 Purch.-Post
 
         IF PostWhseJnlLine THEN BEGIN
           ItemTrackingMgt.SplitWhseJnlLine(TempWhseJnlLine,TempWhseJnlLine2,TempWhseTrackingSpecification,FALSE);
-          IF TempWhseJnlLine2.FIND('-') THEN
+          IF TempWhseJnlLine2.FINDSET THEN                              //PERF.NIW  TempWhseJnlLine2.FIND('-')
             REPEAT
               IF "Document Type" IN ["Document Type"::"Return Order","Document Type"::"Credit Memo"] THEN
                 CreatePositiveEntry(TempWhseJnlLine2,"Job No.",PostJobConsumptionBeforePurch);
@@ -1808,7 +1821,7 @@ OBJECT Codeunit 90 Purch.-Post
           TempItemChargeAssgntPurch.SETRANGE("Applies-to Doc. Type","Document Type");
           TempItemChargeAssgntPurch.SETRANGE("Applies-to Doc. No.","Document No.");
           TempItemChargeAssgntPurch.SETRANGE("Applies-to Doc. Line No.","Line No.");
-          IF TempItemChargeAssgntPurch.FIND('-') THEN
+          IF TempItemChargeAssgntPurch.FINDSET THEN                    //PERF.NIW  TempItemChargeAssgntPurch.FIND('-')
             REPEAT
               TESTFIELD("Allow Item Charge Assignment");
               GetItemChargeLine(ItemChargePurchLine);
@@ -2436,6 +2449,11 @@ OBJECT Codeunit 90 Purch.-Post
       ItemJnlLine."Derived from Blanket Order" := SalesOrderLine."Blanket Order No." <> '';
       ItemJnlLine."Applies-to Entry" := ItemLedgShptEntryNo;
       ItemJnlLine."Shipment Method Code" := SalesOrderHeader."Shipment Method Code";
+      //AC1.00
+      // Field no more exist 2015 ItemJnlLine."Order Reference Customer" := SalesOrderHeader."Customer Order No.";
+
+      // ALDA 171214D
+      ItemJnlLine."Country Dimension Code" := SalesOrderLine."Country Dimension Code";
 
       IF SalesOrderLine."Job Contract Entry No." = 0 THEN BEGIN
         TransferReservToItemJnlLine(SalesOrderLine,ItemJnlLine,QtyToBeShippedBase,TRUE);
@@ -3551,6 +3569,11 @@ OBJECT Codeunit 90 Purch.-Post
         GenJnlLine2."Creditor No." := "Creditor No.";
         GenJnlLine2."Payment Reference" := "Payment Reference";
         GenJnlLine2."Payment Method Code" := "Payment Method Code";
+        // ALDA 171214D.Begin
+        GenJnlLine."Order Reference Customer" := PurchHeader."Order Reference Customer";
+        GenJnlLine."Country Dimension Code" := PurchHeader."Country Dimension Code";
+        // ALDA 171214D.End
+
         GenJnlPostLine.RunWithCheck(GenJnlLine2);
       END;
     END;
@@ -4627,7 +4650,7 @@ OBJECT Codeunit 90 Purch.-Post
         IF PurchLine.NEXT = 1 THEN
           EXIT(FALSE);
       PurchaseLinesProcessed := TRUE;
-      IF TempPrepmtPurchLine.FIND('-') THEN BEGIN
+      IF TempPrepmtPurchLine.FINDFIRST THEN BEGIN              //PERF.NIW      TempPrepmtPurchLine.FIND('-')
         PurchLine := TempPrepmtPurchLine;
         TempPrepmtPurchLine.DELETE;
         EXIT(FALSE);
@@ -4653,12 +4676,12 @@ OBJECT Codeunit 90 Purch.-Post
       WITH PurchLine DO BEGIN
         SETRANGE("Document Type",PurchHeader."Document Type");
         SETRANGE("Document No.",PurchHeader."No.");
-        IF NOT FIND('+') THEN
+        IF NOT FINDLAST THEN
           EXIT;
         NextLineNo := "Line No." + 10000;
         SETFILTER(Quantity,'>0');
         SETFILTER("Qty. to Invoice",'>0');
-        IF FIND('-') THEN
+        IF FINDSET THEN               //PERF.NIW   FIND('-')
           REPEAT
             IF CompleteFunctionality THEN
               IF PurchHeader."Document Type" <> PurchHeader."Document Type"::Invoice THEN BEGIN
@@ -4758,7 +4781,7 @@ OBJECT Codeunit 90 Purch.-Post
                 TransferExtText.PrepmtGetAnyExtText(
                   TempPrepmtPurchLine."No.",DATABASE::"Purch. Inv. Line",
                   PurchHeader."Document Date",PurchHeader."Language Code",TempExtTextLine);
-                IF TempExtTextLine.FIND('-') THEN
+                IF TempExtTextLine.FINDSET(FALSE,FALSE) THEN                 //PERF.NIW    TempExtTextLine.FIND('-')
                   REPEAT
                     TempPrepmtPurchLine.INIT;
                     TempPrepmtPurchLine.Description := TempExtTextLine.Text;
@@ -5095,7 +5118,7 @@ OBJECT Codeunit 90 Purch.-Post
       WITH PurchLine DO BEGIN
         SETRANGE("Document Type",PurchHeader."Document Type");
         SETRANGE("Document No.",PurchHeader."No.");
-        IF FIND('-') THEN
+        IF FINDSET(FALSE,FALSE) THEN                  //PERF.NIW   FIND('-')
           REPEAT
             MergedPurchLine := PurchLine;
             MergedPurchLine.INSERT;
@@ -5104,7 +5127,7 @@ OBJECT Codeunit 90 Purch.-Post
       WITH PurchLine2 DO BEGIN
         SETRANGE("Document Type",PurchHeader."Document Type");
         SETRANGE("Document No.",PurchHeader."No.");
-        IF FIND('-') THEN
+        IF FINDSET(FALSE,FALSE) THEN                    //PERF.NIW   FIND('-')
           REPEAT
             MergedPurchLine := PurchLine2;
             MergedPurchLine.INSERT;
@@ -5346,7 +5369,7 @@ OBJECT Codeunit 90 Purch.-Post
             // item tracking for consumption
             ReservationEntry2.RESET;
             IF ReservationEntry3.FIND('-') THEN BEGIN
-              IF ReservationEntry2.FIND('+') THEN
+              IF ReservationEntry2.FINDLAST THEN
                 NextReservationEntryNo := ReservationEntry2."Entry No." + 1
               ELSE
                 NextReservationEntryNo := 1;
@@ -6026,6 +6049,8 @@ OBJECT Codeunit 90 Purch.-Post
             SalesShptHeader."Posting Date" := "Posting Date";
             SalesShptHeader."Document Date" := "Document Date";
             SalesShptHeader."No. Printed" := 0;
+            //AC1.00
+            SalesShptHeader."Order Reference Customer" := SalesOrderHeader."Order Reference Customer";
             SalesShptHeader.INSERT(TRUE);
 
             ApprovalsMgmt.PostApprovalEntries(RECORDID,SalesShptHeader.RECORDID,SalesShptHeader."No.");
@@ -6135,6 +6160,11 @@ OBJECT Codeunit 90 Purch.-Post
         GenJnlLine."Posting No. Series" := "Posting No. Series";
         GenJnlLine."IC Partner Code" := "Pay-to IC Partner Code";
         GenJnlLine."Ship-to/Order Address Code" := "Order Address Code";
+        //AC1.00
+        GenJnlLine."Order Reference Customer" := "Order Reference Customer";
+
+        // ALDA 171214D
+        GenJnlLine."Country Dimension Code" := "Country Dimension Code";
 
         IF InvPostingBuffer[1].Type = InvPostingBuffer[1].Type::"Fixed Asset" THEN BEGIN
           GenJnlLine."Account Type" := GenJnlLine."Account Type"::"Fixed Asset";

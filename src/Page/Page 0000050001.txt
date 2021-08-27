@@ -1,0 +1,66 @@
+OBJECT Page 50001 Code List
+{
+  OBJECT-PROPERTIES
+  {
+    Date=16/04/14;
+    Time=18:15:58;
+    Modified=Yes;
+    Version List=AC1.00;
+  }
+  PROPERTIES
+  {
+    CaptionML=[ENU=Code List;
+               FRA=Liste code];
+    SourceTable=Table50007;
+    PageType=List;
+    OnOpenPage=BEGIN
+                 TableFilter := GETFILTER("Table No.");
+                 FieldFilter := GETFILTER("Field No.");
+                 FILTERGROUP(2);
+                 IF TableFilter <> '' THEN
+                   SETFILTER("Table No.",TableFilter);
+                 IF FieldFilter <> '' THEN
+                   SETFILTER("Field No.",FieldFilter);
+                 FILTERGROUP(0);
+               END;
+
+  }
+  CONTROLS
+  {
+    { 1900000001;0;Container;
+                ContainerType=ContentArea }
+
+    { 1   ;1   ;Group     ;
+                GroupType=Repeater }
+
+    { 2   ;2   ;Field     ;
+                SourceExpr=Code }
+
+    { 10  ;2   ;Field     ;
+                SourceExpr=Description }
+
+    { 1900000007;0;Container;
+                ContainerType=FactBoxArea }
+
+    { 1900383207;1;Part   ;
+                Visible=FALSE;
+                PartType=System;
+                SystemPartID=RecordLinks }
+
+    { 1905767507;1;Part   ;
+                Visible=FALSE;
+                PartType=System;
+                SystemPartID=Notes }
+
+  }
+  CODE
+  {
+    VAR
+      TableFilter@1180250002 : Text[1024];
+      FieldFilter@1180250001 : Text[1024];
+
+    BEGIN
+    END.
+  }
+}
+

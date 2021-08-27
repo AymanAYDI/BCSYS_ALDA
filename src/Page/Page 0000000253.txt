@@ -4,7 +4,8 @@ OBJECT Page 253 Sales Journal
   {
     Date=15/09/15;
     Time=12:00:00;
-    Version List=NAVW19.00,NAVFR9.00;
+    Modified=Yes;
+    Version List=NAVW19.00,NAVFR9.00,AC1.00;
   }
   PROPERTIES
   {
@@ -267,6 +268,9 @@ OBJECT Page 253 Sales Journal
 
     { 12  ;2   ;Field     ;
                 SourceExpr=Description }
+
+    { 1180250002;2;Field  ;
+                SourceExpr="Order Reference Customer" }
 
     { 55  ;2   ;Field     ;
                 SourceExpr="Salespers./Purch. Code";
@@ -611,6 +615,9 @@ OBJECT Page 253 Sales Journal
     END;
 
     BEGIN
+    {
+      AC1.00 Ajout Field "Order Reference Customer"
+    }
     END.
   }
 }

@@ -1,0 +1,1192 @@
+OBJECT Codeunit 50004 EXPED
+{
+  OBJECT-PROPERTIES
+  {
+    Date=08/08/18;
+    Time=12:08:49;
+    Modified=Yes;
+    Version List=AC1.00;
+  }
+  PROPERTIES
+  {
+    TableNo=50001;
+    OnRun=VAR
+            EDILog2@1180250007 : Record 50001;
+            EDIEntry@1180250005 : Record 50002;
+            EDILogEntry@1180250006 : Record 50004;
+            Fields2Import@1180250001 : ARRAY [100] OF Text[250];
+            CurrFile@1180250004 : File;
+            FileInStream@1180250003 : InStream;
+            Line@1180250002 : BigText;
+          BEGIN
+            EDISetup.GET("EDI Code");
+            EDISetup.TESTFIELD("Source Type");
+            EDISetup.TESTFIELD("Source No.");
+
+            IF GUIALLOWED THEN
+              Window.OPEN(Text000);
+
+            EDILog := Rec;
+            Post := EDISetup."Create Sales/Purch. Doc.";
+
+            CheckDataError();
+            IF "Data Error" = FALSE THEN BEGIN
+              CLEAR(FileInStream);
+              CLEAR(Line);
+              CLEAR(Fields2Import);
+              CLEAR(CurrFile);
+
+              TESTFIELD(Mode,Mode::Normal);
+
+              CurrFile.WRITEMODE := FALSE;
+              CurrFile.TEXTMODE := TRUE;
+              CurrFile.OPEN(EDISetup."File Imp. Path (Err.)" +'\' + Filename);
+              CurrFile.CREATEINSTREAM(FileInStream);
+              Line.READ(FileInStream);
+              SplitFileLineInRec(EDIEntry,Line,"EDI Code","Treatment Date","Batch ID");
+              CurrFile.CLOSE;
+              RegisterRec(EDIEntry,EDISetup."Source No.","EDI Code","Treatment Date", "Batch ID");
+              COMMIT;
+              IF Post THEN
+                PostPurchAndSalesOrders;
+            END ELSE BEGIN
+              TESTFIELD(Mode,Mode::Recovery);
+              EDILogEntry.RESET;
+              EDILogEntry.SETRANGE("EDI Code","EDI Code");
+              EDILogEntry.SETRANGE("Treatment Date","Treatment Date");
+              EDILogEntry.DELETEALL;
+              RegisterRec(EDIEntry,EDISetup."Source No.","EDI Code","Treatment Date", "Batch ID");
+              COMMIT;
+              IF Post THEN
+                PostPurchAndSalesOrders;
+              Mode := Mode::Normal;
+              MODIFY;
+            END;
+
+            IF GUIALLOWED THEN
+              Window.CLOSE;
+          END;
+
+  }
+  CODE
+  {
+    VAR
+      Text000@1180250027 : TextConst 'ENU=Batch in process...;FRA=Traitement en cours...';
+      Text001@1180250002 : TextConst 'FRA=Nø s‚quence %1 : %2';
+      Text002@1180250003 : TextConst 'FRA=Cde. vente %1 pas trouv‚!';
+      EDISetup@1180250001 : Record 50000;
+      EDILog@1180250004 : Record 50001;
+      Post@1180250005 : Boolean;
+      Text003@1180250006 : TextConst 'FRA=Cde. achat %1 pas trouv‚!';
+      Text004@1180250008 : TextConst 'FRA=Cde. vente %1, article %2 pas trouv‚!';
+      Text005@1180250007 : TextConst 'FRA=Cde. achat %1, article %2 pas trouv‚!';
+      Text006@1180250009 : TextConst 'FRA=R‚f. %1 pas trouv‚!';
+      Text007@1180250012 : TextConst 'FRA=R‚f. %1 trait‚e.';
+      Text008@1180250011 : TextConst 'FRA=Cde. vente %1 trait‚e.';
+      Text009@1180250010 : TextConst 'FRA=C.de achat %1 trait‚es.';
+      Text010@1180250014 : TextConst 'FRA=Cde. vente %1, article %2 livr‚.';
+      Text011@1180250013 : TextConst 'FRA=Cde. achat %1, article %2 re‡u.';
+      Text012@1180250015 : TextConst 'FRA=R‚f. commande client vide!';
+      Text013@1180250017 : TextConst 'FRA=Cde. vente %1, article %2 non livr‚.';
+      Text014@1180250016 : TextConst 'FRA=Cde. achat %1, article %2 non re‡u.';
+      Text015@1180250018 : TextConst 'FRA=Cde. vente nø%1 pas valid‚.';
+      Text016@1180250019 : TextConst 'FRA=Cde. achat nø%1 pas valid‚.';
+      Text017@1180250020 : TextConst 'FRA=Cde. a ne pas valider nø%1 et n%2.';
+      Text018@1180250021 : TextConst 'FRA=Cde. achat %1, article %2 en doublon.';
+      Text019@1180250022 : TextConst 'FRA=Cde. achat %1, article %2 remplac‚ par %2.';
+      TempSalesHeader@1180250023 : TEMPORARY Record 36;
+      TempPurchHeader@1180250024 : TEMPORARY Record 38;
+      Text020@1180250025 : TextConst 'FRA=%1/%2 ligne(s) trait‚e(s).';
+      Window@1180250026 : Dialog;
+      NullGUID@1000000000 : GUID;
+
+    PROCEDURE SplitFileLineInRec@1180250003(VAR EDIEntry@1180250006 : Record 50002;ReadLine@1180250008 : BigText;EDICode@1180250007 : Code[10];EDILogDT@1180250016 : DateTime;BatchID@1000000000 : GUID);
+    VAR
+      LineToRead@1000000001 : BigText;
+      LineToReadBuff@1180250002 : BigText;
+      ReadField@1000000003 : Text[30];
+      i@1180250015 : Integer;
+      EndOfLinePos@1000000007 : Integer;
+      EntryNo@1180250001 : Integer;
+      NextStartingPos@1180250012 : Integer;
+      CurrStrLen@1180250013 : Integer;
+      CarriageReturn@1180250004 : Char;
+      LineFeed@1180250003 : Char;
+      EOF@1180250005 : Boolean;
+      SubStr@1180250009 : Text[128];
+      CNUR@1180250010 : Text[3];
+      xCNUR@1180250017 : Text[3];
+      CNUT_Lot@1180250011 : Text[5];
+      CNUT_Msg@1180250014 : Text[5];
+    BEGIN
+      CarriageReturn := 13;
+      LineFeed := 10;
+      EOF := FALSE;
+      LineToRead := ReadLine;
+
+      EDIEntry.RESET;
+      IF EDIEntry.FINDLAST THEN
+        EntryNo := EDIEntry."Entry No."
+      ELSE
+        EntryNo := 0;
+
+      i := 0;
+
+      REPEAT
+        EndOfLinePos := LineToRead.TEXTPOS(FORMAT(CarriageReturn)+FORMAT(LineFeed));
+        EOF := EndOfLinePos = 0;
+        EntryNo += 1;
+
+        EDIEntry.INIT;
+        EDIEntry."Entry No." := EntryNo;
+        EDIEntry."User ID" := USERID;
+        EDIEntry."Imp./Exp. Date" := EDILogDT;
+        EDIEntry."EDI Code" := EDICode;
+        EDIEntry.Error := TRUE;
+        EDIEntry."Batch ID" := BatchID;
+        EDIEntry.INSERT;
+
+        LineToRead.GETSUBTEXT(SubStr,1,5);
+        CASE SubStr OF
+          '03503':CNUT_Lot := SubStr;
+          '02405':CNUT_Msg := SubStr;
+        END;//CASE
+
+        LineToRead.GETSUBTEXT(SubStr,1,3);
+        IF SubStr IN ['100','176','177','193','191','199','221','223','224','227','228','267','323','361','362','363','364','390'] THEN
+          CNUR := SubStr
+        ELSE
+          CNUR := '';
+
+        EDIEntry."Field 1" := CNUT_Lot;
+        EDIEntry."Field 2" := CNUT_Msg;
+        EDIEntry."Field 3" := CNUR;
+
+        NextStartingPos := 4;
+
+        CASE CNUR OF
+          '100':LineToRead.GETSUBTEXT(EDIEntry."Field 4",NextStartingPos,13);//Destinataire
+          '176':LineToRead.GETSUBTEXT(EDIEntry."Field 4",NextStartingPos,6);//Date d'‚mission
+          '177':BEGIN
+            CASE xCNUR OF
+              '176':BEGIN
+                 CurrStrLen := 35;//Code d‚tail client
+                 LineToRead.GETSUBTEXT(EDIEntry."Field 4",NextStartingPos,CurrStrLen);
+                 EDIEntry."Field 4" := DELCHR(EDIEntry."Field 4",'<',' ');
+                 NextStartingPos := NextStartingPos + CurrStrLen;
+                 CurrStrLen := 8;//R‚f emetteur client
+                 LineToRead.GETSUBTEXT(EDIEntry."Field 5",NextStartingPos,CurrStrLen);
+                 NextStartingPos := NextStartingPos + CurrStrLen;
+              END;
+              '390':BEGIN
+                 CurrStrLen := 3;//Type de ligne
+                 LineToRead.GETSUBTEXT(EDIEntry."Field 4",NextStartingPos,CurrStrLen);
+                 NextStartingPos := NextStartingPos + CurrStrLen;
+                 CASE EDIEntry."Field 4" OF
+                  'LIB':BEGIN
+                    CurrStrLen := 32;//D‚signation article
+                    LineToRead.GETSUBTEXT(EDIEntry."Field 5",NextStartingPos,CurrStrLen);
+                    NextStartingPos := NextStartingPos + CurrStrLen;
+                  END;
+                  'COM':BEGIN
+                    CurrStrLen := 30;//Libell‚ d'information
+                    LineToRead.GETSUBTEXT(EDIEntry."Field 5",NextStartingPos,CurrStrLen);
+                    NextStartingPos := NextStartingPos + CurrStrLen;
+                    CurrStrLen := 14;//R‚f. art command‚e
+                    LineToRead.GETSUBTEXT(EDIEntry."Field 5",NextStartingPos,CurrStrLen);
+                    NextStartingPos := NextStartingPos + CurrStrLen;
+                    CurrStrLen := 7;//Libell‚ champ
+                    LineToRead.GETSUBTEXT(EDIEntry."Field 5",NextStartingPos,CurrStrLen);
+                    NextStartingPos := NextStartingPos + CurrStrLen;
+                    CurrStrLen := 6;//Libell‚ d'information
+                    LineToRead.GETSUBTEXT(EDIEntry."Field 5",NextStartingPos,CurrStrLen);
+                    NextStartingPos := NextStartingPos + CurrStrLen;
+                  END;
+
+                 END;//CASE
+              END;
+              {
+              ELSE BEGIN
+                 CurrStrLen := 4;
+                 LineToRead.GETSUBTEXT(EDIEntry."Field 4",NextStartingPos,CurrStrLen);
+                 NextStartingPos := NextStartingPos + CurrStrLen;
+                 CurrStrLen := 14;
+                 LineToRead.GETSUBTEXT(EDIEntry."Field 5",NextStartingPos,CurrStrLen);
+                 NextStartingPos := NextStartingPos + CurrStrLen;
+                 CurrStrLen := 1;
+                 LineToRead.GETSUBTEXT(EDIEntry."Field 6",NextStartingPos,CurrStrLen);
+                 NextStartingPos := NextStartingPos + CurrStrLen;
+                 CurrStrLen := 9;
+                 LineToRead.GETSUBTEXT(EDIEntry."Field 7",NextStartingPos,CurrStrLen);
+                 NextStartingPos := NextStartingPos + CurrStrLen;
+                 CurrStrLen := 8;
+                 LineToRead.GETSUBTEXT(EDIEntry."Field 8",NextStartingPos,CurrStrLen);
+                 NextStartingPos := NextStartingPos + CurrStrLen;
+                 CurrStrLen := 1;
+                 LineToRead.GETSUBTEXT(EDIEntry."Field 9",NextStartingPos,CurrStrLen);
+                 NextStartingPos := NextStartingPos + CurrStrLen;
+                 CurrStrLen := 10;
+                 LineToRead.GETSUBTEXT(EDIEntry."Field 10",NextStartingPos,CurrStrLen);
+                 NextStartingPos := NextStartingPos + CurrStrLen;
+                 CurrStrLen := 5 + 14;
+                 LineToRead.GETSUBTEXT(EDIEntry."Field 11",NextStartingPos,CurrStrLen);
+                 NextStartingPos := NextStartingPos + CurrStrLen;
+              END;
+              }
+            END;//CASE
+          END;
+          '190':LineToRead.GETSUBTEXT(EDIEntry."Field 4",NextStartingPos,6);
+          '193':BEGIN
+            CurrStrLen := 3;//Qualifiant
+            LineToRead.GETSUBTEXT(EDIEntry."Field 4",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            CurrStrLen := 6;//Date de fin de pr‚paration
+            LineToRead.GETSUBTEXT(EDIEntry."Field 5",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            CurrStrLen := 4;//Heure de fin de pr‚paration
+            LineToRead.GETSUBTEXT(EDIEntry."Field 6",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+          END;
+          '191':LineToRead.GETSUBTEXT(EDIEntry."Field 4",NextStartingPos,6);
+          '199':LineToRead.GETSUBTEXT(EDIEntry."Field 4",NextStartingPos,6);
+          '221':BEGIN
+            CurrStrLen := 13;//Genecod MAJUSCULE 3012668100100
+            LineToRead.GETSUBTEXT(EDIEntry."Field 4",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            CurrStrLen := 8;//Nø msg. EDI AX
+            LineToRead.GETSUBTEXT(EDIEntry."Field 5",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+          END;
+          '223':LineToRead.GETSUBTEXT(EDIEntry."Field 4",NextStartingPos,13);//Genecod du lieu de la livraison
+          '224':BEGIN
+            CurrStrLen := 3;//3 premier chiffrres du CNUT 023
+            LineToRead.GETSUBTEXT(EDIEntry."Field 4",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            CurrStrLen := 13;//Genecod de la station
+            LineToRead.GETSUBTEXT(EDIEntry."Field 5",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            CurrStrLen := 8;//Nø de message EDI
+            LineToRead.GETSUBTEXT(EDIEntry."Field 6",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            CurrStrLen := 6;//Rappel du CNUR 176
+            LineToRead.GETSUBTEXT(EDIEntry."Field 7",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+          END;
+          '227':LineToRead.GETSUBTEXT(EDIEntry."Field 4",NextStartingPos,35);//Code d'identification
+          '228':BEGIN
+            CurrStrLen := 4;//0000
+            LineToRead.GETSUBTEXT(EDIEntry."Field 4",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            CurrStrLen := 6;//Nø adh‚rent/Nø PDV
+            LineToRead.GETSUBTEXT(EDIEntry."Field 5",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            CurrStrLen := 8;//Nø commande de micro ou 00000000
+            LineToRead.GETSUBTEXT(EDIEntry."Field 6",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            CurrStrLen := 12;//R‚f commande client
+            LineToRead.GETSUBTEXT(EDIEntry."Field 7",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            CurrStrLen := 1;//Mode de livraison 9 G D
+            LineToRead.GETSUBTEXT(EDIEntry."Field 8",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            CurrStrLen := 1;//Not‚ 0 1 3
+            LineToRead.GETSUBTEXT(EDIEntry."Field 9",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            CurrStrLen := 1;//Type de commande B ou S
+            LineToRead.GETSUBTEXT(EDIEntry."Field 10",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            CurrStrLen := 1;//Code origine de commande
+            LineToRead.GETSUBTEXT(EDIEntry."Field 11",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+          END;
+          '267':BEGIN
+            CurrStrLen := 9;//Poids  en gramme
+            LineToRead.GETSUBTEXT(EDIEntry."Field 4",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            CurrStrLen := 9;//00000000
+            LineToRead.GETSUBTEXT(EDIEntry."Field 5",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            CurrStrLen := 9;//Vol total
+            LineToRead.GETSUBTEXT(EDIEntry."Field 6",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            CurrStrLen := 7;//Nb de palette
+            LineToRead.GETSUBTEXT(EDIEntry."Field 7",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            CurrStrLen := 7;//0000000
+            LineToRead.GETSUBTEXT(EDIEntry."Field 8",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            CurrStrLen := 7;//0000000
+            LineToRead.GETSUBTEXT(EDIEntry."Field 9",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            CurrStrLen := 7;//Nb de colis sur palette
+            LineToRead.GETSUBTEXT(EDIEntry."Field 10",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            CurrStrLen := 6; //Nb de ligne de command‚es
+            LineToRead.GETSUBTEXT(EDIEntry."Field 11",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            CurrStrLen := 6;//Nb de ligne exp‚di‚es
+            LineToRead.GETSUBTEXT(EDIEntry."Field 12",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+          END;
+          '323':BEGIN
+            CurrStrLen := 13;//Code du transporteur
+            LineToRead.GETSUBTEXT(EDIEntry."Field 4",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            CurrStrLen := 10;//Nom du transporteur
+            LineToRead.GETSUBTEXT(EDIEntry."Field 5",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            CurrStrLen := 35;//Nø exped transporteur
+            LineToRead.GETSUBTEXT(EDIEntry."Field 6",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+          END;
+          '361':BEGIN
+            CurrStrLen := 6;//Nø du client
+            LineToRead.GETSUBTEXT(EDIEntry."Field 4",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            CurrStrLen := 29;//Nom du client
+            LineToRead.GETSUBTEXT(EDIEntry."Field 5",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            CurrStrLen := 8;//Nø BL MAJUSCULE
+            LineToRead.GETSUBTEXT(EDIEntry."Field 6",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+          END;
+          '362':BEGIN
+            CurrStrLen := 35;//voie
+            LineToRead.GETSUBTEXT(EDIEntry."Field 4",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            CurrStrLen := 35;//Rue
+            LineToRead.GETSUBTEXT(EDIEntry."Field 5",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            CurrStrLen := 35;//Rue 2
+            LineToRead.GETSUBTEXT(EDIEntry."Field 6",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            CurrStrLen := 35;//Localit‚
+            LineToRead.GETSUBTEXT(EDIEntry."Field 7",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+          END;
+          '363':LineToRead.GETSUBTEXT(EDIEntry."Field 4",NextStartingPos,35);//Bureau distributeur
+          '364':BEGIN
+            CurrStrLen := 9;//CP
+            LineToRead.GETSUBTEXT(EDIEntry."Field 4",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            CurrStrLen := 15;//Nø t‚l
+            LineToRead.GETSUBTEXT(EDIEntry."Field 5",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+          END;
+          '390':BEGIN
+            CurrStrLen := 4;//Par combien 0001
+            LineToRead.GETSUBTEXT(EDIEntry."Field 4",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            CurrStrLen := 14;//R‚f livr‚
+            LineToRead.GETSUBTEXT(EDIEntry."Field 5",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            CurrStrLen := 1;//0
+            LineToRead.GETSUBTEXT(EDIEntry."Field 6",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            CurrStrLen := 9;//qt‚ livr‚e
+            LineToRead.GETSUBTEXT(EDIEntry."Field 7",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            CurrStrLen := 8;//PU
+            LineToRead.GETSUBTEXT(EDIEntry."Field 8",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            CurrStrLen := 1;//Indicateur de livraison
+            LineToRead.GETSUBTEXT(EDIEntry."Field 9",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            CurrStrLen := 10;//Info compl‚mentaires
+            LineToRead.GETSUBTEXT(EDIEntry."Field 10",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            CurrStrLen := 19;//Code article MAJUSCULE ou Ref. commerncial
+            LineToRead.GETSUBTEXT(EDIEntry."Field 11",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+          END;
+        END;//CASE
+        xCNUR := CNUR;
+        EDIEntry.MODIFY;
+        COMMIT;
+
+        IF ((EDIEntry."Field 2" = '02405') AND (EDIEntry."Field 3" = '199')) OR
+           ((EDIEntry."Field 2" = '02405') AND (EDIEntry."Field 3" = '')) THEN
+          i += 1;
+        IF i MOD 2 = 0 THEN
+          CNUT_Msg := '';
+
+        CLEAR(LineToReadBuff);
+        LineToReadBuff.ADDTEXT(LineToRead);
+        CLEAR(LineToRead);
+        LineToReadBuff.GETSUBTEXT(LineToRead,EndOfLinePos + 2);
+      UNTIL EOF;
+    END;
+
+    LOCAL PROCEDURE RegisterRec@1180210000(VAR EDIEntry@1180210000 : Record 50002;VendorNo@1180250004 : Code[20];EDICode@1180250008 : Code[10];EDILogDT@1180250006 : DateTime;BatchID@1000000000 : GUID);
+    VAR
+      CompanyInfo@1180250055 : Record 79;
+      SalesHeader@1180250009 : Record 36;
+      SalesLine@1180250010 : Record 37;
+      PurchHeader@1180250015 : Record 38;
+      PurchLine@1180250016 : Record 39;
+      Item@1180250003 : Record 27;
+      ItemCrossRef@1180250002 : Record 5717;
+      PurchPrice@1180250001 : Record 7012;
+      ShipAgent@1180250025 : Record 291;
+      ShipAgentSrv@1180250026 : Record 5790;
+      EDILog2@1180250013 : Record 50001;
+      TempEDIEntry@1180250007 : TEMPORARY Record 50002;
+      xEDIEntry@1180250029 : Record 50002;
+      EDILogEntry@1180250046 : Record 50004;
+      ReleasePurchDoc@1180250056 : Codeunit 415;
+      LastMsgError@1180250005 : Text[128];
+      OrderRefCust@1180250014 : Text[35];
+      ShipAgentName@1180250040 : Text[50];
+      ShipAgentCode@1180250024 : Code[10];
+      ShipAgentSrvCode@1180250023 : Code[10];
+      AnomalyCode@1180250044 : Code[10];
+      CrossRefNoVend@1180250027 : Code[20];
+      xCrossRefNoVend@1180250028 : Code[20];
+      VendorShipNo@1180250030 : Code[35];
+      CustNo@1180250012 : Code[20];
+      EDIMsgNo@1180250038 : Code[20];
+      ExtDocNo@1180250039 : Code[20];
+      CrossRefExtNo@1180250041 : Code[20];
+      ItemNo@1180250045 : Code[20];
+      GrossWeight@1180250017 : Decimal;
+      NetWeight@1180250018 : Decimal;
+      Vol@1180250019 : Decimal;
+      Qty2Receive@1180250042 : Decimal;
+      Qty2Ship@1180250051 : Decimal;
+      UnitCost@1180250043 : Decimal;
+      NbrOfPallet@1180250020 : Integer;
+      NbrOfPackage@1180250021 : Integer;
+      NbrOfPackagePerPallet@1180250022 : Integer;
+      i@1180250048 : Integer;
+      NbrOfLine@1180250057 : Integer;
+      NbrOfHandledLine@1180250049 : Integer;
+      NewVendorShip@1180250031 : Boolean;
+      PurchLineFound@1180250052 : Boolean;
+      SalesLineFound@1180250053 : Boolean;
+      DocOnErr@1180250054 : Boolean;
+      Found@1180250050 : Boolean;
+      DouboonItemExist@1180250047 : Boolean;
+      CNUR@1180250035 : Text[3];
+      xCNUR@1180250034 : Text[3];
+      CNUT_Lot@1180250033 : Text[5];
+      CNUT_Msg@1180250032 : Text[5];
+      ItemDescrip@1180250036 : Text[50];
+      PostDate@1180250011 : Date;
+      ShipDate@1180250037 : Date;
+      AnomalyCode2@1180250058 : Code[10];
+      MicroOrderNo@1180250059 : Code[20];
+    BEGIN
+      CompanyInfo.GET();
+      CompanyInfo.TESTFIELD("Customer No. for MAJUSCULE");
+
+      EDISetup.GET(EDICode);
+
+      CLEAR(TempEDIEntry);
+      TempEDIEntry.RESET;
+      TempEDIEntry.DELETEALL;
+
+      CLEAR(TempSalesHeader);
+      TempSalesHeader.RESET;
+      TempSalesHeader.DELETEALL;
+
+      CLEAR(TempPurchHeader);
+      TempPurchHeader.RESET;
+      TempPurchHeader.DELETEALL;
+
+      PurchHeader.INIT;
+      SalesHeader.INIT;
+
+      NbrOfLine := 0;
+      NbrOfHandledLine := 0;
+
+      EDIEntry.RESET;
+      EDIEntry.LOCKTABLE;
+      EDIEntry.SETCURRENTKEY("EDI Code","Imp./Exp. Date",Error,Handled);
+      EDIEntry.SETRANGE("EDI Code",EDICode);
+      IF BatchID = NullGUID THEN
+        EDIEntry.SETFILTER("Imp./Exp. Date", '>=%1', EDILogDT)
+      ELSE BEGIN
+        EDIEntry.RESET;
+        EDIEntry.LOCKTABLE;
+        EDIEntry.SETCURRENTKEY("Batch ID");
+        EDIEntry.SETRANGE("EDI Code",EDICode);
+        EDIEntry.SETRANGE("Batch ID", BatchID);
+      END;
+
+      IF EDIEntry.FINDSET THEN BEGIN
+        NbrOfLine := EDIEntry.COUNT;
+        REPEAT
+          TempEDIEntry := EDIEntry;
+          TempEDIEntry.INSERT;
+
+          NbrOfHandledLine += 1;
+
+          CNUT_Lot := EDIEntry."Field 1";
+          CNUT_Msg := EDIEntry."Field 2";
+          CNUR := EDIEntry."Field 3";
+
+          Qty2Receive := 0;
+
+          CASE CNUR OF
+            '':BEGIN
+              IF (CNUT_Lot = '03503') AND
+                 (CNUT_Msg = '02405')
+                 AND (NbrOfHandledLine <> 4)
+                 THEN BEGIN
+                //C'est donc une nouvelle cde … traiter et valider en rcpt la pr‚c‚dente et en liv la cde associ‚e
+                IF Post AND
+                  (DocOnErr = FALSE) THEN BEGIN
+                  COMMIT;
+                  PurchHeader.CALCFIELDS("Completely Received");
+                  SalesHeader.CALCFIELDS("Completely Shipped");
+                  IF (PurchHeader."No." <> '') AND
+                     (PurchHeader."Completely Received" = FALSE) THEN BEGIN
+                    TempPurchHeader := PurchHeader;
+                    IF TempPurchHeader.INSERT THEN;
+                  END;
+                  IF (SalesHeader."No." <> '') AND
+                     (SalesHeader."Completely Shipped"= FALSE) AND
+                     (SalesHeader."Sell-to Customer No." <> CompanyInfo."Customer No. for MAJUSCULE") THEN BEGIN
+                    TempSalesHeader := SalesHeader;
+                    IF TempSalesHeader.INSERT THEN;
+                  END;
+                END;
+                DocOnErr := FALSE;
+              END;
+            END;
+            '100':BEGIN//En-tˆte
+            //Genecod de la station EDI ayant envoy‚e la commande
+            END;
+            '176':BEGIN//En-tˆte
+              IF EDIEntry."Field 4" <> '' THEN
+                IF EVALUATE(PostDate,COPYSTR(EDIEntry."Field 4",1,6)) THEN;//Date d'emission
+            END;
+            '177':BEGIN//En-tˆte et/ou lignes
+              CASE xCNUR OF
+                '176':BEGIN//En-tˆte
+                  OrderRefCust := COPYSTR(EDIEntry."Field 4",1,35);//Commentaire sur exped'
+                  CustNo := COPYSTR(EDIEntry."Field 5",1,20)//R‚f ‚metteur cli
+                END;
+                ELSE BEGIN//lignes
+                  //Code type ligne LIB, COM, PRL, PRA
+                  ItemDescrip := EDIEntry."Field 4";//D‚signation de l'article ou autre
+                END;
+              END;//CASE
+            END;
+            '191':BEGIN
+              IF (CNUT_Lot = '03503') AND
+                 (CNUT_Msg = '') THEN BEGIN
+                //C'est donc la derniŠre cde … valider en rcpt et en liv … la cde associ‚e
+                IF Post AND
+                  (DocOnErr = FALSE) THEN BEGIN
+                  COMMIT;
+                  PurchHeader.CALCFIELDS("Completely Received");
+                  SalesHeader.CALCFIELDS("Completely Shipped");
+                  IF (PurchHeader."No." <> '') AND
+                     (PurchHeader."Completely Received" = FALSE) THEN BEGIN
+                    TempPurchHeader := PurchHeader;
+                    IF TempPurchHeader.INSERT THEN;
+                  END;
+                  IF (SalesHeader."No." <> '') AND
+                     (SalesHeader."Completely Shipped"= FALSE) AND
+                     (SalesHeader."Sell-to Customer No." <> CompanyInfo."Customer No. for MAJUSCULE") THEN BEGIN
+                    TempSalesHeader := SalesHeader;
+                    IF TempSalesHeader.INSERT THEN;
+                  END;
+                  DocOnErr := FALSE;
+                END;
+              END;
+            END;
+            '193':BEGIN//En-tˆte
+              //Qualifiant de la date
+              IF EDIEntry."Field 5" <> '' THEN
+                IF NOT EVALUATE(ShipDate,COPYSTR(EDIEntry."Field 5",1,6)) THEN //Date de fin pr‚paration
+                  ShipDate := WORKDATE;
+              //Heure de pr‚paration
+            END;
+            '221':BEGIN//En-tˆte
+              //Gencod MJ
+              //Nø EDI AX
+            END;
+            '223':BEGIN//En-tˆte
+              //Gencod du lieu de livraison
+            END;
+            '224':BEGIN//En-tˆte
+              //CNUT_Msg de la cde vte
+              //Gencod de la station ayant ‚mis la cde
+              EDIMsgNo := COPYSTR(EDIEntry."Field 6",1,20);//Nø de msg EDI (CNUR 221 d ela cde)
+              //CNUR 176
+            END;
+            '227':BEGIN//Lignes
+              //Code d'identification du colis
+            END;
+            '228':BEGIN//En-tˆte
+              //'0000'
+              //Nøadh‚rent/PDV
+              // ALDA 071015D
+              MicroOrderNo := COPYSTR(EDIEntry."Field 6",1,8);// nø cde micro ou '00000000'
+              ExtDocNo := COPYSTR(EDIEntry."Field 7",1,20);//R‚f. cde Client
+              //Mode de livraion
+              //Code notation
+              //Type de commande
+              //Code origine de la commande
+            END;
+            '323':BEGIN//En-tˆte
+              ShipAgentCode := COPYSTR(EDIEntry."Field 4",1,10);//Code du transporteur
+              ShipAgentName := COPYSTR(EDIEntry."Field 5",1,50);//Nom du transporteur
+              ShipAgentSrvCode := COPYSTR(EDIEntry."Field 6",1,10);//Nø exped transporteur
+              IF (ShipAgentCode <> '') AND NOT ShipAgent.GET(ShipAgentCode) THEN BEGIN
+                ShipAgent.INIT;
+                ShipAgent.Code := ShipAgentCode ;
+                ShipAgent.Name := ShipAgent.Name;
+                ShipAgent.INSERT;
+                IF (ShipAgentSrvCode <> '') AND NOT ShipAgentSrv.GET(ShipAgentCode,ShipAgentSrvCode) THEN BEGIN
+                  ShipAgentSrv.INIT;
+                  ShipAgentSrv."Shipping Agent Code" := ShipAgentCode;
+                  ShipAgentSrv.Code := ShipAgentSrvCode;
+                  ShipAgentSrv.Description := '';
+                  ShipAgentSrv.INSERT;
+                END;
+              END;
+              IF (OrderRefCust <> '') OR
+                 (MicroOrderNo <> '') THEN BEGIN
+                //DerniŠre info concernant l'en-tˆte de l'avis d'exped' d'une commande
+                PurchHeader.LOCKTABLE;
+                PurchHeader.RESET;
+                PurchHeader.SETRANGE("Document Type",PurchHeader."Document Type"::Order);
+                PurchHeader.SETRANGE("Micro Order No.",MicroOrderNo);
+                IF PurchHeader.ISEMPTY THEN
+                  PurchHeader.SETRANGE("Order Reference Customer",OrderRefCust);
+
+                IF PurchHeader.FINDFIRST THEN BEGIN
+                  DocOnErr := FALSE;
+                  SalesHeader.LOCKTABLE;
+                  SalesHeader.RESET;
+                  SalesHeader.SETRANGE("Document Type",SalesHeader."Document Type"::Order);
+                  SalesHeader.SETRANGE("Micro Order No.",MicroOrderNo);
+                  IF SalesHeader.ISEMPTY THEN
+                    SalesHeader.SETRANGE("Order Reference Customer",OrderRefCust);
+
+                  IF SalesHeader.FINDFIRST THEN BEGIN
+                    //Mise … jour de la commande achat
+                    CLEAR(ReleasePurchDoc);
+                    ReleasePurchDoc.PerformManualReopen(PurchHeader);
+                    PurchHeader."Last EDI Code for Batch" := EDICode;
+                    PurchHeader."Last EDI DT for Batch" := EDILogDT;
+                    PurchHeader.VALIDATE("Posting Date",PostDate);
+                    PurchHeader."Vendor Shipment No." := VendorShipNo;
+                    PurchHeader."Gross Weight" := GrossWeight;
+                    PurchHeader."Net Weight" := NetWeight;
+                    PurchHeader.Volume := Vol;
+                    PurchHeader."Nbr. of Pallet" := NbrOfPallet;
+                    PurchHeader."Nbr. of Package per Pallet" := NbrOfPackagePerPallet;
+                    PurchHeader.MODIFY;
+                    //ACBDU 060613D.Begin
+                    PurchLine.RESET;
+                    PurchLine.SETRANGE("Document Type",PurchHeader."Document Type");
+                    PurchLine.SETRANGE("Document No.",PurchHeader."No.");
+                    PurchLine.SETRANGE(Type,PurchLine.Type::Item);
+                    IF PurchLine.FINDSET(TRUE,FALSE) THEN
+                      REPEAT
+                        PurchLine.VALIDATE("Qty. to Receive",0);
+                        PurchLine.MODIFY(FALSE);
+                      UNTIL PurchLine.NEXT = 0;
+                    //ACBDU 060613D.End
+                    //Mise … jour de la commande vente
+                    SalesHeader.VALIDATE("Posting Date",PostDate);
+                    SalesHeader."Last EDI Code for Batch" := EDICode;
+                    SalesHeader."Last EDI DT for Batch" := EDILogDT;
+                    SalesHeader."Shipment Date" := ShipDate;
+                    SalesHeader."Gross Weight" := GrossWeight;
+                    SalesHeader."Net Weight" := NetWeight;
+                    SalesHeader.Volume := Vol;
+                    SalesHeader."Nbr. of Pallet" := NbrOfPallet;
+                    SalesHeader."Nbr. of Package per Pallet" := NbrOfPackagePerPallet;
+                    SalesHeader."Shipping Agent Code" := ShipAgentCode;
+                    SalesHeader."Shipping Agent Service Code" := ShipAgentSrvCode;
+                    SalesHeader."Vendor Shipment No." := VendorShipNo;
+                    SalesHeader.MODIFY;
+                    //ACBDU 060613D.Begin
+                    //Mise … 0 des qt‚. … liv pr ‚viter de relivrer (en rapport avec la modif ds CU80)
+                    SalesLine.RESET;
+                    SalesLine.SETRANGE("Document Type",SalesHeader."Document Type");
+                    SalesLine.SETRANGE("Document No.",SalesHeader."No.");
+                    SalesLine.SETRANGE(Type,SalesLine.Type::Item);
+                    IF SalesLine.FINDSET(TRUE,FALSE) THEN
+                      REPEAT
+                        SalesLine.VALIDATE("Qty. to Ship",0);
+                        SalesLine.MODIFY(FALSE);
+                      UNTIL SalesLine.NEXT = 0;
+                    //ACBDU 060613D.End
+                  END ELSE BEGIN
+                    CreateEDILogEntry(EDICode,EDILogDT,STRSUBSTNO(Text002,OrderRefCust),2,EDIEntry."Entry No.");
+                    DocOnErr := TRUE;
+                    SalesHeader.INIT;
+                  END;
+                END ELSE BEGIN
+                  CreateEDILogEntry(EDICode,EDILogDT,STRSUBSTNO(Text003,OrderRefCust),2,EDIEntry."Entry No.");
+                  DocOnErr := TRUE;
+                  PurchHeader.INIT;
+                END;
+              END ELSE BEGIN
+                CreateEDILogEntry(EDICode,EDILogDT,Text012,2,EDIEntry."Entry No.");
+                DocOnErr := TRUE;
+              END;
+            END;
+            '267':BEGIN//En-tˆte
+              GrossWeight := ConvTxt2Dec(EDIEntry."Field 4");//Poids total en g
+              NetWeight := ConvTxt2Dec(EDIEntry."Field 4");
+              //'00000000'
+              Vol := ConvTxt2Dec(EDIEntry."Field 6");//Vol total
+              NbrOfPallet := ConvTxt2Int(EDIEntry."Field 7");//Nb de palette
+              //'0000000'
+              //'0000000'
+              NbrOfPackagePerPallet := ConvTxt2Int(EDIEntry."Field 10");
+              //Nombre de ligne command‚es
+              //Nombre de ligne exp‚di‚es
+            END;
+            '361':BEGIN//En-tˆte
+              //Nø du client
+              //Nom du client
+              VendorShipNo := EDIEntry."Field 6";//Nø BL fournisseur MAJUSCULE
+            END;
+            '363':BEGIN//En-tˆte
+              //Bureau distributeur
+            END;
+            '364':BEGIN//En-tˆte
+              //Code postal du bureau distributeur
+              //T‚l du client
+            END;
+            '390':BEGIN//Lignes
+              //0001 par combien
+              CrossRefExtNo := FORMAT(EDIEntry."Field 5");//Ref. art MAJUSCULE
+              //0 variante logistique
+              Qty2Receive := ConvTxt2Dec(EDIEntry."Field 7");//Qt‚ livr‚e
+              UnitCost := ConvTxt2Dec(EDIEntry."Field 8");//PU
+              //Indicateur de livraison (Non)
+              AnomalyCode := EDIEntry."Field 10";//Anomalie (… stocker dans les lignes vente)
+              //CrossRefExtNo := EDIEntry."Field 11";//Code article MAJUSCULE
+              //Recherche de l'article … partir de la r‚f‚rence externe fournisseur, et log d'err le cas ‚ch‚ant
+              IF NOT GetItem(ItemNo,CrossRefExtNo,EDISetup."Source No.") THEN BEGIN
+                CreateEDILogEntry(EDICode,EDILogDT,STRSUBSTNO(Text006,CrossRefExtNo),2,EDIEntry."Entry No.");
+                DocOnErr := TRUE;
+              END;
+              //Recherche de la ligne d'achat (avec le nø d'article)
+              PurchLine.RESET;
+              PurchLine.SETRANGE("Document Type",PurchLine."Document Type"::Order);
+              PurchLine.SETRANGE("Document No.",PurchHeader."No.");
+              PurchLine.SETRANGE(Type,PurchLine.Type::Item);
+              PurchLine.SETRANGE("No.",ItemNo);
+              //Recheche si pr‚sence de remplacement d'article
+              IF (DocOnErr = FALSE) AND
+                 (CheckReplacedItemExist(EDIEntry."Field 10")) THEN BEGIN
+                DocOnErr := TRUE;
+                PurchLineFound := FALSE;
+                CreateEDILogEntry(EDICode,EDILogDT,STRSUBSTNO(Text019,OrderRefCust,CrossRefExtNo,COPYSTR(EDIEntry."Field 10",2,7)),
+                  1,EDIEntry."Entry No.");
+              END ELSE
+                PurchLineFound := PurchLine.FINDFIRST;
+              //Recherche de la ligne de vente (avec le nø d'article)
+              IF PurchLineFound THEN BEGIN
+                SalesLine.RESET;
+                SalesLine.SETRANGE("Document Type",SalesLine."Document Type"::Order);
+                SalesLine.SETRANGE("Document No.",SalesHeader."No.");
+                SalesLine.SETRANGE(Type,SalesLine.Type::Item);
+                //Recherche si pr‚sence de doublon sur nø article
+                DouboonItemExist := CheckDouboonItemExist(SalesHeader."Document Type",SalesHeader."No.",ItemNo);
+                IF DouboonItemExist THEN BEGIN
+                  SalesLine.SETRANGE("No.",ItemNo);
+                  CreateEDILogEntry(EDICode,EDILogDT,STRSUBSTNO(Text018,OrderRefCust,CrossRefExtNo),2,EDIEntry."Entry No.");
+                END ELSE BEGIN
+                  SalesLine.SETRANGE("Line No. Reference Customer",PurchLine."Line No. Reference Customer");
+                END;
+                SalesLineFound := SalesLine.FINDSET(TRUE,FALSE);
+              END;
+              //Mise … jour des lignes si l'achat et la vente ont ‚t‚ trouv‚
+              IF PurchLineFound AND SalesLineFound THEN BEGIN
+                //Mise … jour du code anomalie en tout ‚tat de cause
+                PurchLine."Anomaly Code" := AnomalyCode;
+                PurchLine.MODIFY;
+                SalesLine."Anomaly Code" := AnomalyCode;
+                SalesLine.MODIFY;
+                //En fonction du code anomalie
+                AnomalyCode := COPYSTR(AnomalyCode,1,3);
+                AnomalyCode2 := COPYSTR(AnomalyCode,4,2);
+                CASE AnomalyCode OF
+                  'LIJ','MQL':BEGIN
+                    //Mise … jour de la ligne d'article de la cde achat correspondante
+                    IF (Qty2Receive <> 0) AND
+                       (Qty2Receive <= PurchLine."Outstanding Quantity") AND
+                       (PurchLine.Quantity > PurchLine."Quantity Received") THEN BEGIN
+                      PurchLine.VALIDATE("Qty. to Receive",Qty2Receive);
+                      PurchLine.VALIDATE("Direct Unit Cost",UnitCost);
+                      PurchLine.MODIFY;
+                    END ELSE BEGIN
+                      CreateEDILogEntry(EDICode,EDILogDT,STRSUBSTNO(Text014,OrderRefCust,CrossRefExtNo),1,EDIEntry."Entry No.");
+                    END;
+                    //Mise … jour de la ligne d'article de la cde vente correspondante
+                    IF DouboonItemExist THEN BEGIN
+                      Qty2Ship := Qty2Receive;
+                      REPEAT
+                        IF Qty2Ship > 0 THEN BEGIN
+                          IF Qty2Ship >= SalesLine."Outstanding Quantity" THEN
+                            SalesLine.VALIDATE("Qty. to Ship",SalesLine."Outstanding Quantity")
+                          ELSE
+                            SalesLine.VALIDATE("Qty. to Ship",Qty2Ship);
+                          Qty2Ship := Qty2Ship - SalesLine."Qty. to Ship";
+                        END ELSE BEGIN
+                          CreateEDILogEntry(EDICode,EDILogDT,STRSUBSTNO(Text013,OrderRefCust,CrossRefExtNo),1,EDIEntry."Entry No.");
+                        END;
+                        SalesLine."Anomaly Code" := AnomalyCode;
+                        SalesLine.VALIDATE("Unit Cost (LCY)",UnitCost);
+                        SalesLine.MODIFY;
+                      UNTIL SalesLine.NEXT = 0;
+                    END ELSE BEGIN
+                      IF (Qty2Receive <> 0) AND
+                         (Qty2Receive <= SalesLine."Outstanding Quantity") AND
+                         (SalesLine.Quantity > SalesLine."Quantity Shipped") THEN BEGIN
+                        SalesLine.VALIDATE("Qty. to Ship",Qty2Receive);
+                        SalesLine.VALIDATE("Unit Cost (LCY)",UnitCost);
+                        SalesLine.MODIFY;
+                      END ELSE BEGIN
+                        CreateEDILogEntry(EDICode,EDILogDT,STRSUBSTNO(Text013,OrderRefCust,CrossRefExtNo),1,EDIEntry."Entry No.");
+                      END;
+                    END;
+                    //Pas de validation automatique pour un LIJ avec la mention RT/ (remplcement temporaire,commercial,marketing)
+                    IF AnomalyCode2 IN ['RT','RC','RM'] THEN BEGIN
+                      DocOnErr := TRUE;
+                      CreateEDILogEntry(EDICode,EDILogDT,STRSUBSTNO('Remplacement (RT/RC/RM) du jour %1 %2',OrderRefCust,CrossRefExtNo),
+                        2,EDIEntry."Entry No.");
+                    END;
+                  END;
+                  'RET':BEGIN
+                     PurchLine.VALIDATE("Qty. to Receive",0);
+                     PurchLine.MODIFY;
+                     SalesLine.VALIDATE("Qty. to Ship",0);
+                     SalesLine.MODIFY;
+                     CreateEDILogEntry(EDICode,EDILogDT,STRSUBSTNO('Ligne en retour %1 %2',OrderRefCust,CrossRefExtNo),
+                       0,EDIEntry."Entry No.");
+                   END;
+                  'CG':BEGIN
+                     PurchLine.VALIDATE("Qty. to Receive",0);
+                     PurchLine.MODIFY;
+                     SalesLine.VALIDATE("Qty. to Ship",0);
+                     SalesLine.MODIFY;
+                     CreateEDILogEntry(EDICode,EDILogDT,STRSUBSTNO('Commande group‚ %1 %2',OrderRefCust,CrossRefExtNo),
+                       0,EDIEntry."Entry No.");
+                   END;
+                  'DD':BEGIN
+                     PurchLine.VALIDATE("Qty. to Receive",0);
+                     PurchLine.MODIFY;
+                     SalesLine.VALIDATE("Qty. to Ship",0);
+                     SalesLine.MODIFY;
+                     CreateEDILogEntry(EDICode,EDILogDT,STRSUBSTNO('D‚bit divers %1 %2',OrderRefCust,CrossRefExtNo),
+                       0,EDIEntry."Entry No.");
+                   END;
+                  'MQJ','MQS','MQH':BEGIN
+                     CreateEDILogEntry(EDICode,EDILogDT,STRSUBSTNO('Manquant %1 %2',OrderRefCust,CrossRefExtNo),
+                       0,EDIEntry."Entry No.");
+                   END;
+                  'ANO':BEGIN
+                     PurchLine.VALIDATE("Qty. to Receive",0);
+                     PurchLine.MODIFY;
+                     SalesLine.VALIDATE("Qty. to Ship",0);
+                     SalesLine.MODIFY;
+                     CreateEDILogEntry(EDICode,EDILogDT,STRSUBSTNO('Anomalie du jour %1 %2',OrderRefCust,CrossRefExtNo),
+                       0,EDIEntry."Entry No.");
+                     CASE AnomalyCode2 OF
+                       '11':CreateEDILogEntry(EDICode,EDILogDT,'  art. inexistant',0,EDIEntry."Entry No.");
+                       '13':CreateEDILogEntry(EDICode,EDILogDT,'  cet art. n''est plus disponible'
+                         ,0,EDIEntry."Entry No.");
+                       '14':CreateEDILogEntry(EDICode,EDILogDT,'  cet art. n''est plus disponible'
+                         ,0,EDIEntry."Entry No.");
+                       '15':CreateEDILogEntry(EDICode,EDILogDT,'  art en anomalie',0,EDIEntry."Entry No.");
+                       '16':CreateEDILogEntry(EDICode,EDILogDT,'  art. non disponible',0,EDIEntry."Entry No.");
+                       '18':CreateEDILogEntry(EDICode,EDILogDT,'  art. non disponible',0,EDIEntry."Entry No.");
+                       '23':CreateEDILogEntry(EDICode,EDILogDT,'  cet art. n''est plus disponible'
+                         ,0,EDIEntry."Entry No.");
+                       '24':CreateEDILogEntry(EDICode,EDILogDT,'  prochainement disponible',0,EDIEntry."Entry No.");
+                       '26':CreateEDILogEntry(EDICode,EDILogDT,'  qt‚. > qt‚. maxi autoris‚e',0,EDIEntry."Entry No.");
+                       '27':CreateEDILogEntry(EDICode,EDILogDT,'  reliquat non gard‚ en note',0,EDIEntry."Entry No.");
+                       '28':CreateEDILogEntry(EDICode,EDILogDT,'  ‚puis‚ pour cette ann‚e',0,EDIEntry."Entry No.");
+                     END;//CASE
+
+
+
+                   END;
+                END;//CASE
+                //Afin de ne pas confondre les lignes
+                PurchLine.INIT;
+                SalesLine.INIT;
+              END ELSE BEGIN
+                //Log en cas de lignes non trouv‚es...
+                CASE FALSE OF
+                  PurchLineFound:BEGIN
+                    CreateEDILogEntry(EDICode,EDILogDT,STRSUBSTNO(Text005,OrderRefCust,CrossRefExtNo),2,EDIEntry."Entry No.");
+                    PurchLine.INIT;
+                  END;
+                  SalesLineFound:BEGIN
+                    CreateEDILogEntry(EDICode,EDILogDT,STRSUBSTNO(Text004,OrderRefCust,CrossRefExtNo),2,EDIEntry."Entry No.");
+                    SalesLine.INIT;
+                  END;
+                END;//CASE
+              END
+            END;
+          END;//CASE
+          xCNUR := CNUR;
+          TempEDIEntry.Error := FALSE;
+          TempEDIEntry.MODIFY;
+        UNTIL EDIEntry.NEXT = 0;
+        //Last Docment
+         IF NbrOfHandledLine = NbrOfLine THEN
+                //C'est donc une nouvelle cde … traiter et valider en rcpt la pr‚c‚dente et en liv la cde associ‚e
+                IF Post AND
+                  (DocOnErr = FALSE) THEN BEGIN
+                  COMMIT;
+                  PurchHeader.CALCFIELDS("Completely Received");
+                  SalesHeader.CALCFIELDS("Completely Shipped");
+                  IF (PurchHeader."No." <> '') AND
+                     (PurchHeader."Completely Received" = FALSE) THEN BEGIN
+                    TempPurchHeader := PurchHeader;
+                    IF TempPurchHeader.INSERT THEN;
+                  END;
+                  IF (SalesHeader."No." <> '') AND
+                     (SalesHeader."Completely Shipped"= FALSE) AND
+                     (SalesHeader."Sell-to Customer No." <> CompanyInfo."Customer No. for MAJUSCULE") THEN BEGIN
+                    TempSalesHeader := SalesHeader;
+                    IF TempSalesHeader.INSERT THEN;
+                  END;
+                  //DocOnErr := TRUE;
+                END;
+
+
+      END;
+
+      IF NbrOfHandledLine <> NbrOfLine THEN
+
+        CreateEDILogEntry(EDICode,EDILogDT,STRSUBSTNO(Text020,NbrOfHandledLine,NbrOfLine),2,0)
+      ELSE
+        CreateEDILogEntry(EDICode,EDILogDT,STRSUBSTNO(Text020,NbrOfHandledLine,NbrOfLine),0,0);
+
+      TempEDIEntry.RESET;
+      TempEDIEntry.SETRANGE(Error,FALSE);
+      IF TempEDIEntry.FIND('-') THEN
+        REPEAT
+          EDIEntry := TempEDIEntry;
+          EDIEntry.Handled := TRUE;
+          EDIEntry.MODIFY;
+        UNTIL TempEDIEntry.NEXT = 0;
+    END;
+
+    LOCAL PROCEDURE ConvTxt2Dec@1180250002(Txt2Conv@1180250001 : Text[50]) DecConv : Decimal;
+    BEGIN
+      IF EVALUATE(DecConv,Txt2Conv) THEN
+        DecConv := DecConv / 1000
+      ELSE
+         DecConv := 0.0;
+    END;
+
+    LOCAL PROCEDURE ConvTxt2Int@1180250001(Txt2Conv@1180250001 : Text[50]) IntConv : Integer;
+    BEGIN
+      IF Txt2Conv <> '' THEN
+        EVALUATE(IntConv,Txt2Conv);
+    END;
+
+    PROCEDURE CreateEDILogEntry@1180250005(EDICode@1180250003 : Code[10];EDILogDT@1180250002 : DateTime;String@1180250001 : Text[250];Status@1180250006 : ' ,OK,Error';EntryNo@1180250007 : Integer);
+    VAR
+      EDILogEntry@1180250004 : Record 50004;
+      LineNo@1180250005 : Integer;
+    BEGIN
+      EDILogEntry.RESET;
+      EDILogEntry.SETRANGE("EDI Code",EDICode);
+      EDILogEntry.SETRANGE("Treatment Date",EDILogDT);
+      IF EDILogEntry.FINDLAST THEN
+        LineNo := EDILogEntry."Ligne No."
+      ELSE
+        LineNo := 0;
+
+      LineNo += 10000;
+
+      EDILogEntry.INIT;
+      EDILogEntry."EDI Code" := EDICode;
+      EDILogEntry."Treatment Date" := EDILogDT;
+      EDILogEntry."Ligne No." := LineNo;
+      EDILogEntry."Error Text" := String;
+      EDILogEntry.Status := Status;
+      EDILogEntry."Applied E.D.I. Entry No." := EntryNo;
+      EDILogEntry.INSERT;
+    END;
+
+    PROCEDURE GetItem@1180250010(VAR ItemNo@1180250005 : Code[20];CrossRefExtNo@1180250001 : Code[20];VendorNo@1180250002 : Code[20]) : Boolean;
+    VAR
+      ItemCrossRef@1180250003 : Record 5717;
+      Item@1180250004 : Record 27;
+      Found@1180250006 : Boolean;
+    BEGIN
+      ItemCrossRef.RESET;
+      ItemCrossRef.SETCURRENTKEY("Cross-Reference No.","Cross-Reference Type","Cross-Reference Type No.","Discontinue Bar Code");
+      ItemCrossRef.SETRANGE("Cross-Reference Type",ItemCrossRef."Cross-Reference Type"::Vendor);
+      ItemCrossRef.SETRANGE("Cross-Reference Type No.",VendorNo);
+      ItemCrossRef.SETRANGE("Cross-Reference No.",CrossRefExtNo);
+      IF ItemCrossRef.FINDFIRST THEN
+        Found := TRUE
+      ELSE
+        Found := FALSE;
+
+      IF Found THEN
+        ItemNo := ItemCrossRef."Item No."
+      ELSE
+        ItemNo := '';
+
+      EXIT(Found);
+    END;
+
+    PROCEDURE CheckDouboonItemExist@1180250006(DocType@1180250003 : 'Quote,Order,Invoice,Credit Memo,Blanket Order,Return Order';DocNo@1180250004 : Code[20];ItemNo2Check@1180250002 : Code[20]) : Boolean;
+    VAR
+      SalesLine@1180250001 : Record 37;
+      FoundNbrOfRec@1180250005 : Integer;
+    BEGIN
+      SalesLine.RESET;
+      SalesLine.SETRANGE("Document Type",DocType);
+      SalesLine.SETRANGE("Document No.",DocNo);
+      SalesLine.SETRANGE(Type,SalesLine.Type::Item);
+      SalesLine.SETRANGE("No.",ItemNo2Check);
+      IF SalesLine.FINDSET THEN
+        FoundNbrOfRec := SalesLine.COUNT
+      ELSE
+        FoundNbrOfRec := 0;
+
+      IF FoundNbrOfRec > 1 THEN
+        EXIT(TRUE)
+      ELSE
+        EXIT(FALSE);
+    END;
+
+    PROCEDURE CheckReplacedItemExist@1180250015(Text2Handle@1180250001 : Text[50]) : Boolean;
+    BEGIN
+      IF COPYSTR(Text2Handle,1,2) = 'RT' THEN
+        EXIT(TRUE)
+      ELSE
+        EXIT(FALSE);
+    END;
+
+    PROCEDURE PostPurchAndSalesOrders@1180250013();
+    VAR
+      SalesHeader@1180250004 : Record 36;
+      SalesLine@1180250008 : Record 37;
+      PurchHeader@1180250003 : Record 38;
+      PurchLine@1180250006 : Record 39;
+      BatchPostSalesOrders@1180250002 : Report 296;
+      BatchPostPurchOrders@1180250001 : Report 496;
+    BEGIN
+      PurchHeader.RESET;
+      SalesHeader.RESET;
+      PurchHeader.CLEARMARKS;
+      SalesHeader.CLEARMARKS;
+
+      //Achat
+      TempPurchHeader.RESET;
+      IF TempPurchHeader.FIND('-') THEN
+        REPEAT
+          IF PurchHeader.GET(TempPurchHeader."Document Type",TempPurchHeader."No.") THEN
+            PurchHeader.MARK(TRUE)
+          ELSE
+            PurchHeader.MARK(FALSE);
+        UNTIL TempPurchHeader.NEXT = 0;
+      PurchHeader.MARKEDONLY(TRUE);
+
+      CLEAR(BatchPostPurchOrders);
+      BatchPostPurchOrders.InitReport(TRUE,FALSE,0D,FALSE,FALSE,FALSE,FALSE);
+      BatchPostPurchOrders.USEREQUESTPAGE := FALSE;
+      BatchPostPurchOrders.SETTABLEVIEW(PurchHeader);
+      BatchPostPurchOrders.RUN;
+      COMMIT;
+      //Vente
+      TempSalesHeader.RESET;
+      TempSalesHeader.RESET;
+      IF TempSalesHeader.FIND('-') THEN
+        REPEAT
+          IF SalesHeader.GET(TempSalesHeader."Document Type",TempSalesHeader."No.")
+            //AND NOT (SalesHeader."Order Type" IN [SalesHeader."Order Type"::DG,SalesHeader."Order Type"::"DG sans Stock"]) //BC6>> Posting inconditionnel
+          THEN
+            SalesHeader.MARK(TRUE)
+          ELSE
+            SalesHeader.MARK(FALSE);
+        UNTIL TempSalesHeader.NEXT = 0;
+      SalesHeader.MARKEDONLY(TRUE);
+
+      // ACBDU 061213D
+      //CheckShipingOnSalesOrder(SalesHeader);
+
+      CLEAR(BatchPostSalesOrders);
+      BatchPostSalesOrders.InitReport(TRUE,FALSE,0D,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE);
+      BatchPostSalesOrders.USEREQUESTPAGE := FALSE;
+      BatchPostSalesOrders.SETTABLEVIEW(SalesHeader);
+      BatchPostSalesOrders.RUN;
+      COMMIT;
+
+      //Remise des qt‚ … recpt … 0
+      TempPurchHeader.RESET;
+      IF TempPurchHeader.FINDSET(FALSE,FALSE) THEN
+        REPEAT
+          PurchLine.RESET;
+          PurchLine.SETRANGE("Document Type",TempPurchHeader."Document Type");
+          PurchLine.SETRANGE("Document No.",TempPurchHeader."No.");
+          //PurchLine.SETRANGE("Exported Line",TRUE);
+          //PurchLine.SETFILTER("Outstanding Quantity",'<>%1',0);
+          IF PurchLine.FINDSET(TRUE,FALSE) THEN
+            REPEAT
+              PurchLine.VALIDATE("Qty. to Receive",0);
+              PurchLine.MODIFY;
+            UNTIL PurchLine.NEXT = 0;
+        UNTIL TempPurchHeader.NEXT = 0;
+      //Remise des qt‚ … liv … 0
+      TempSalesHeader.RESET;
+      IF TempSalesHeader.FINDSET(FALSE,FALSE) THEN
+        REPEAT
+          SalesLine.RESET;
+          SalesLine.SETRANGE("Document Type",TempSalesHeader."Document Type");
+          SalesLine.SETRANGE("Document No.",TempSalesHeader."No.");
+          //SalesLine.SETRANGE("Exported Line",TRUE);
+          //SalesLine.SETFILTER("Outstanding Quantity",'<>%1',0);
+          IF SalesLine.FINDSET(TRUE,FALSE) THEN
+            REPEAT
+              SalesLine.VALIDATE("Qty. to Ship",0);
+              SalesLine.MODIFY;
+            UNTIL SalesLine.NEXT = 0;
+        UNTIL TempSalesHeader.NEXT = 0;
+    END;
+
+    PROCEDURE CheckShipingOnSalesOrder@1180250004(VAR SalesHeader@1180250002 : Record 36);
+    VAR
+      SalesSetup@1180250001 : Record 311;
+      SalesLine@1180250003 : Record 37;
+    BEGIN
+      SalesSetup.GET;
+
+      IF SalesHeader.FINDFIRST THEN
+        REPEAT
+          SalesLine.RESET;
+          SalesLine.SETRANGE("Document Type",SalesHeader."Document Type");
+          SalesLine.SETRANGE("Document No.",SalesHeader."No.");
+          SalesLine.SETRANGE(Type,SalesLine.Type::Item);
+          SalesLine.SETRANGE("No.",SalesSetup."Item No. for Shipping Charge");
+          SalesLine.SETFILTER(Quantity,'<>%1',0);
+          IF SalesLine.FINDSET(TRUE,FALSE) THEN
+            REPEAT
+              IF SalesLine."Quantity Shipped" = 0 THEN BEGIN
+                SalesLine.VALIDATE("Qty. to Ship",SalesLine.Quantity);
+                SalesLine.MODIFY(FALSE);
+              END;
+            UNTIL SalesLine.NEXT = 0;
+        UNTIL SalesHeader.NEXT = 0;
+    END;
+
+    BEGIN
+    {
+      AB6.JME.001   04/10/12    Retrait du MQS dans les codes anomalies
+    }
+    END.
+  }
+}
+

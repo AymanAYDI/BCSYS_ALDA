@@ -1,0 +1,272 @@
+OBJECT Table 50005 State Indicator
+{
+  OBJECT-PROPERTIES
+  {
+    Date=12/05/16;
+    Time=10:45:38;
+    Modified=Yes;
+    Version List=BC6AUTOINV;
+  }
+  PROPERTIES
+  {
+  }
+  FIELDS
+  {
+    { 1   ;   ;Primary Key         ;Integer        }
+    { 2   ;   ;Table No.           ;Integer        }
+    { 3   ;   ;TableName           ;Text50         }
+    { 4   ;   ;Committed           ;Boolean        }
+    { 6   ;   ;Actual Status       ;Option        ;OptionString=[ ,Running,Canceled,Skip,Error] }
+    { 7   ;   ;UpdateMode          ;Boolean        }
+    { 15  ;   ;Record ID in Process;RecordID      ;CaptionML=[ENU=Record ID in Process;
+                                                              FRA=ID d'enregistrement en cours] }
+    { 33  ;   ;XML                 ;BLOB          ;CaptionML=[ENU=XML;
+                                                              FRA=XML] }
+    { 103 ;   ;Last Sync. Date     ;Date           }
+    { 104 ;   ;Log Entry No.       ;Integer        }
+    { 50101;  ;Data Flow Code      ;Code20        ;TableRelation="Data Flow";
+                                                   CaptionML=[ENU=Data Flow Code;
+                                                              FRA=Code flux de donn‚es] }
+    { 50104;  ;Prev. Status No.    ;Integer       ;TableRelation="Data Flow Status".No.;
+                                                   CaptionML=[ENU=Prev. Status No.;
+                                                              FRA=Statut pr‚c‚dent] }
+    { 50105;  ;Next Status No.     ;Integer       ;TableRelation="Data Flow Status".No.;
+                                                   CaptionML=[ENU=Next Status No.;
+                                                              FRA=Statut suivant] }
+  }
+  KEYS
+  {
+    {    ;Primary Key                             ;Clustered=Yes }
+    {    ;TableName                                }
+  }
+  FIELDGROUPS
+  {
+  }
+  CODE
+  {
+    VAR
+      NoOfRecords@1000 : BigInteger;
+      RecordNo@1001 : BigInteger;
+      TableNoOfRecords@1002 : BigInteger;
+      TableRecordNo@1003 : BigInteger;
+      PrimaryKey@1018 : BigInteger;
+      StartTime@1004 : Time;
+      LastUpdateTime@1005 : Time;
+      Started@1006 : Boolean;
+      Opened@1007 : Boolean;
+      Window@1008 : Dialog;
+      Text000@1009 : TextConst 'ENU=Database...\;FRA=Base de donn‚es...';
+      Text001@1010 : TextConst 'ENU=" No. of Records #1######\";FRA=" Nb. d''enregistrements #1######\"';
+      Text002@1011 : TextConst 'ENU=" Progress       @2@@@@@@@@@@@@@\";FRA=" Progression    @2@@@@@@@@@@@@@\"';
+      Text003@1012 : TextConst 'ENU=" Ending Time    #3##########\\";FRA=" Heure fin      #3##########\\"';
+      Text004@1000000004 : TextConst 'ENU=" Table          #8#######################\";FRA=" Table          #8#######################\"';
+      Text005@1014 : TextConst 'ENU=" Company        #4#######################\";FRA=" Soci‚t‚        #4#######################\"';
+      Text006@1015 : TextConst 'ENU=" Table          #5#######################\";FRA=" Table          #5#######################\"';
+      Text007@1016 : TextConst 'ENU=" No. of Records #6######\";FRA=" Nb. d''enregistrements #6######\"';
+      Text008@1017 : TextConst 'ENU=" Progress       @7@@@@@@@@@@@@@";FRA=" Progression    @7@@@@@@@@@@@@@\"';
+      DataFlow@1000000001 : Record 50014;
+      EmptyGUID@1000000000 : GUID;
+      TransactionID@1000000002 : GUID;
+      test@1000000003 : TextConst 'ENU=‚ Š ˆ …';
+
+    PROCEDURE Open@1();
+    BEGIN
+      IF GUIALLOWED THEN
+      IF NOT Opened THEN
+        Window.OPEN(
+          Text000 +
+          Text005 +
+          Text001 +
+          Text002 +
+          Text004 +
+          Text006 +
+          Text007 +
+          Text008);
+      LastUpdateTime := TIME;
+      Opened := TRUE;
+    END;
+
+    PROCEDURE UpdateDataFlowStep@4(VAR DataFlowStep@1000 : Record 50018) : Boolean;
+    VAR
+      DataFlow@1000000000 : Record 50014;
+      RecRef@1000000001 : RecordRef;
+    BEGIN
+      IF NOT Opened THEN EXIT;
+      DataFlow.GET(DataFlowStep."Data Flow Code");
+      IF DataFlow."Job Queue Entry ID" = EmptyGUID THEN BEGIN
+        DataFlow."Job Queue Entry ID" := CREATEGUID;
+        DataFlow.MODIFY;
+      END;
+      TransactionID :=  DataFlow."Job Queue Entry ID";
+
+      RecRef.OPEN(DataFlowStep."Source Table ID");
+      RecRef.SETVIEW(DataFlowStep.GetViewRestrictions);
+
+      IF NOT Started THEN BEGIN
+        IF RecRef.COUNT > 0 THEN
+          NoOfRecords := NoOfRecords + RecRef.COUNT;
+        IF NOT Rec.FINDFIRST THEN
+          PrimaryKey := 1
+        ELSE BEGIN
+          PrimaryKey += 1;
+          IF Rec.GET(PrimaryKey) THEN
+            IF Rec.Committed = TRUE THEN
+              NoOfRecords := NoOfRecords - RecRef.COUNT;
+        END;
+        RecRef.CLOSE;
+        EXIT(FALSE);
+      END ELSE BEGIN
+        IF NOT Opened THEN BEGIN
+          Open;
+          IF GUIALLOWED THEN
+          Window.UPDATE(1,NoOfRecords);
+        END;
+        IF RecRef.COUNT = 0 THEN BEGIN
+          IF Rec.GET(PrimaryKey) THEN
+            IF RecRef.NUMBER = Rec."Table No." THEN BEGIN
+                PrimaryKey += 1;
+                EXIT(FALSE);
+              END;
+          EXIT(TRUE)
+        END ELSE
+          IF Rec.GET(PrimaryKey) THEN
+            IF RecRef.NUMBER = Rec."Table No." THEN
+              BEGIN
+                PrimaryKey += 1;
+                EXIT(FALSE);
+              END;
+        TableRecordNo := 0L;
+        TableNoOfRecords := RecRef.COUNT;
+        IF GUIALLOWED THEN BEGIN
+          Window.UPDATE(4,COMPANYNAME);
+          Window.UPDATE(8,TableName);
+          Window.UPDATE(1,TableNoOfRecords);
+          Window.UPDATE(7,0);
+        END;
+        UpdateWindow;
+        RecRef.CLOSE;
+        EXIT(TRUE);
+      END;
+    END;
+
+    PROCEDURE EndUpdateDataFlowStep@3(VAR DataFlowStep@1000000000 : Record 50018);
+    VAR
+      Object@1001 : Record 2000000001;
+    BEGIN
+      IF Started THEN BEGIN
+        Object.SETCURRENTKEY(Type,Name);
+        Object.SETRANGE(Type,Object.Type::Table);
+        Object.SETRANGE(Name,TableName);
+        IF NOT Object.FINDFIRST THEN
+          EXIT;
+        IF Rec.GET(PrimaryKey) THEN
+          EXIT
+        ELSE BEGIN
+          Rec."Primary Key" := PrimaryKey;
+          Rec."Table No." := Object.ID;
+          Rec.TableName :=  Object.Name;
+          Rec.Committed := TRUE;
+          Rec.INSERT;
+          PrimaryKey += 1;
+        END;
+      END;
+
+      COMMIT;
+    END;
+
+    PROCEDURE Start@5();
+    BEGIN
+      Started := TRUE;
+      StartTime := TIME;
+      TableRecordNo := TableNoOfRecords;
+      PrimaryKey :=1;
+    END;
+
+    PROCEDURE Update@2();
+    BEGIN
+      RecordNo := RecordNo + 1L;
+      TableRecordNo := TableRecordNo + 1L;
+      //IF ABS(TIME - LastUpdateTime) > 2000 THEN
+        UpdateWindow;
+    END;
+
+    LOCAL PROCEDURE UpdateWindow@7();
+    BEGIN
+      IF NOT GUIALLOWED THEN EXIT;
+      IF (RecordNo <> 0) AND (NoOfRecords <> 0) THEN
+        Window.UPDATE(2,ROUND(RecordNo / NoOfRecords * 10000L,1));
+
+      IF (TableRecordNo <> 0) AND (TableNoOfRecords <> 0) THEN
+        Window.UPDATE(2,ROUND(TableRecordNo / TableNoOfRecords * 10000L,1));
+
+      LastUpdateTime := TIME;
+    END;
+
+    PROCEDURE CleanUp@6();
+    BEGIN
+      IF Started THEN BEGIN
+        RESET;
+        DELETEALL;
+      END;
+    END;
+
+    PROCEDURE SetTransactionID@1000000000(_TransactionID@1000000000 : GUID);
+    BEGIN
+      TransactionID := _TransactionID;
+    END;
+
+    PROCEDURE InsertLogEntry@1000000001(VAR DataFlowStep@1000 : Record 50018);
+    VAR
+      JobQueueLogEntry@1001 : Record 474;
+    BEGIN
+      DataFlow.GET(DataFlowStep."Data Flow Code");
+      IF DataFlow."Job Queue Entry ID" = EmptyGUID THEN BEGIN
+        DataFlow."Job Queue Entry ID" := CREATEGUID;
+        DataFlow.MODIFY;
+      END;
+      TransactionID := DataFlow."Job Queue Entry ID";
+      JobQueueLogEntry.INIT;
+      JobQueueLogEntry.ID := DataFlow."Job Queue Entry ID";
+      JobQueueLogEntry."User ID" := USERID;
+      JobQueueLogEntry."Start Date/Time" := CURRENTDATETIME;
+      JobQueueLogEntry."Object Type to Run" := DataFlowStep."Object Type to Run";
+      JobQueueLogEntry."Object ID to Run" := DataFlowStep."Object ID to Run";
+      JobQueueLogEntry.Description := DataFlowStep.Name;
+      JobQueueLogEntry.Status := DataFlowStep.Status;
+      JobQueueLogEntry.INSERT(TRUE);
+      "Log Entry No." := JobQueueLogEntry."Entry No.";
+    END;
+
+    PROCEDURE UpdateLogEntry@8(VAR DataFlowStep@1002 : Record 50018;Message@1000000000 : Text);
+    VAR
+      JobQueueLogEntry@1003 : Record 474;
+    BEGIN
+      JobQueueLogEntry.LOCKTABLE;
+      IF JobQueueLogEntry.GET("Log Entry No.") THEN BEGIN
+        JobQueueLogEntry."End Date/Time" := CURRENTDATETIME;
+        IF DataFlowStep.Status = DataFlowStep.Status::Error THEN BEGIN
+          JobQueueLogEntry.Status := JobQueueLogEntry.Status::Error;
+          JobQueueLogEntry.SetErrorMessage(DataFlowStep.GetErrorMessage);
+        END ELSE
+          JobQueueLogEntry.Status := JobQueueLogEntry.Status::Success;
+        IF Message <> '' THEN
+          JobQueueLogEntry.Description := COPYSTR(Message,1,MAXSTRLEN(JobQueueLogEntry.Description));
+        JobQueueLogEntry.MODIFY;
+      END;
+    END;
+
+    PROCEDURE UpdateText@1000000002(TableName@1000000000 : Text;TableNoOfRecords@1000000001 : Integer;PercentInt@1000000002 : Integer);
+    BEGIN
+      IF GUIALLOWED THEN
+        IF Opened THEN BEGIN
+          Window.UPDATE(5,TableName);
+          Window.UPDATE(6,TableNoOfRecords);
+          Window.UPDATE(7,PercentInt);
+        END;
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

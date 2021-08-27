@@ -2,8 +2,9 @@ OBJECT Codeunit 229 Document-Print
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
+    Date=25/04/16;
+    Time=12:14:39;
+    Modified=Yes;
     Version List=NAVW19.00;
   }
   PROPERTIES
@@ -359,6 +360,66 @@ OBJECT Codeunit 229 Document-Print
       REPEAT
         REPORT.RUNMODAL(ReportSelection."Report ID",TRUE,FALSE,PurchHeaderArch)
       UNTIL ReportSelection.NEXT = 0;
+    END;
+
+    PROCEDURE EmailPurchHeader@1000000000(PurchHeader@1000 : Record 38);
+    BEGIN
+      DoPrintPurchHeader(PurchHeader,TRUE);
+    END;
+
+    PROCEDURE DoPrintPurchHeader@1000000001(PurchHeader@1000 : Record 38;SendAsEmail@1000000000 : Boolean);
+    VAR
+      CustomReportSelection@1000000003 : Record 9657;
+      DocumentMailing@1000000002 : Codeunit 260;
+      AttachmentFilePath@1000000001 : Text[250];
+      ReportSelection@1000000005 : Record 77;
+    BEGIN
+      PurchHeader.SETRANGE("No.",PurchHeader."No.");
+      PurchSetup.GET;
+      IF PurchSetup."Calc. Inv. Discount" THEN BEGIN
+        PurchLine.RESET;
+        PurchLine.SETRANGE("Document Type",PurchHeader."Document Type");
+        PurchLine.SETRANGE("Document No.",PurchHeader."No.");
+        PurchLine.FINDFIRST;
+        PurchCalcDisc.RUN(PurchLine);
+        PurchHeader.GET(PurchHeader."Document Type",PurchHeader."No.");
+        COMMIT;
+      END;
+      CASE PurchHeader."Document Type" OF
+        PurchHeader."Document Type"::Quote:
+          ReportSelection.SETRANGE(Usage,ReportSelection.Usage::"P.Quote");
+        PurchHeader."Document Type"::"Blanket Order":
+          ReportSelection.SETRANGE(Usage,ReportSelection.Usage::"P.Blanket");
+        PurchHeader."Document Type"::Order:
+          ReportSelection.SETRANGE(Usage,ReportSelection.Usage::"P.Order");
+        PurchHeader."Document Type"::"Return Order":
+          ReportSelection.SETRANGE(Usage,ReportSelection.Usage::"P.Return");
+        ELSE
+          EXIT;
+      END;
+      ReportSelection.SETFILTER("Report ID",'<>0');
+      ReportSelection.FIND('-');
+      REPEAT
+        IF SendAsEmail THEN BEGIN
+          AttachmentFilePath := SavePurchHeaderReportAsPdf(PurchHeader,ReportSelection."Report ID");
+          DocumentMailing.EmailFileFromPurchHeader(PurchHeader,AttachmentFilePath,CustomReportSelection);
+        END ELSE
+          REPORT.RUNMODAL(ReportSelection."Report ID",TRUE,FALSE,PurchHeader)
+      UNTIL ReportSelection.NEXT = 0;
+    END;
+
+    LOCAL PROCEDURE SavePurchHeaderReportAsPdf@1000000003(VAR PurchHeader@1000 : Record 38;ReportId@1005 : Integer) : Text[250];
+    VAR
+      FileManagement@1003 : Codeunit 419;
+      ServerAttachmentFilePath@1004 : Text;
+    BEGIN
+      ServerAttachmentFilePath := FileManagement.ServerTempFileName('pdf');
+
+      REPORT.SAVEASPDF(ReportId,ServerAttachmentFilePath,PurchHeader);
+      IF NOT EXISTS(ServerAttachmentFilePath) THEN
+        ERROR(ServerSaveAsPdfFailedErr);
+
+      EXIT(ServerAttachmentFilePath);
     END;
 
     BEGIN

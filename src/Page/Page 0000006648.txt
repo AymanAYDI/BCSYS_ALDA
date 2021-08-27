@@ -2,8 +2,9 @@ OBJECT Page 6648 Get Return Shipment Lines
 {
   OBJECT-PROPERTIES
   {
-    Date=09/09/14;
-    Time=12:00:00;
+    Date=28/12/16;
+    Time=12:09:05;
+    Modified=Yes;
     Version List=NAVW18.00;
   }
   PROPERTIES
@@ -82,6 +83,12 @@ OBJECT Page 6648 Get Return Shipment Lines
 
     { 8   ;2   ;Field     ;
                 SourceExpr="No." }
+
+    { 1000000000;2;Field  ;
+                SourceExpr="Vendor Item No." }
+
+    { 1000000001;2;Field  ;
+                SourceExpr="Cross-Reference No. of Vendor" }
 
     { 10  ;2   ;Field     ;
                 SourceExpr="Variant Code";

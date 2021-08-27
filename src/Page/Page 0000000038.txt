@@ -2,9 +2,10 @@ OBJECT Page 38 Item Ledger Entries
 {
   OBJECT-PROPERTIES
   {
-    Date=23/10/15;
-    Time=12:00:00;
-    Version List=NAVW19.00.00.43402;
+    Date=17/10/16;
+    Time=16:50:27;
+    Modified=Yes;
+    Version List=NAVW19.00.00.43402,ALDA;
   }
   PROPERTIES
   {
@@ -124,12 +125,23 @@ OBJECT Page 38 Item Ledger Entries
     { 6   ;2   ;Field     ;
                 SourceExpr="Document No." }
 
+    { 1180250001;2;Field  ;
+                CaptionML=[ENU=Source No.;
+                           FRA=Nø tiers];
+                SourceExpr="Source No." }
+
     { 78  ;2   ;Field     ;
                 SourceExpr="Document Line No.";
                 Visible=FALSE }
 
+    { 1000000000;2;Field  ;
+                SourceExpr="Order Reference Customer" }
+
     { 8   ;2   ;Field     ;
                 SourceExpr="Item No." }
+
+    { 1000000001;2;Field  ;
+                SourceExpr="Cross-Reference No." }
 
     { 16  ;2   ;Field     ;
                 SourceExpr="Variant Code";
@@ -149,6 +161,9 @@ OBJECT Page 38 Item Ledger Entries
     { 36  ;2   ;Field     ;
                 SourceExpr="Global Dimension 2 Code";
                 Visible=FALSE }
+
+    { 1180250002;2;Field  ;
+                SourceExpr="Country Dimension Code" }
 
     { 82  ;2   ;Field     ;
                 SourceExpr="Expiration Date";

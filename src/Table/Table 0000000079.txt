@@ -2,9 +2,10 @@ OBJECT Table 79 Company Information
 {
   OBJECT-PROPERTIES
   {
-    Date=26/11/15;
-    Time=12:00:00;
-    Version List=NAVW19.00.00.43897,NAVFR9.00.00.43897;
+    Date=03/05/16;
+    Time=11:53:35;
+    Modified=Yes;
+    Version List=NAVW19.00.00.43897,NAVFR9.00.00.43897,NAVFR5.00,AC1.00,ALDA;
   }
   PROPERTIES
   {
@@ -249,6 +250,58 @@ OBJECT Table 79 Company Information
     { 10812;  ;Last Intrastat Declaration ID;Integer;
                                                    CaptionML=[ENU=Last Intrastat Declaration ID;
                                                               FRA=ID derniŠre D.E.B.] }
+    { 50000;  ;Follower No. for MAJUSCULE;Code10  ;CaptionML=[ENU=Follower No. for MAJUSCULE;
+                                                              FRA=Nø adh‚rent pour MAJUSCULE];
+                                                   Description=AC1.00 }
+    { 50001;  ;Bar Code for MAJUSCULE;Code20      ;CaptionML=[ENU=Bar Code for MAJUSCULE;
+                                                              FRA=Code barre pour MAJUSCULE];
+                                                   Description=AC1.00 }
+    { 50002;  ;Dim. Shipping Method Code;Code20   ;TableRelation=Dimension;
+                                                   CaptionML=[ENU=Dim. Shipping Method Code;
+                                                              FRA=Code axe mode d'exp‚dition];
+                                                   Description=AC1.00 }
+    { 50003;  ;Dim. Selling Point Code;Code20     ;TableRelation=Dimension;
+                                                   CaptionML=[ENU=Dim. Selling Point Code;
+                                                              FRA=Code axe point de vente];
+                                                   Description=AC1.00 }
+    { 50004;  ;Dim. Cust. Category Code;Code20    ;TableRelation=Dimension;
+                                                   CaptionML=[ENU=Dim. Cust. Category Code;
+                                                              FRA=Code axe cat‚gorie client];
+                                                   Description=AC1.00 }
+    { 50005;  ;Dim. Manufaturer Code;Code20       ;TableRelation=Dimension;
+                                                   CaptionML=[ENU=Dim. Dim. Manufaturer Code Code;
+                                                              FRA=Code axe fabricant];
+                                                   Description=AC1.00 }
+    { 50006;  ;Follower No. for CEA;Code35        ;CaptionML=[ENU=Follower No. for CEA;
+                                                              FRA=Nø adh‚rent pour CEA];
+                                                   Description=AC1.00 }
+    { 50007;  ;Customer No. for MAJUSCULE;Code20  ;TableRelation=Customer;
+                                                   CaptionML=[ENU=Customer No. for MAJUSCULE;
+                                                              FRA=Nø client pour MAJUSCULE];
+                                                   Description=AC1.00 }
+    { 50008;  ;Dim. Cust. Grp. Code;Code20        ;TableRelation=Dimension;
+                                                   CaptionML=[ENU=Dim. Cust. Grp. Code;
+                                                              FRA=Code axe groupe client];
+                                                   Description=AC2.00 }
+    { 50011;  ;Printer Name        ;Text250       ;CaptionML=[ENU=Printer Name;
+                                                              FRA=Nom de l'imprimante];
+                                                   Description=ALDA 040813D }
+    { 50012;  ;File Folder         ;Text250       ;CaptionML=[ENU=File Folder;
+                                                              FRA=R‚pertoire des fichiers];
+                                                   Description=ALDA 040813D }
+    { 50013;  ;Sending Mail Mgt. Method;Option    ;CaptionML=[ENU=Mgt. Method;
+                                                              FRA=Mode de gestion d'envoi par mail];
+                                                   OptionString=Mail,SMTP Mail;
+                                                   Description=ALDA 040813D }
+    { 50015;  ;E-mail for Sent Items;Text80       ;CaptionML=[ENU=E-mail for Sent Items;
+                                                              FRA=E-mail pour ‚lements envoy‚s];
+                                                   Description=ALDA 040813D }
+    { 50016;  ;EORI No.            ;Code20        ;CaptionML=[ENU=EORI No.;
+                                                              FRA=Nø EORI];
+                                                   Description=ALDA 301214D }
+    { 50029;  ;Picture 2           ;BLOB          ;CaptionML=[ENU=Picture 2;
+                                                              FRA=Image 2];
+                                                   SubType=Bitmap }
   }
   KEYS
   {
@@ -532,6 +585,10 @@ OBJECT Table 79 Company Information
     END;
 
     BEGIN
+    {
+      AC1.00 Ajout champ "Follower No. for MAJUSCULE" "champ Bar Code for MAJUSCULE" "Dim. Shipping Method Filter"
+                         "Dim. Selling Point Filter"
+    }
     END.
   }
 }

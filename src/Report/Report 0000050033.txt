@@ -1,0 +1,132 @@
+OBJECT Report 50033 Batch Create PDF File
+{
+  OBJECT-PROPERTIES
+  {
+    Date=22/04/16;
+    Time=11:27:52;
+    Modified=Yes;
+    Version List=ALDA,2016;
+  }
+  PROPERTIES
+  {
+    CaptionML=[ENU=Batch Create PDF File;
+               FRA=TPL cr�er fichier PDF];
+    ShowPrintStatus=No;
+    ProcessingOnly=Yes;
+    OnInitReport=BEGIN
+                   CompanyInfo.GET;
+                 END;
+
+    UseRequestPage=No;
+  }
+  DATASET
+  {
+    { 5290;    ;DataItem;                    ;
+               DataItemTable=Table472;
+               DataItemTableView=SORTING(ID);
+               MaxIteration=1 }
+
+    { 5291;    ;DataItem;                    ;
+               DataItemTable=Table50006;
+               DataItemTableView=SORTING(Document Type,Document No.,Handled)
+                                 WHERE(Handled=CONST(No),
+                                       Printer Name=CONST(0));
+               OnPreDataItem=BEGIN
+                               SETFILTER("Document by Mail"."Creation Date",'..%1',TODAY);
+
+                               IF GUIALLOWED THEN
+                                 Window.OPEN(Text000);
+
+                               CounterTotal := COUNT;
+                               Counter := 0;
+                               CounterOK := 0;
+                             END;
+
+               OnAfterGetRecord=BEGIN
+                                  Counter := Counter + 1;
+                                  IF GUIALLOWED THEN BEGIN
+                                    Window.UPDATE(1,"Document Type");
+                                    Window.UPDATE(2,ROUND(Counter / CounterTotal * 10000,1));
+                                  END;
+
+                                  Doc2SendBuff := "Document by Mail";
+
+                                  IF CreatePDF THEN BEGIN
+                                    CounterOK := CounterOK + 1;
+                                    IF MARKEDONLY THEN
+                                      MARK(FALSE);
+                                    Doc2SendBuff.Handled := TRUE;
+                                  END ELSE BEGIN
+                                    //Doc2SendBuff. := COPYSTR(GETLASTERRORTEXT,1,MAXSTRLEN(Doc2SendBuff."Error Text"));
+                                    Doc2SendBuff.Handled := FALSE;
+                                    CLEARLASTERROR;
+                                  END;
+                                  Doc2SendBuff.MODIFY;
+                                END;
+
+               OnPostDataItem=BEGIN
+                                IF GUIALLOWED THEN BEGIN
+                                  Window.CLOSE;
+                                  MESSAGE(Text001,CounterOK,CounterTotal)
+                                END;
+                              END;
+                               }
+
+  }
+  REQUESTPAGE
+  {
+    PROPERTIES
+    {
+    }
+    CONTROLS
+    {
+    }
+  }
+  LABELS
+  {
+  }
+  CODE
+  {
+    VAR
+      CompanyInfo@1180250032 : Record 79;
+      Text000@1180250004 : TextConst 'ENU=Creating Files #1########## @2@@@@@@@@@@@@@;FRA=Cr‚ation des fichiers #1########## @2@@@@@@@@@@@@@';
+      Doc2SendBuff@1180250005 : Record 50006;
+      SMTPMail@1180250031 : Codeunit 400;
+      Window@1180250020 : Dialog;
+      CounterTotal@1180250016 : Integer;
+      Counter@1180250015 : Integer;
+      CounterOK@1180250014 : Integer;
+      Text001@1180250001 : TextConst 'ENU=%1 document(s) out of a total of %2 have now been sent.;FRA=%1 fichier(s) cr‚‚(s) sur %2 document(s).';
+
+    PROCEDURE CreatePDF@1180250002() return : Boolean;
+    VAR
+      SalesInvHeader@1180250003 : Record 112;
+      SalesCrMemoHdr@1180250002 : Record 114;
+      BullZipPDFMgt@1180250001 : Codeunit 50009;
+    BEGIN
+      return := FALSE;
+      CLEAR(BullZipPDFMgt);
+
+      CASE TRUE OF
+        "Document by Mail"."Document Type" = "Document by Mail"."Document Type"::"Posted Invoice":
+        BEGIN
+          SalesInvHeader.RESET;
+          SalesInvHeader.SETRANGE("No.", "Document by Mail"."Document No.");
+          SalesInvHeader.FINDFIRST;
+          //BullZipPDFMgt.PrintPostedSalesInvoice(SalesInvHeader);
+          return := TRUE;
+        END;
+        ELSE BEGIN
+        END;
+      END;//CASE
+      EXIT(return);
+    END;
+
+    BEGIN
+    END.
+  }
+  RDLDATA
+  {
+  }
+}
+

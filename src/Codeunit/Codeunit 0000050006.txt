@@ -1,0 +1,674 @@
+OBJECT Codeunit 50006 CEA
+{
+  OBJECT-PROPERTIES
+  {
+    Date=08/01/19;
+    Time=15:54:08;
+    Modified=Yes;
+    Version List=AC1.00;
+  }
+  PROPERTIES
+  {
+    TableNo=50001;
+    OnRun=VAR
+            EDIEntry@1180250005 : Record 50002;
+            CurrFile@1180250004 : File;
+            FileInStream@1180250003 : InStream;
+            Line@1180250006 : BigText;
+            DotFile@1000000000 : DotNet "'mscorlib'.System.IO.File";
+            DotEncoding@1000000001 : DotNet "'mscorlib'.System.Text.UTF8Encoding";
+            DotString@1000000002 : DotNet "'mscorlib'.System.String";
+          BEGIN
+            EDISetup.GET("EDI Code");
+            EDISetup.TESTFIELD("Target Type");
+            EDISetup.TESTFIELD("Target No.");
+            EDISetup.TESTFIELD("Customer Nos.");
+
+            IF GUIALLOWED THEN
+              Window.OPEN(Text000);
+
+            CheckDataError();
+            IF "Data Error" = FALSE THEN BEGIN
+              TESTFIELD(Mode,Mode::Normal);
+              //N¯ sq
+              EDIEntry.RESET;
+              IF EDIEntry.FINDLAST THEN
+                EntryNo := EDIEntry."Entry No."
+              ELSE
+                EntryNo := 0;
+              //Enregistrement des lignes du fichier dans une table
+              CLEAR(CurrFile);
+              CurrFile.WRITEMODE := FALSE;
+              CurrFile.TEXTMODE := TRUE;
+              CurrFile.OPEN(EDISetup."File Imp. Path (Err.)" +'\' + Filename);
+              CLEAR(FileInStream);
+              CLEAR(Line);
+              CLEAR(Fields_ToImport);
+              CurrFile.CREATEINSTREAM(FileInStream);
+              Line.READ(FileInStream);
+              //DecodeVariableFile(Line,Fields_ToImport, ';',"EDI Code","Treatment Date");
+              CurrFile.CLOSE;
+
+              CLEAR(Line);
+            DotEncoding  := DotEncoding.UTF8Encoding(TRUE);
+              Line.ADDTEXT(CONVERTSTR(DotFile.ReadAllText(EDISetup."File Imp. Path (Err.)" +'\' + Filename, DotEncoding),'‚', 'a'));
+              DecodeVariableFile(Line,Fields_ToImport, ';',"EDI Code","Treatment Date");
+              //Transfert des enreg de la table vers les tables de vente
+              RegisterRec(EDISetup."Target No.","EDI Code","Treatment Date");
+            END ELSE BEGIN
+              TESTFIELD(Mode,Mode::Recovery);
+              //Transfert des enreg de la table vers les tables de vente
+              RegisterRec(EDISetup."Target No.","EDI Code","Treatment Date");
+              Mode := Mode::Normal;
+              MODIFY;
+            END;
+
+            IF GUIALLOWED THEN
+              Window.CLOSE;
+          END;
+
+  }
+  CODE
+  {
+    VAR
+      Text000@1180250009 : TextConst 'ENU=Batch in process...;FRA=Traitement en cours...';
+      Text001@1180250002 : TextConst 'FRA=N¯ sÇquence %1 : %2';
+      Text002@1180250008 : TextConst 'FRA=ERREUR! RÇf. non trouvÇe (cf. "DÇsignation 2").';
+      Text003@1180250003 : TextConst 'FRA="%1 n¯%2, %3=%4."';
+      EDISetup@1180250001 : Record 50000;
+      EDIEntry@1180250017 : Record 50002;
+      AsciiStr@1180250007 : Text[250];
+      AnsiStr@1180250006 : Text[250];
+      CharVar@1180250005 : ARRAY [32] OF Char;
+      Text004@1180250010 : TextConst 'FRA=Nb de ligne %1/%2.';
+      Text005@1180250014 : TextConst 'ENU=CEA : %1 to %2 %3 %4 (Nbr. of Line in File: %5)\;FRA="ERREUR! %1=%2"';
+      Window@1180250011 : Dialog;
+      FileInStream@1180250016 : InStream;
+      Line@1180250015 : BigText;
+      Fields_ToImport@1180250013 : ARRAY [100] OF Text[250];
+      LineNo@1180250012 : Integer;
+      EntryNo@1180250004 : Integer;
+
+    PROCEDURE DecodeVariableFile@1000000000(_ReadLine@1000000000 : BigText;VAR _ResultFields@1000000005 : ARRAY [100] OF Text[250];_Separator@1000000009 : Text[3];EDICode@1180250006 : Code[10];EDILogDT@1180250005 : DateTime);
+    VAR
+      CR@1180250004 : Char;
+      LF@1180250003 : Char;
+      l_LineToRead@1000000001 : BigText;
+      l_CurrPos@1000000002 : Integer;
+      l_ReadField@1000000003 : Text[30];
+      l_CurrFieldNo@1000000004 : Integer;
+      l_LineToReadBuff@1000000006 : BigText;
+      l_EndOfLine@1000000007 : Integer;
+      l_EOL@1000000008 : Boolean;
+      l_SalesLine@1180250001 : Record 37;
+      l_Item@1180250002 : Record 27;
+    BEGIN
+      CR := 13;
+      LF := 10;
+
+      l_LineToRead := _ReadLine;
+      CLEAR(_ResultFields);
+
+      l_CurrFieldNo := 0;
+
+      REPEAT
+        //Nouvelle ligne
+        IF l_EOL THEN BEGIN
+          CLEAR(_ResultFields);
+          l_CurrFieldNo := 0;
+        END;
+
+        l_CurrFieldNo += 1;
+        l_EOL := FALSE;
+        l_CurrPos := l_LineToRead.TEXTPOS(_Separator); //Position du prochain sÇparateur
+        l_EndOfLine := l_LineToRead.TEXTPOS(FORMAT(CR)+FORMAT(LF)); //Position de la fin de ligne
+
+        //Dernier champ de la ligne
+        IF (l_CurrPos > l_EndOfLine) OR (l_CurrPos = 0) THEN BEGIN
+          l_EOL := TRUE;
+          l_CurrPos := l_EndOfLine;
+        END;
+
+        IF l_CurrPos <> 0 THEN BEGIN
+          //Alimentation du tableau result
+          l_LineToRead.GETSUBTEXT(_ResultFields[l_CurrFieldNo],1,l_CurrPos-1);
+          //Suppression des donnÇes lues
+          CLEAR(l_LineToReadBuff);
+          l_LineToReadBuff.ADDTEXT(l_LineToRead);
+          CLEAR(l_LineToRead);
+          IF NOT l_EOL THEN
+            l_LineToReadBuff.GETSUBTEXT(l_LineToRead, l_CurrPos+1)
+          ELSE BEGIN
+            l_LineToReadBuff.GETSUBTEXT(l_LineToRead, l_CurrPos+2);
+            //InterprÇtation de la ligne
+            TreatLine(Fields_ToImport,EDICode,EDILogDT);
+            LineNo += 1;
+          END;
+        END;
+      UNTIL l_CurrPos = 0;
+    END;
+
+    PROCEDURE TreatLine@1180250003(_ResultFields@1180210000 : ARRAY [100] OF Text[250];EDICode@1180250003 : Code[10];EDILogDT@1180250002 : DateTime);
+    VAR
+      i@1180250004 : Integer;
+    BEGIN
+      FOR i := 1 TO 67 DO
+        _ResultFields[i] := Ascii2Ansi(_ResultFields[i]);
+
+      IF _ResultFields[1] <> '' THEN BEGIN
+        EntryNo += 1;
+
+        WITH EDIEntry DO BEGIN
+          INIT;
+          "Entry No." := EntryNo;
+          "User ID" := USERID;
+          "Imp./Exp. Date" := EDILogDT;
+          "EDI Code" := EDICode;
+          Error := TRUE;
+          INSERT;
+
+          "Field 1" := COPYSTR(_ResultFields[1],1,50); //@payloadID (identifiant unique du document)
+          "Field 2" := COPYSTR(_ResultFields[2],1,50); //@timestamp (horodatage du document au format ISO)
+          "Field 3" := COPYSTR(_ResultFields[3],1,50); //@domain (Identification du domaine de l'acheteur)
+          "Field 4" := COPYSTR(_ResultFields[4],1,50); //Identity (constante "CEA")
+          "Field 5" := COPYSTR(_ResultFields[5],1,50); //@domain (Identification du domaine du fournisseur)
+          "Field 6" := COPYSTR(_ResultFields[6],1,50); //Identity (Code CEA du fournisseur)
+          "Field 7" := COPYSTR(_ResultFields[7],1,50); //@domain (Identification du domaine de l'Çmetteur)
+          "Field 8" := COPYSTR(_ResultFields[8],1,50); //Identity (LibellÇ du centreCEA Ö l'origine de la commande)
+          "Field 9" := COPYSTR(_ResultFields[9],1,50); //@DeploymentMode (Mode de dÇploiment)
+          "Field 10" := COPYSTR(_ResultFields[10],1,50); //@OrderID (NumÇro unique de commande)
+          "Field 11" := COPYSTR(_ResultFields[11],1,50); //@OrderDate (date de la commande)
+          "Field 12" := COPYSTR(_ResultFields[12],1,50); //@OrderType (type de commande)
+          "Field 13" := COPYSTR(_ResultFields[13],1,50); //@type (type de requàte)
+          "Field 14" := COPYSTR(_ResultFields[14],1,50); //Money (Montant total hors taxe de la commande)
+          "Field 15" := COPYSTR(_ResultFields[15],1,50); //@currency (Devise de la commande)
+          "Field 16" := COPYSTR(_ResultFields[16],1,50); //@addressID (identifiant unique du site)
+          "Field 17" := COPYSTR(_ResultFields[17],1,50); //@isoCountryCode (identifiant du pays)
+          "Field 18" := COPYSTR(_ResultFields[18],1,50); //Name (Nom de la sociÇtÇ)
+          "Field 19" := COPYSTR(_ResultFields[19],1,50); //PostalAddressName (Nom de la sociÇtÇ)
+          "Field 20" := COPYSTR(_ResultFields[20],1,50); //DeliverTo 1 (ComplÇment d'adresse)
+          "Field 21" := COPYSTR(_ResultFields[21],1,50); //DeliverTo 2 (Nom de la personne destinataire)
+          "Field 22" := COPYSTR(_ResultFields[22],1,50); //DeliverTo 3 (BÉtiment et/ou piäce du point dÇchargement)
+          "Field 23" := COPYSTR(_ResultFields[23],1,50); //street (NumÇro et rue)
+          "Field 24" := COPYSTR(_ResultFields[24],1,50); //City (Ville)
+          "Field 25" := COPYSTR(_ResultFields[25],1,50); //PostalCode (Code postal)
+          "Field 26" := COPYSTR(_ResultFields[26],1,50); //Country (Pays)
+          "Field 27" := COPYSTR(_ResultFields[27],1,50); //TelephoneNumber (numÇro de tÇl au format "+code pays zone numÇro")
+          "Field 28" := COPYSTR(_ResultFields[28],1,50); //TelephoneNumber (NumÇro de fax au màme format que pour le tÇlÇphone)
+          "Field 29" := COPYSTR(_ResultFields[29],1,50); //Email (Adresse mail du destinataire)
+          "Field 30" := COPYSTR(_ResultFields[30],1,50); //@addressID (identifiant unique du site)
+          "Field 31" := COPYSTR(_ResultFields[31],1,50); //@isoCountryCode (identifiant du pays)
+          "Field 32" := COPYSTR(_ResultFields[32],1,50); //Name (Nom de la sociÇtÇ)
+          "Field 33" := COPYSTR(_ResultFields[33],1,50); //PostalAddressName (Nom de la sociÇtÇ)
+          "Field 34" := COPYSTR(_ResultFields[34],1,50); //DeliverTo 1 (ComplÇment d'adresse)
+          "Field 35" := COPYSTR(_ResultFields[35],1,50); //DeliverTo 2 (Nom de la personne destinataire)
+          "Field 36" := COPYSTR(_ResultFields[36],1,50); //DeliverTo 3 (Vide)
+          "Field 37" := COPYSTR(_ResultFields[37],1,50); //street (NumÇro et rue)
+          "Field 38" := COPYSTR(_ResultFields[38],1,50); //City (Ville)
+          "Field 39" := COPYSTR(_ResultFields[39],1,50); //PostalCode (Code postal)
+          "Field 40" := COPYSTR(_ResultFields[40],1,50); //Country (Pays)
+          "Field 41" := COPYSTR(_ResultFields[41],1,50); //TelephoneNumber (n¯ tÇl au format "+code pays zone numÇro")
+          "Field 42" := COPYSTR(_ResultFields[42],1,50); //TelephoneNumber (NumÇro de fax au màme format que pour le tÇlÇphone)
+          "Field 43" := COPYSTR(_ResultFields[43],1,50); //Email (Vide)
+          "Field 44" := COPYSTR(_ResultFields[44],1,50); // (Commentaire d'entàte)
+          "Field 45" := COPYSTR(_ResultFields[44],51,50); // (Commentaire d'entàte)
+          "Field 46" := COPYSTR(_ResultFields[45],1,50); //NumÇro de poste de commande
+          "Field 47" := COPYSTR(_ResultFields[46],1,50); //@quantity (QuantitÇ commandÇe)
+          "Field 48" := COPYSTR(_ResultFields[47],1,50); //@requestedDeliveryDate (Date de livraison souhaitÇe)
+          "Field 49" := COPYSTR(_ResultFields[48],1,50); //SupplierPartID (RÇfÇrence fournisseur de l'article)
+          "Field 50" := COPYSTR(_ResultFields[49],1,50); //Money (Prix unitaire HT)
+          "Field 51" := COPYSTR(_ResultFields[50],1,50); //@currency (Devise)
+          "Field 52" := COPYSTR(_ResultFields[51],1,50); //Description (Description de l'article)
+          "Field 53" := COPYSTR(_ResultFields[52],1,50); //UnitOfMeasure (UnitÇ de mesure)
+          "Field 54" := COPYSTR(_ResultFields[53],1,50); //@addressID (identifiant unique du site)
+          "Field 55" := COPYSTR(_ResultFields[54],1,50); //@isoCountryCode (identifiant du pays)
+          "Field 56" := COPYSTR(_ResultFields[55],1,50); //Name (Nom de la sociÇtÇ)
+          "Field 57" := COPYSTR(_ResultFields[56],1,50); //PostalAddressName (Nom de la sociÇtÇ)
+          "Field 58" := COPYSTR(_ResultFields[57],1,50); //DeliverTo 1 (ComplÇment d'adresse)
+          "Field 59" := COPYSTR(_ResultFields[58],1,50); //DeliverTo 2 (Nom de la personne destinataire)
+          "Field 60" := COPYSTR(_ResultFields[59],1,50); //DeliverTo 3 (BÉtiment et/ou piäce du point dÇchargement)
+          "Field 61" := COPYSTR(_ResultFields[60],1,50); //street (NumÇro et rue)
+          "Field 62" := COPYSTR(_ResultFields[61],1,50); //City (Ville)
+          "Field 63" := COPYSTR(_ResultFields[62],1,50); //PostalCode (Code postal)
+          "Field 64" := COPYSTR(_ResultFields[63],1,50);
+          "Field 65" := COPYSTR(_ResultFields[64],1,50);
+          "Field 66" := COPYSTR(_ResultFields[65],1,50);
+          "Field 67" := COPYSTR(_ResultFields[66],1,50);//Registration No. (N¯ SIRET)
+          "Field 68" := COPYSTR(_ResultFields[67],1,50);//Executing Service Code (Code service Çxecutant)
+          "Field 69" := COPYSTR(_ResultFields[68],1,50);//Commitment No. (NumÇro engagement)
+          MODIFY;
+        END;//WITH
+      END;
+    END;
+
+    LOCAL PROCEDURE RegisterRec@1180210000(VendorNo@1180250004 : Code[20];EDICode@1180250008 : Code[10];EDILogDT@1180250006 : DateTime);
+    VAR
+      CompanyInfo@1180250012 : Record 79;
+      GLSetup@1180250001 : Record 98;
+      SalesSetup@1180250014 : Record 311;
+      Customer@1180250025 : Record 18;
+      SalesHeader@1180250009 : Record 36;
+      SalesLine@1180250003 : Record 37;
+      SalesCommentLine@1180250002 : Record 44;
+      TempEDIEntry2@1180250007 : TEMPORARY Record 50002;
+      ItemNo@1180250019 : Code[20];
+      ItemCrossRefNo@1180250018 : Code[20];
+      VendorNo2@1180250022 : Code[20];
+      CurrItemNoIDPrefix@1180250017 : Text[30];
+      LineNo@1180250010 : Integer;
+      LineNo2@1180250011 : Integer;
+      LenItemNoIDPrefix@1180250020 : Integer;
+      Sell2CustNo@1180250015 : Code[20];
+      Bill2CustNo@1180250016 : Code[20];
+      NbrOfLine@1180250026 : Integer;
+      NbrOfHandledLine@1180250021 : Integer;
+      i@1180250013 : Integer;
+    BEGIN
+      EDISetup.GET(EDICode);
+      GLSetup.GET();
+      CompanyInfo.GET();
+      SalesSetup.GET();
+
+      CLEAR(TempEDIEntry2);
+      TempEDIEntry2.RESET;
+      TempEDIEntry2.DELETEALL;
+
+      NbrOfHandledLine := 0;
+      NbrOfLine := 0;
+
+      IF NOT SalesHeader.RECORDLEVELLOCKING THEN
+        SalesHeader.LOCKTABLE(TRUE,TRUE);
+      IF NOT SalesLine.RECORDLEVELLOCKING THEN
+        SalesLine.LOCKTABLE(TRUE,TRUE);
+
+      EDIEntry.RESET;
+      EDIEntry.SETRANGE("EDI Code",EDICode);
+      EDIEntry.SETRANGE("Imp./Exp. Date",EDILogDT);
+      IF EDIEntry.FINDSET(TRUE,FALSE) THEN BEGIN
+        NbrOfLine := EDIEntry.COUNT;
+        REPEAT
+          TempEDIEntry2 := EDIEntry;
+          IF TempEDIEntry2.INSERT THEN;
+          //Tempo
+          IF EDISetup."Control of Time (milliseconds)" <> 0 THEN
+            SLEEP(EDISetup."Control of Time (milliseconds)");
+          //En-tàte
+          IF NbrOfHandledLine = 0 THEN BEGIN
+            SalesHeader.INIT;
+            SalesHeader."Document Type" := SalesHeader."Document Type"::Order;
+            SalesHeader."No." := '';
+            SalesHeader.INSERT(TRUE);
+            SalesHeader."Last EDI Code for Batch" := EDICode;
+            SalesHeader."Last EDI DT for Batch" := EDILogDT;
+            SalesHeader."Order Type" := SalesHeader."Order Type"::DD;
+            SalesHeader."Order Date" := ConvText2Date(EDIEntry."Field 11");//date de la commande
+            IF EDIEntry."Field 15" = GLSetup."LCY Code" THEN
+              SalesHeader.VALIDATE("Currency Code",'')
+            ELSE
+              SalesHeader.VALIDATE("Currency Code",EDIEntry."Field 15");//Devise de la commande
+            Bill2CustNo := EDIEntry."Field 8";
+            Sell2CustNo := CustExist(EDIEntry."Field 20",EDIEntry."Field 23",EDIEntry."Field 22" + ' ' + EDIEntry."Field 21",
+              EDIEntry."Field 24");
+            IF Sell2CustNo = '' THEN
+              Sell2CustNo := CreateCust(EDIEntry."EDI Code",EDIEntry."Field 20",EDIEntry."Field 23",EDIEntry."Field 22" + ' ' +
+                EDIEntry."Field 21",EDIEntry."Field 24",EDIEntry."Field 25",EDIEntry."Field 17",EDIEntry."Field 27",EDIEntry."Field 28",
+                EDIEntry."Field 29",Bill2CustNo);
+            SalesHeader.VALIDATE("Sell-to Customer No.",Sell2CustNo);
+            SalesHeader.VALIDATE("External Document No.",EDIEntry."Field 10");//NumÇro unique de commande
+            SalesHeader."Your Reference" := EDIEntry."Field 12";//Type de commande
+            SalesHeader.VALIDATE("Requested Delivery Date",WORKDATE);//Date de livraison souhaitÇe
+            IF Bill2CustNo <> Sell2CustNo THEN
+              Customer.GET(Bill2CustNo)
+            ELSE
+              Customer.GET(Sell2CustNo);
+            Customer.CALCFIELDS("Dim. Shipping Method Code");
+            CASE Customer."Dim. Shipping Method Code" OF
+              'DCL':SalesHeader."Order Type" := SalesHeader."Order Type"::DD;
+              'DG':SalesHeader."Order Type" := SalesHeader."Order Type"::DG;
+              ELSE
+                SalesHeader."Order Type" := SalesHeader."Order Type"::AA;
+            END;//CASE
+
+            //BC6 - MM 18/12/18 >>
+            SalesHeader."Registration No." := EDIEntry."Field 67";
+            SalesHeader."Executing Service Code" := EDIEntry."Field 68";
+            //SalesHeader."EDI Add. Info. 3" := EDIEntry."Field 69";
+            SalesHeader."EDI Add. Info. 4" := EDIEntry."Field 69";
+            //BC6 - MM 18/12/18 <<
+
+            SalesHeader.MODIFY(TRUE);
+            //Commentaires
+            LineNo2 := 0;
+            IF EDIEntry."Field 44" <> '' THEN BEGIN
+              LineNo2 += 10000;
+              SalesCommentLine.INIT;
+              SalesCommentLine."Document Type" := SalesHeader."Document Type";
+              SalesCommentLine."No." := SalesHeader."No.";
+              SalesCommentLine."Document Line No." := 0;
+              SalesCommentLine."Line No." := LineNo2;
+              SalesCommentLine.INSERT;
+              SalesCommentLine.Date := TODAY;
+              SalesCommentLine.Comment := EDIEntry."Field 44";
+              SalesCommentLine.MODIFY;
+            END;
+            IF EDIEntry."Field 45" <> '' THEN BEGIN
+              LineNo2 += 10000;
+              SalesCommentLine.INIT;
+              SalesCommentLine."Document Type" := SalesHeader."Document Type";
+              SalesCommentLine."No." := SalesHeader."No.";
+              SalesCommentLine."Document Line No." := 0;
+              SalesCommentLine."Line No." := LineNo2;
+              SalesCommentLine.INSERT;
+              SalesCommentLine.Date := TODAY;
+              SalesCommentLine.Comment := EDIEntry."Field 45";
+              SalesCommentLine.MODIFY;
+            END;
+          END;
+          //Recherche de l'article
+          IF EDISetup."Item No. Itentification Prefix" = '' THEN BEGIN
+            ItemNo := GetItemFromItemCrossRefVendor(VendorNo,EDIEntry."Field 49");//Ref. ext. No. of Vendor -> No.
+            ItemCrossRefNo := FORMAT(EDIEntry."Field 49");
+          END ELSE BEGIN
+            ItemCrossRefNo := '';
+            LenItemNoIDPrefix := STRLEN(EDISetup."Item No. Itentification Prefix");
+            CurrItemNoIDPrefix := COPYSTR(EDIEntry."Field 49",1,LenItemNoIDPrefix);
+            IF CurrItemNoIDPrefix = EDISetup."Item No. Itentification Prefix" THEN BEGIN
+              ItemNo := FORMAT(COPYSTR(EDIEntry."Field 49",LenItemNoIDPrefix + 1,STRLEN(EDIEntry."Field 49")));
+              ItemCrossRefNo := COPYSTR(EDIEntry."Field 49",LenItemNoIDPrefix + 1);
+              VendorNo2 := '';
+            END ELSE BEGIN
+              ItemNo := GetItemFromItemCrossRefVendor(VendorNo,EDIEntry."Field 49");
+              ItemCrossRefNo := FORMAT(EDIEntry."Field 49");
+              VendorNo2 := VendorNo;
+            END;
+          END;
+          //CrÇation de la ligne
+          LineNo += 10000;
+          SalesLine.INIT;
+          SalesLine.SetHideValidationDialog(EDISetup."Hide Validation Dialog");
+          SalesLine."Document Type" := SalesHeader."Document Type";
+          SalesLine."Document No." := SalesHeader."No.";
+          SalesLine."Line No." := LineNo;
+          SalesLine.INSERT(TRUE);
+
+          NbrOfHandledLine += 1;
+
+          IF ItemNo <> '' THEN BEGIN
+            SalesLine.Type := SalesLine.Type::Item;
+            SalesLine.VALIDATE("No.",ItemNo);
+            SalesLine.VALIDATE(Quantity,ConvTxt2Dec(EDIEntry."Field 47"));//QuantitÇ commandÇe
+            SalesLine.VALIDATE("Requested Delivery Date",ConvText2Date(EDIEntry."Field 48"));//Date de livraison souhaitÇe
+            SalesLine.VALIDATE("Unit Price",ConvTxt2Dec(EDIEntry."Field 50"));//Prix unitaire HT
+            SalesLine."Order Reference Customer" := SalesHeader."Order Reference Customer";
+            SalesLine."Line No. Reference Customer" := SalesLine."Line No.";
+            IF SalesHeader."Order Type" <> SalesHeader."Order Type"::AA THEN BEGIN
+              SalesLine."Vendor No. for EDI Sending" := VendorNo2;
+              SalesLine."Cross-Reference No. of Vendor" := ItemCrossRefNo;
+              SalesLine.VALIDATE("Qty. to Ship",0);
+            END;
+            SalesLine."External Line No." := ConvTxt2Int(EDIEntry."Field 46");
+            SalesLine.MODIFY(TRUE);
+          END ELSE BEGIN
+            SalesLine.Type := SalesLine.Type::" ";
+            SalesLine.Description := Text002;
+            SalesLine."Description 2" := EDIEntry."Field 49";
+            SalesLine."Order Reference Customer" := SalesHeader."Order Reference Customer";
+            SalesLine."External Line No." := ConvTxt2Int(EDIEntry."Field 46");
+            SalesLine.MODIFY(TRUE);
+            CreateEDILogEntry(EDICode,EDILogDT,STRSUBSTNO(Text003,SalesLine."Document Type",SalesLine."Document No.",
+              SalesLine.FIELDCAPTION("Line No."),SalesLine."Line No."),2,EDIEntry."Entry No.");
+          END;
+          //Tag si ok
+          TempEDIEntry2.Error := FALSE;
+          TempEDIEntry2.MODIFY;
+        UNTIL EDIEntry.NEXT = 0;
+      END;
+
+      IF NbrOfHandledLine = NbrOfLine THEN
+        CreateEDILogEntry(EDICode,EDILogDT,STRSUBSTNO(Text004,NbrOfHandledLine,NbrOfLine),1,0)
+      ELSE
+        CreateEDILogEntry(EDICode,EDILogDT,STRSUBSTNO(Text004,NbrOfHandledLine,NbrOfLine),2,0);
+
+      TempEDIEntry2.RESET;
+      TempEDIEntry2.SETRANGE(Error,FALSE);
+      IF TempEDIEntry2.FINDSET(FALSE,FALSE) THEN
+        REPEAT
+          EDIEntry := TempEDIEntry2;
+          EDIEntry.Handled := TRUE;
+          EDIEntry.MODIFY;
+        UNTIL TempEDIEntry2.NEXT = 0;
+    END;
+
+    LOCAL PROCEDURE ConvTxt2Dec@1180250002(Txt2Conv@1180250001 : Text[50]) DecConv : Decimal;
+    BEGIN
+      IF Txt2Conv <> '' THEN
+        EVALUATE(DecConv,CONVERTSTR(Txt2Conv,'.',','))
+      ELSE
+        DecConv := 0;
+    END;
+
+    LOCAL PROCEDURE ConvTxt2Int@1180250001(Txt2Conv@1180250001 : Text[50]) IntConv : Integer;
+    BEGIN
+      IF Txt2Conv <> '' THEN
+        EVALUATE(IntConv,Txt2Conv)
+      ELSE
+        IntConv := 0;
+    END;
+
+    PROCEDURE ConvText2Date@1180250010(Txt2Conv@1180250001 : Text[50]) OutPutDate : Date;
+    VAR
+      DayInInt@1180250003 : Integer;
+      MonthinInt@1180250002 : Integer;
+      YearInInt@1180250004 : Integer;
+    BEGIN
+      IF Txt2Conv <> '' THEN BEGIN
+        EVALUATE(DayInInt,COPYSTR(Txt2Conv,9,2));
+        EVALUATE(MonthinInt,COPYSTR(Txt2Conv,6,2));
+        EVALUATE(YearInInt,COPYSTR(Txt2Conv,1,4));
+
+        OutPutDate := DMY2DATE(DayInInt,MonthinInt,YearInInt);
+      END ELSE
+        OutPutDate := 0D;
+    END;
+
+    PROCEDURE Ansi2Ascii@1180250005(_Text@1180250001 : Text[250]) : Text[250];
+    BEGIN
+      MakeVars;
+      EXIT(CONVERTSTR(_Text,AnsiStr,AsciiStr));
+    END;
+
+    PROCEDURE Ascii2Ansi@1180250007(_Text@1180250001 : Text[250]) : Text[250];
+    BEGIN
+      MakeVars;
+      EXIT(CONVERTSTR(_Text,AsciiStr,AnsiStr));
+    END;
+
+    PROCEDURE MakeVars@1180250006();
+    BEGIN
+      AsciiStr := 'ÄÅÇÉÑÖÜáàâäãåçéèêëíìîïñóòôöõúùûü†°¢£§•¶ß®©™´¨≠ÆØ›››››µ∂∑∏››++Ωæ++--+-+∆«++--›-+';
+      AsciiStr := AsciiStr +'œ–—“”‘i÷◊ÿ++›_›ﬁÓ‡·‚„‰ÂÊÁËÈÍÎÏÌÓÔÒ=ÛÙıˆ˜¯˘˙˚¸˝›ˇ';
+      CharVar[1] := 196;
+      CharVar[2] := 197;
+      CharVar[3] := 201;
+      CharVar[4] := 242;
+      CharVar[5] := 220;
+      CharVar[6] := 186;
+      CharVar[7] := 191;
+      CharVar[8] := 188;
+      CharVar[9] := 187;
+      CharVar[10] := 193;
+      CharVar[11] := 194;
+      CharVar[12] := 192;
+      CharVar[13] := 195;
+      CharVar[14] := 202;
+      CharVar[15] := 203;
+      CharVar[16] := 200;
+      CharVar[17] := 205;
+      CharVar[18] := 206;
+      CharVar[19] := 204;
+      CharVar[20] := 175;
+      CharVar[21] := 223;
+      CharVar[22] := 213;
+      CharVar[23] := 254;
+      CharVar[24] := 218;
+      CharVar[25] := 219;
+      CharVar[26] := 217;
+      CharVar[27] := 180;
+      CharVar[28] := 177;
+      CharVar[29] := 176;
+      CharVar[30] := 185;
+      CharVar[31] := 179;
+      CharVar[32] := 178;
+      AnsiStr  := '«¸È‚‰‡ÂÁÍÎËÔÓÏ'+FORMAT(CharVar[1])+FORMAT(CharVar[2])+FORMAT(CharVar[3])+ 'Ê∆Ùˆ'+FORMAT(CharVar[4]);
+      AnsiStr := AnsiStr + '˚˘ˇ÷'+FORMAT(CharVar[5])+'¯£ÿ◊É·ÌÛ˙Ò—™'+FORMAT(CharVar[6])+FORMAT(CharVar[7]);
+      AnsiStr := AnsiStr + 'Æ¨Ω'+FORMAT(CharVar[8])+'°´'+FORMAT(CharVar[9])+'___¶¶' + FORMAT(CharVar[10])+FORMAT(CharVar[11]);
+      AnsiStr := AnsiStr + FORMAT(CharVar[12]) + '©¶¶++¢•++--+-+„' + FORMAT(CharVar[13]) + '++--¶-+§–';
+      AnsiStr  :=  AnsiStr +FORMAT(CharVar[14])+FORMAT(CharVar[15])+FORMAT(CharVar[16])+'i'+FORMAT(CharVar[17])+FORMAT(CharVar[18]);
+      AnsiStr  :=  AnsiStr + 'œ++__¶' + FORMAT(CharVar[19])+FORMAT(CharVar[20])+'”'+FORMAT(CharVar[21])+'‘“ı';
+      AnsiStr  :=  AnsiStr + FORMAT(CharVar[22]) + 'µ' + FORMAT(CharVar[23]) + 'ﬁ' + FORMAT(CharVar[24])+ FORMAT(CharVar[25]);
+      AnsiStr  :=  AnsiStr + FORMAT(CharVar[26]) + '˝›Ø' + FORMAT(CharVar[27]) + '≠' + FORMAT(CharVar[28]) +'=æ∂ß˜∏'+ FORMAT(CharVar[29]
+      );
+      AnsiStr  :=  AnsiStr + '®∑' + FORMAT(CharVar[30]) +FORMAT(CharVar[31]) +FORMAT(CharVar[32]) +'_ ';
+    END;
+
+    PROCEDURE CustExist@1180250009(CustName@1180250001 : Text[50];CustAddress@1180250003 : Text[50];CustAddress2@1180250004 : Text[50];CustCity@1180250005 : Text[50]) : Code[20];
+    VAR
+      Cust@1180250002 : Record 18;
+      Found@1180250012 : Boolean;
+    BEGIN
+      Cust.RESET;
+      Cust.SETFILTER(Name,'%1',CustName);
+      Cust.SETFILTER(Address,'%1',CustAddress);
+      Cust.SETFILTER("Address 2",'%1',CustAddress2);
+      Cust.SETFILTER(City,'%1',CustCity);
+      Found := Cust.FINDFIRST;
+
+      IF Found THEN
+        EXIT(Cust."No.")
+      ELSE
+        EXIT('');
+    END;
+
+    PROCEDURE CreateCust@1180250012(EDICode@1180250008 : Code[10];CustName@1180250001 : Text[50];CustAddress@1180250003 : Text[50];CustAddress2@1180250004 : Text[50];CustCity@1180250005 : Text[50];CustPostCode@1180250012 : Code[10];CustCountryCode@1180250013 : Code[10];CustPhoneNo@1180250014 : Text[30];CustFaxNo@1180250015 : Text[30];CustEMail@1180250016 : Text[80];CustBill2@1180250020 : Code[20]) : Code[20];
+    VAR
+      CompanyInfo@1180250017 : Record 79;
+      Cust@1180250002 : Record 18;
+      DataTempHeader@1180250010 : Record 8618;
+      EDISetup@1180250009 : Record 50000;
+      DefaultDim@1180250019 : Record 352;
+      NoSeriesMgt@1180250018 : Codeunit 396;
+      TemplateMgt@1180250007 : Codeunit 8612;
+      RecRef@1180250006 : RecordRef;
+      CustNo@1180250011 : Code[20];
+    BEGIN
+      CompanyInfo.GET();
+      EDISetup.GET(EDICode);
+
+      CLEAR(NoSeriesMgt);
+      Cust.INIT;
+      Cust."No." := '';
+      Cust."No. Series" := EDISetup."Customer Nos.";
+      NoSeriesMgt.InitSeries(EDISetup."Customer Nos.",EDISetup."Customer Nos.",0D,Cust."No.",Cust."No. Series");
+      Cust.INSERT(TRUE);
+      CustNo := Cust."No.";
+
+      Cust.RESET;
+      Cust.SETRANGE("No.",CustNo);
+      Cust.FINDFIRST;
+
+      CLEAR(RecRef);
+      RecRef.GETTABLE(Cust);
+      CLEAR(TemplateMgt);
+      DataTempHeader.GET(EDISetup."Data Temp. Code for CEA Cust.");
+      TemplateMgt.UpdateRecord(DataTempHeader,RecRef);
+      COMMIT;
+
+      Cust.GET(CustNo);
+      Cust.VALIDATE(Name,CustName);
+      Cust.Address := CustAddress;
+      Cust."Address 2" := CustAddress2;
+      Cust.City := CustCity;
+      Cust."Post Code" := CustPostCode;
+      Cust."Country/Region Code" := CustCountryCode;
+      Cust."Phone No." := CustPhoneNo;
+      Cust."Fax No." := CustFaxNo;
+      Cust."E-Mail" := CustEMail;
+      Cust."Bill-to Customer No." := CustBill2;
+      Cust."Location Code" := '01';
+      IF (Cust."Dim. Shipping Method Filter" = '') OR
+         (Cust."Dim. Cust. Category Filter" = '') OR
+         (Cust."Dim. Selling Point Filter" = '') THEN BEGIN
+        Cust."Dim. Shipping Method Filter" := CompanyInfo."Dim. Shipping Method Code";
+        Cust."Dim. Cust. Category Filter" := CompanyInfo."Dim. Cust. Category Code";
+        Cust."Dim. Selling Point Filter" := CompanyInfo."Dim. Selling Point Code";
+      END;
+      Cust.MODIFY(TRUE);
+
+      DefaultDim.INIT;
+      DefaultDim."Table ID" := 18;
+      DefaultDim."No." := Cust."No.";
+      DefaultDim."Dimension Code" := CompanyInfo."Dim. Shipping Method Code";
+      DefaultDim."Dimension Value Code" := 'DCL';
+      DefaultDim.INSERT;
+
+      DefaultDim.INIT;
+      DefaultDim."Table ID" := 18;
+      DefaultDim."No." := Cust."No.";
+      DefaultDim."Dimension Code" := CompanyInfo."Dim. Cust. Category Code";
+      DefaultDim."Dimension Value Code" := 'B';
+      DefaultDim.INSERT;
+
+      DefaultDim.INIT;
+      DefaultDim."Table ID" := 18;
+      DefaultDim."No." := Cust."No.";
+      DefaultDim."Dimension Code" := CompanyInfo."Dim. Selling Point Code";
+      DefaultDim."Dimension Value Code" := '020';
+      DefaultDim.INSERT;
+
+      EXIT(Cust."No.")
+    END;
+
+    PROCEDURE GetItemFromItemCrossRefVendor@1180250008(VendorNo@1180250001 : Code[20];CrossRefNo@1180250003 : Code[20]) : Code[20];
+    VAR
+      ItemCrossReference@1180250002 : Record 5717;
+    BEGIN
+      ItemCrossReference.RESET;
+      ItemCrossReference.SETRANGE("Cross-Reference Type",ItemCrossReference."Cross-Reference Type"::Vendor);
+      ItemCrossReference.SETRANGE("Cross-Reference Type No.",VendorNo);
+      ItemCrossReference.SETRANGE("Cross-Reference No.",CrossRefNo);
+      IF ItemCrossReference.FINDFIRST THEN
+        EXIT(ItemCrossReference."Item No.")
+      ELSE
+        EXIT('');
+    END;
+
+    PROCEDURE CreateEDILogEntry@1180250011(EDICode@1180250003 : Code[10];EDILogDT@1180250002 : DateTime;String@1180250001 : Text[250];Status@1180250006 : ' ,OK,Error';EntryNo@1180250007 : Integer);
+    VAR
+      EDILogEntry@1180250004 : Record 50004;
+      LineNo@1180250005 : Integer;
+    BEGIN
+      EDILogEntry.RESET;
+      EDILogEntry.SETRANGE("EDI Code",EDICode);
+      EDILogEntry.SETRANGE("Treatment Date",EDILogDT);
+      IF EDILogEntry.FINDLAST THEN
+        LineNo := EDILogEntry."Ligne No."
+      ELSE
+        LineNo := 0;
+
+      LineNo += 10000;
+
+      EDILogEntry.INIT;
+      EDILogEntry."EDI Code" := EDICode;
+      EDILogEntry."Treatment Date" := EDILogDT;
+      EDILogEntry."Ligne No." := LineNo;
+      EDILogEntry."Error Text" := String;
+      EDILogEntry.Status := Status;
+      EDILogEntry."Applied E.D.I. Entry No." := EntryNo;
+      EDILogEntry.INSERT;
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

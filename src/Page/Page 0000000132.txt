@@ -2,9 +2,10 @@ OBJECT Page 132 Posted Sales Invoice
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
-    Version List=NAVW19.00;
+    Date=04/02/20;
+    Time=16:37:19;
+    Modified=Yes;
+    Version List=NAVW19.00,AC1.00,AB6.JME.001,ALDA;
   }
   PROPERTIES
   {
@@ -35,6 +36,8 @@ OBJECT Page 132 Posted Sales Invoice
                            DocExchStatusStyle := GetDocExchStatusStyle;
                            CurrPage.IncomingDocAttachFactBox.PAGE.LoadDataFromRecord(Rec);
                            CRMIsCoupledToRecord := CRMIntegrationEnabled AND CRMCouplingManagement.IsRecordCoupledToCRM(RECORDID);
+                           //BC6 EABO 03.02.20 Integration of Chorus invoice status
+                           UpdateCommentFactbox;
                          END;
 
     ActionList=ACTIONS
@@ -84,6 +87,7 @@ OBJECT Page 132 Posted Sales Invoice
                       CaptionML=[ENU=Approvals;
                                  FRA=Approbations];
                       Promoted=Yes;
+                      Visible=FALSE;
                       PromotedIsBig=Yes;
                       Image=Approvals;
                       PromotedCategory=Category4;
@@ -102,6 +106,7 @@ OBJECT Page 132 Posted Sales Invoice
                                   Document No.=FIELD(No.),
                                   Customer No.=FIELD(Bill-to Customer No.);
                       Promoted=Yes;
+                      Visible=FALSE;
                       PromotedIsBig=Yes;
                       Image=CreditCardLog;
                       PromotedCategory=Category5 }
@@ -192,6 +197,33 @@ OBJECT Page 132 Posted Sales Invoice
                       PromotedCategory=Category4;
                       OnAction=BEGIN
                                  Navigate;
+                               END;
+                                }
+      { 1180250003;1 ;Separator  }
+      { 1180250004;1 ;Action    ;
+                      Ellipsis=Yes;
+                      CaptionML=[ENU=Create PDF File;
+                                 FRA=Cr‚er un document PDF];
+                      Description=ALDA 040813D;
+                      Promoted=Yes;
+                      PromotedIsBig=Yes;
+                      Image=Print;
+                      PromotedCategory=Process;
+                      OnAction=BEGIN
+                                 CreatePDF;
+                               END;
+                                }
+      { 1180250005;1 ;Action    ;
+                      Ellipsis=Yes;
+                      CaptionML=[ENU=Send To Mail As PDF;
+                                 FRA=Envoyer en tant que PDF];
+                      Description=ALDA 040813D;
+                      Promoted=Yes;
+                      PromotedIsBig=No;
+                      Image=SendTo;
+                      PromotedCategory=Process;
+                      OnAction=BEGIN
+                                 SendToMailAsPDF;
                                END;
                                 }
       { 13      ;1   ;Action    ;
@@ -287,6 +319,9 @@ OBJECT Page 132 Posted Sales Invoice
                 SourceExpr="Sell-to Address 2";
                 Editable=FALSE }
 
+    { 1000000000;2;Field  ;
+                SourceExpr="Sell-to County" }
+
     { 6   ;2   ;Field     ;
                 SourceExpr="Sell-to Post Code";
                 Editable=FALSE }
@@ -340,16 +375,75 @@ OBJECT Page 132 Posted Sales Invoice
 
     { 92  ;2   ;Field     ;
                 SourceExpr="Responsibility Center";
+                Visible=FALSE;
                 Editable=FALSE }
 
     { 14  ;2   ;Field     ;
                 SourceExpr="No. Printed";
                 Editable=FALSE }
 
+    { 1180250002;2;Field  ;
+                SourceExpr="Order Reference Customer";
+                Editable=FALSE }
+
+    { 1000000002;2;Field  ;
+                SourceExpr="Your Reference" }
+
+    { 1000000013;2;Field  ;
+                SourceExpr="Acquitted by EDI";
+                Editable=FALSE }
+
     { 54  ;1   ;Part      ;
                 Name=SalesInvLines;
                 SubPageLink=Document No.=FIELD(No.);
                 PagePartID=Page133 }
+
+    { 1000000008;1;Group  ;
+                CaptionML=[ENU=Defence Office;
+                           FRA=D‚fense Bureau];
+                GroupType=Group }
+
+    { 1000000007;2;Field  ;
+                CaptionML=[ENU=NUM_SUBSEQUENT;
+                           FRA=Nø du march‚ subs‚quent];
+                SourceExpr=NUM_SUBSEQUENT;
+                Editable=false }
+
+    { 1000000006;2;Field  ;
+                CaptionML=[ENU=REF_ENGAGEMENT;
+                           FRA=R‚f‚rence engagement];
+                SourceExpr=REF_ENGAGEMENT;
+                Editable=false }
+
+    { 1000000005;2;Field  ;
+                CaptionML=[ENU=NUM_EJ;
+                           FRA=Nø d'engagement juridique];
+                SourceExpr=NUM_EJ;
+                Editable=false }
+
+    { 1000000004;2;Field  ;
+                CaptionML=[ENU=NUM_EJ;
+                           FRA=Nø de transaction];
+                SourceExpr=TRS_ID;
+                Editable=false }
+
+    { 1000000003;2;Field  ;
+                CaptionML=[ENU=TRS_ID_AUTORISATION;
+                           FRA=Nø de paiement INGENICO];
+                SourceExpr=TRS_ID_AUTORISATION;
+                Editable=false }
+
+    { 1000000009;2;Field  ;
+                CaptionML=[ENU=CODE_WCP;
+                           FRA=Nø Client g‚n‚r‚ par le site];
+                SourceExpr=CODE_WCP;
+                Editable=false }
+
+    { 1000000010;2;Field  ;
+                CaptionML=[ENU=Market Nø;
+                           FRA=Code march‚];
+                SourceExpr=NUM_MARKET;
+                Editable=false }
 
     { 1905885101;1;Group  ;
                 CaptionML=[ENU=Invoicing;
@@ -366,6 +460,10 @@ OBJECT Page 132 Posted Sales Invoice
 
     { 18  ;2   ;Field     ;
                 SourceExpr="Bill-to Name";
+                Editable=FALSE }
+
+    { 1180250001;2;Field  ;
+                SourceExpr="Bill-to Name 2";
                 Editable=FALSE }
 
     { 20  ;2   ;Field     ;
@@ -388,6 +486,13 @@ OBJECT Page 132 Posted Sales Invoice
                 SourceExpr="Bill-to Contact";
                 Editable=FALSE }
 
+    { 1000000012;2;Field  ;
+                SourceExpr="Registration No." }
+
+    { 1000000011;2;Field  ;
+                SourceExpr="Executing Service Code";
+                Editable=FALSE }
+
     { 7   ;2   ;Field     ;
                 SourceExpr="Shortcut Dimension 1 Code";
                 Editable=FALSE }
@@ -408,10 +513,12 @@ OBJECT Page 132 Posted Sales Invoice
 
     { 32  ;2   ;Field     ;
                 SourceExpr="Payment Discount %";
+                Visible=FALSE;
                 Editable=FALSE }
 
     { 34  ;2   ;Field     ;
                 SourceExpr="Pmt. Discount Date";
+                Visible=FALSE;
                 Editable=FALSE }
 
     { 82  ;2   ;Field     ;
@@ -424,13 +531,22 @@ OBJECT Page 132 Posted Sales Invoice
 
     { 127 ;2   ;Field     ;
                 SourceExpr="Credit Card No.";
+                Visible=FALSE;
                 Editable=FALSE }
 
     { 126 ;2   ;Field     ;
                 CaptionML=[ENU=Cr. Card Number (Last 4 Digits);
                            FRA=Num‚ro de carte de cr‚dit (4ÿderniers chiffres)];
                 SourceExpr=GetCreditcardNumber;
+                Visible=FALSE;
                 Editable=FALSE }
+
+    { 1000000001;2;Field  ;
+                SourceExpr="Exist Deskom File";
+                Editable=FALSE }
+
+    { 1180250007;2;Field  ;
+                SourceExpr="Validated by" }
 
     { 1906801201;1;Group  ;
                 CaptionML=[ENU=Shipping;
@@ -477,11 +593,13 @@ OBJECT Page 132 Posted Sales Invoice
     { 50  ;2   ;Field     ;
                 SourceExpr="Shipment Date";
                 Importance=Promoted;
+                Visible=FALSE;
                 Editable=FALSE }
 
     { 1907468901;1;Group  ;
                 CaptionML=[ENU=Foreign Trade;
-                           FRA=International] }
+                           FRA=International];
+                Visible=FALSE }
 
     { 87  ;2   ;Field     ;
                 SourceExpr="Currency Code";
@@ -501,6 +619,10 @@ OBJECT Page 132 Posted Sales Invoice
                 SourceExpr="EU 3-Party Trade";
                 Editable=FALSE }
 
+    { 1180250006;2;Field  ;
+                SourceExpr="VAT Registration No.";
+                Editable=FALSE }
+
     { 1900000007;0;Container;
                 ContainerType=FactBoxArea }
 
@@ -509,6 +631,13 @@ OBJECT Page 132 Posted Sales Invoice
                 PagePartID=Page193;
                 PartType=Page;
                 ShowFilter=No }
+
+    { 1000000015;1;Part   ;
+                SubPageLink=Document Type=CONST(Posted Invoice),
+                            No.=FIELD(No.);
+                PagePartID=Page50033;
+                Visible=IsAcquittedByEDIPlatform;
+                PartType=Page }
 
     { 1900383207;1;Part   ;
                 Visible=FALSE;
@@ -530,8 +659,55 @@ OBJECT Page 132 Posted Sales Invoice
       DocExchStatusStyle@1003 : Text;
       CRMIntegrationEnabled@1004 : Boolean;
       CRMIsCoupledToRecord@1005 : Boolean;
+      IsAcquittedByEDIPlatform@1000000000 : Boolean INDATASET;
+
+    PROCEDURE CreatePDF@1180250004();
+    VAR
+      PDFCreatorMgt@1180250004 : Codeunit 50014;
+      DocumentType@1180250003 : 'Quote,Blanket Order,Order,Invoice,Return Order,Credit Memo,Posted Shipment,Posted Invoice,Posted Return Receipt,Posted Credit Memo';
+    BEGIN
+      CLEAR(PDFCreatorMgt);
+
+      SalesInvHeader.COPY(Rec);
+      CurrPage.SETSELECTIONFILTER(SalesInvHeader);
+
+      PDFCreatorMgt.SaveInvoiceAsPDF(SalesInvHeader,TRUE);
+    END;
+
+    PROCEDURE SendToMailAsPDF@1180250003();
+    VAR
+      PDFCreatorMgt@1180250002 : Codeunit 50014;
+      DocumentType@1180250001 : 'Quote,Blanket Order,Order,Invoice,Return Order,Credit Memo,Posted Shipment,Posted Invoice,Posted Return Receipt,Posted Credit Memo';
+    BEGIN
+      CLEAR(PDFCreatorMgt);
+
+      SalesInvHeader.COPY(Rec);
+      CurrPage.SETSELECTIONFILTER(SalesInvHeader);
+
+      IF NOT PDFCreatorMgt.ExistRecordLink(SalesInvHeader."No.",TABLENAME) THEN BEGIN
+        PDFCreatorMgt.SaveInvoiceAsPDF(SalesInvHeader,TRUE);
+        COMMIT;
+      END;
+
+      PDFCreatorMgt.CreateSalesDocToSend(DocumentType::"Posted Invoice",SalesInvHeader."No.",SalesInvHeader."Bill-to Customer No.",
+        FALSE);
+
+      PDFCreatorMgt.SendInvoiceAsPDF(SalesInvHeader);
+    END;
+
+    LOCAL PROCEDURE UpdateCommentFactbox@1000000000();
+    BEGIN
+      IsAcquittedByEDIPlatform := "Acquitted by EDI";
+    END;
 
     BEGIN
+    {
+      AC1.00 Ajout Field "Order Reference Customer"
+      BC6 EABO 03.02.20 Integration of Chorus invoice status
+        - Add field "Acquitted by EDI"
+        - add factbox <Sales Comment ListPart>
+        - Add function UpdateCommentFactbox to update visibility of factbox
+    }
     END.
   }
 }

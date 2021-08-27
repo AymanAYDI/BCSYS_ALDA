@@ -4,6 +4,7 @@ OBJECT Page 427 Payment Methods
   {
     Date=09/09/14;
     Time=12:00:00;
+    Modified=Yes;
     Version List=NAVW18.00;
   }
   PROPERTIES
@@ -35,6 +36,9 @@ OBJECT Page 427 Payment Methods
 
     { 13  ;2   ;Field     ;
                 SourceExpr="Payment Processor" }
+
+    { 1180250001;2;Field  ;
+                SourceExpr="Code for EDI (EDICOT)" }
 
     { 3   ;2   ;Field     ;
                 SourceExpr="Direct Debit" }

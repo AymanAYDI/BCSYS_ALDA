@@ -2,9 +2,10 @@ OBJECT Page 46 Sales Order Subform
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
-    Version List=NAVW19.00;
+    Date=03/10/16;
+    Time=19:15:01;
+    Modified=Yes;
+    Version List=NAVW19.00,AC1.00,AB6.TAH.001,ALDA;
   }
   PROPERTIES
   {
@@ -324,6 +325,10 @@ OBJECT Page 46 Sales Order Subform
     { 1   ;1   ;Group     ;
                 GroupType=Repeater }
 
+    { 1000000001;2;Field  ;
+                SourceExpr="Anomaly Code";
+                Editable=FALSE }
+
     { 2   ;2   ;Field     ;
                 SourceExpr=Type;
                 OnValidate=BEGIN
@@ -351,7 +356,7 @@ OBJECT Page 46 Sales Order Subform
 
     { 68  ;2   ;Field     ;
                 SourceExpr="Cross-Reference No.";
-                Visible=FALSE;
+                Visible=true;
                 OnValidate=BEGIN
                              CrossReferenceNoOnAfterValidat;
                              NoOnAfterValidate;
@@ -363,6 +368,12 @@ OBJECT Page 46 Sales Order Subform
                            NoOnAfterValidate;
                          END;
                           }
+
+    { 1180250006;2;Field  ;
+                SourceExpr="Cross-Reference No. of Vendor" }
+
+    { 1180250008;2;Field  ;
+                SourceExpr="HS Code" }
 
     { 1136;2   ;Field     ;
                 SourceExpr="IC Partner Code";
@@ -422,6 +433,7 @@ OBJECT Page 46 Sales Order Subform
 
     { 42  ;2   ;Field     ;
                 SourceExpr="Location Code";
+                Visible=FALSE;
                 OnValidate=BEGIN
                              LocationCodeOnAfterValidate;
                            END;
@@ -467,10 +479,12 @@ OBJECT Page 46 Sales Order Subform
     { 48  ;2   ;Field     ;
                 BlankZero=Yes;
                 SourceExpr="Reserved Quantity";
+                Visible=FALSE;
                 QuickEntry=FALSE }
 
     { 44  ;2   ;Field     ;
                 SourceExpr="Unit of Measure Code";
+                Visible=FALSE;
                 OnValidate=BEGIN
                              UnitofMeasureCodeOnAfterValida;
                              RedistributeTotalsOnAfterValidate;
@@ -510,6 +524,14 @@ OBJECT Page 46 Sales Order Subform
                              RedistributeTotalsOnAfterValidate;
                            END;
                             }
+
+    { 1180250004;2;Field  ;
+                SourceExpr="Ecotaxe Unitaire";
+                Visible=FALSE }
+
+    { 1180250005;2;Field  ;
+                SourceExpr="Montant Ecotaxe";
+                Visible=FALSE }
 
     { 116 ;2   ;Field     ;
                 Name=SalesLineDiscExists;
@@ -606,6 +628,7 @@ OBJECT Page 46 Sales Order Subform
     { 5800;2   ;Field     ;
                 BlankZero=Yes;
                 SourceExpr="Qty. to Assign";
+                Visible=FALSE;
                 OnDrillDown=BEGIN
                               CurrPage.SAVERECORD;
                               ShowItemChargeAssgnt;
@@ -617,6 +640,7 @@ OBJECT Page 46 Sales Order Subform
     { 102 ;2   ;Field     ;
                 BlankZero=Yes;
                 SourceExpr="Qty. Assigned";
+                Visible=FALSE;
                 OnDrillDown=BEGIN
                               CurrPage.SAVERECORD;
                               ShowItemChargeAssgnt;
@@ -635,13 +659,16 @@ OBJECT Page 46 Sales Order Subform
 
     { 86  ;2   ;Field     ;
                 SourceExpr="Planned Delivery Date";
+                Visible=FALSE;
                 QuickEntry=FALSE }
 
     { 88  ;2   ;Field     ;
-                SourceExpr="Planned Shipment Date" }
+                SourceExpr="Planned Shipment Date";
+                Visible=FALSE }
 
     { 100 ;2   ;Field     ;
                 SourceExpr="Shipment Date";
+                Visible=FALSE;
                 OnValidate=BEGIN
                              ShipmentDateOnAfterValidate;
                            END;
@@ -805,15 +832,35 @@ OBJECT Page 46 Sales Order Subform
                            END;
                             }
 
+    { 1180250007;2;Field  ;
+                SourceExpr="Country Dimension Code" }
+
     { 146 ;2   ;Field     ;
                 SourceExpr="Document No.";
                 Visible=FALSE;
                 Editable=FALSE }
 
+    { 1180250001;2;Field  ;
+                SourceExpr="Exported Line";
+                Editable=FALSE }
+
+    { 1180250002;2;Field  ;
+                SourceExpr="Date Exported";
+                Visible=FALSE }
+
+    { 1180250003;2;Field  ;
+                SourceExpr="Vendor No. for EDI Sending" }
+
     { 148 ;2   ;Field     ;
                 SourceExpr="Line No.";
                 Visible=FALSE;
                 Editable=FALSE }
+
+    { 1000000000;2;Field  ;
+                SourceExpr="External Line No." }
+
+    { 1000000002;2;Field  ;
+                SourceExpr="Amount Including VAT" }
 
     { 51  ;1   ;Group     ;
                 GroupType=Group }
@@ -1180,6 +1227,9 @@ OBJECT Page 46 Sales Order Subform
     END;
 
     BEGIN
+    {
+      AC1.00 Ajout Textbox "Vendor No. for EDI Sending" "Exported Line" "Date Exported"
+    }
     END.
   }
 }

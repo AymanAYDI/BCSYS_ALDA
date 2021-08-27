@@ -2,8 +2,9 @@ OBJECT Page 137 Posted Purchase Rcpt. Subform
 {
   OBJECT-PROPERTIES
   {
-    Date=22/12/15;
-    Time=12:00:00;
+    Date=14/06/16;
+    Time=16:18:00;
+    Modified=Yes;
     Version List=NAVW19.00.00.44365;
   }
   PROPERTIES
@@ -91,8 +92,15 @@ OBJECT Page 137 Posted Purchase Rcpt. Subform
     { 1   ;1   ;Group     ;
                 GroupType=Repeater }
 
+    { 1000000001;2;Field  ;
+                SourceExpr="Anomaly Code";
+                Editable=FALSE }
+
     { 2   ;2   ;Field     ;
                 SourceExpr=Type }
+
+    { 1000000002;2;Field  ;
+                SourceExpr="Line No." }
 
     { 4   ;2   ;Field     ;
                 SourceExpr="No." }
@@ -100,6 +108,9 @@ OBJECT Page 137 Posted Purchase Rcpt. Subform
     { 26  ;2   ;Field     ;
                 SourceExpr="Cross-Reference No.";
                 Visible=FALSE }
+
+    { 1000000003;2;Field  ;
+                SourceExpr="Vendor Item No." }
 
     { 16  ;2   ;Field     ;
                 SourceExpr="Variant Code";
@@ -187,6 +198,9 @@ OBJECT Page 137 Posted Purchase Rcpt. Subform
     { 52  ;2   ;Field     ;
                 SourceExpr=Correction;
                 Visible=FALSE }
+
+    { 1000000000;2;Field  ;
+                SourceExpr="Vendor Shipment No." }
 
   }
   CODE

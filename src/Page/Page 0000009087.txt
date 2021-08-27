@@ -4,6 +4,7 @@ OBJECT Page 9087 Sales Line FactBox
   {
     Date=15/09/15;
     Time=12:00:00;
+    Modified=Yes;
     Version List=NAVW19.00;
   }
   PROPERTIES
@@ -32,6 +33,20 @@ OBJECT Page 9087 Sales Line FactBox
                               SalesInfoPaneMgt.LookupItem(Rec);
                             END;
                              }
+
+    { 1180250001;1;Field  ;
+                DrillDown=Yes;
+                CaptionML=[ENU=Inventory;
+                           FRA=Stock];
+                SourceExpr=STRSUBSTNO('%1',SalesInfoPaneMgt.CalcInventory(Rec));
+                OnLookup=BEGIN
+                           //ACBDU 170413.Begin
+                           CLEAR(SalesPriceCalcMgt);
+                           SalesInfoPaneMgt.LookupItemLdgEntry(Rec);
+                           CurrPage.UPDATE(TRUE);
+                           //ACBDU 170413.End
+                         END;
+                          }
 
     { 13  ;1   ;Field     ;
                 Name=Required Quantity;

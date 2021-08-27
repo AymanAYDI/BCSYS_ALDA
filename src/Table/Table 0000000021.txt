@@ -2,9 +2,10 @@ OBJECT Table 21 Cust. Ledger Entry
 {
   OBJECT-PROPERTIES
   {
-    Date=22/12/15;
-    Time=12:00:00;
-    Version List=NAVW19.00.00.44365,NAVFR9.00.00.44365;
+    Date=14/02/20;
+    Time=11:33:45;
+    Modified=Yes;
+    Version List=NAVW19.00.00.44365,NAVFR9.00.00.44365,AC1.00?AB6.TAH.001,ALDA;
   }
   PROPERTIES
   {
@@ -397,6 +398,28 @@ OBJECT Table 21 Cust. Ledger Entry
     { 1200;   ;Direct Debit Mandate ID;Code35     ;TableRelation="SEPA Direct Debit Mandate" WHERE (Customer No.=FIELD(Customer No.));
                                                    CaptionML=[ENU=Direct Debit Mandate ID;
                                                               FRA=ID mandat de pr‚lŠvement] }
+    { 50002;  ;Order Reference Customer;Text35    ;CaptionML=[ENU=Order Reference Customer;
+                                                              FRA=R‚f‚rence commande client];
+                                                   Description=AC1.00 }
+    { 50003;  ;ID lettrage Sage    ;Code10        ;Description=AB6.TAH.001 }
+    { 50019;  ;Country Dimension Code;Code20      ;TableRelation=Country/Region;
+                                                   CaptionML=[ENU=Country Dimension Code;
+                                                              FRA=Code axe pays];
+                                                   Description=ALDA 171214D }
+    { 50100;  ;Inv Acquitted by EDI;Boolean       ;FieldClass=FlowField;
+                                                   CalcFormula=Lookup("Sales Invoice Header"."Acquitted by EDI" WHERE (No.=FIELD(Document No.),
+                                                                                                                       Posting Date=FIELD(Posting Date)));
+                                                   CaptionML=[ENU=Invoice Acquitted by the EDI platform;
+                                                              FRA=Facture acquitt‚e par CHORUS];
+                                                   Description=BC6;
+                                                   Editable=No }
+    { 50101;  ;CrMemo Acquitted by EDI;Boolean    ;FieldClass=FlowField;
+                                                   CalcFormula=Lookup("Sales Cr.Memo Header"."Acquitted by EDI" WHERE (Posting Date=FIELD(Posting Date),
+                                                                                                                       No.=FIELD(Document No.)));
+                                                   CaptionML=[ENU=Invoice Acquitted by the EDI platform;
+                                                              FRA=Avoir acquitt‚ par CHORUS];
+                                                   Description=BC6;
+                                                   Editable=No }
   }
   KEYS
   {
@@ -566,6 +589,14 @@ OBJECT Table 21 Cust. Ledger Entry
       "Applies-to Ext. Doc. No." := GenJnlLine."Applies-to Ext. Doc. No.";
       "Payment Method Code" := GenJnlLine."Payment Method Code";
       "Exported to Payment File" := GenJnlLine."Exported to Payment File";
+      //AC1.00
+      "Order Reference Customer" := GenJnlLine."Order Reference Customer";
+      //AB6.TAH.001  <<
+      "ID lettrage Sage" := GenJnlLine."ID lettrage Sage";
+      //AB6.TAH.001  >>
+
+      // ALDA 171214D
+      "Country Dimension Code" := "Country Dimension Code";
 
       OnAfterCopyCustLedgerEntryFromGenJnlLine(Rec,GenJnlLine);
     END;
@@ -593,6 +624,20 @@ OBJECT Table 21 Cust. Ledger Entry
     END;
 
     BEGIN
+    {
+      AC1.00 Ajout Field "Order Reference Customer"
+      AB6.TAH.001 - 04/09/12
+       Ajout d'un champ :50003
+      //AB6.TAH.001
+       "ID lettrage Sage";
+
+      // ALDA 171214D
+       "Country Dimension Code"
+
+      BC6 EABO 03.02.20 Integration of Chorus invoice status
+        - add fields 50100 "Inv Acquitted by EDI"
+                     50101 "CrMemo Acquitted by EDI"
+    }
     END.
   }
 }

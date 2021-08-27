@@ -2,8 +2,9 @@ OBJECT Page 672 Job Queue Entries
 {
   OBJECT-PROPERTIES
   {
-    Date=23/09/13;
-    Time=12:00:00;
+    Date=03/07/18;
+    Time=17:20:52;
+    Modified=Yes;
     Version List=NAVW17.10;
   }
   PROPERTIES
@@ -14,6 +15,11 @@ OBJECT Page 672 Job Queue Entries
     SourceTableView=SORTING(Priority,Last Ready State);
     PageType=List;
     CardPageID=Job Queue Entry Card;
+    OnAfterGetRecord=BEGIN
+                       // AC1.00
+                       GetEDIDescription();
+                     END;
+
     ActionList=ACTIONS
     {
       { 1900000003;  ;ActionContainer;
@@ -130,6 +136,11 @@ OBJECT Page 672 Job Queue Entries
                 SourceExpr="Parameter String";
                 Visible=FALSE }
 
+    { 1180250001;2;Field  ;
+                CaptionML=[ENU=EDI Description;
+                           FRA=D‚signation EDI];
+                SourceExpr=EDIDescription }
+
     { 14  ;2   ;Field     ;
                 SourceExpr="Earliest Start Date/Time" }
 
@@ -195,6 +206,22 @@ OBJECT Page 672 Job Queue Entries
   }
   CODE
   {
+    VAR
+      EDIDescription@1180250001 : Text[50];
+
+    PROCEDURE GetEDIDescription@1180250003();
+    VAR
+      EDISetup@1180250001 : Record 50000;
+    BEGIN
+      // AC1.00 BEGIN
+      EDISetup.RESET;
+      EDISetup.SETRANGE(Code,COPYSTR("Parameter String",1,MAXSTRLEN(EDISetup.Code)));
+      IF EDISetup.FINDFIRST THEN
+        EDIDescription := EDISetup.Description
+      ELSE
+        EDIDescription := '***Pas d''EDI***';
+      // AC1.00 END
+    END;
 
     BEGIN
     END.

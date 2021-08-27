@@ -2,8 +2,9 @@ OBJECT Page 760 Trailing Sales Orders Chart
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
+    Date=22/03/16;
+    Time=16:13:04;
+    Modified=Yes;
     Version List=NAVW19.00;
   }
   PROPERTIES

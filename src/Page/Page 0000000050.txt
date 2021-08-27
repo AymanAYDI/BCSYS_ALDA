@@ -2,9 +2,10 @@ OBJECT Page 50 Purchase Order
 {
   OBJECT-PROPERTIES
   {
-    Date=23/10/15;
-    Time=12:00:00;
-    Version List=NAVW19.00.00.43402;
+    Date=26/04/16;
+    Time=16:34:36;
+    Modified=Yes;
+    Version List=NAVW19.00.00.43402,ALDA;
   }
   PROPERTIES
   {
@@ -115,6 +116,17 @@ OBJECT Page 50 Purchase Order
                       CaptionML=[ENU=Documents;
                                  FRA=Documents];
                       Image=Documents }
+      { 1000000005;2 ;Action    ;
+                      Name=ShowSalesDocument;
+                      CaptionML=[ENU=Show Sales Document;
+                                 FRA=Afficher document vente];
+                      PromotedIsBig=Yes;
+                      Image=Sales;
+                      OnAction=BEGIN
+                                 //BC6>>
+                                 ShowSalesOrder();
+                               END;
+                                }
       { 66      ;2   ;Action    ;
                       CaptionML=[ENU=Receipts;
                                  FRA=Bons de r‚ception];
@@ -193,6 +205,14 @@ OBJECT Page 50 Purchase Order
                                  PurchHeader.COPY(Rec);
                                  DistIntegration.GetSpecialOrders(PurchHeader);
                                  Rec := PurchHeader;
+                               END;
+                                }
+      { 1180250002;2 ;Separator  }
+      { 1180250003;2 ;Action    ;
+                      CaptionML=[ENU=Cust. Sales &Order;
+                                 FRA=Commande &vente client];
+                      OnAction=BEGIN
+                                 CustSalesOrderOnPush();
                                END;
                                 }
       { 1900000004;0 ;ActionContainer;
@@ -279,7 +299,9 @@ OBJECT Page 50 Purchase Order
                       Name=Reopen;
                       CaptionML=[ENU=Re&open;
                                  FRA=R&ouvrir];
+                      Promoted=Yes;
                       Image=ReOpen;
+                      PromotedCategory=Process;
                       OnAction=VAR
                                  ReleasePurchDoc@1001 : Codeunit 415;
                                BEGIN
@@ -658,6 +680,15 @@ OBJECT Page 50 Purchase Order
                       CaptionML=[ENU=Print;
                                  FRA=Imprimer];
                       Image=Print }
+      { 1000000006;2 ;Action    ;
+                      Ellipsis=Yes;
+                      CaptionML=[ENU=Email Confirmation;
+                                 FRA=Envoyer confirmation par e-mail];
+                      Image=Email;
+                      OnAction=BEGIN
+                                 DocPrint.EmailPurchHeader(Rec);
+                               END;
+                                }
       { 82      ;2   ;Action    ;
                       Ellipsis=Yes;
                       CaptionML=[ENU=&Print;
@@ -780,6 +811,13 @@ OBJECT Page 50 Purchase Order
                 SourceExpr=Status;
                 Importance=Promoted }
 
+    { 1180250001;2;Field  ;
+                SourceExpr="Order Reference Customer" }
+
+    { 1000000007;2;Field  ;
+                SourceExpr="Micro Order No.";
+                Editable=FALSE }
+
     { 60  ;1   ;Part      ;
                 Name=PurchLines;
                 SubPageLink=Document No.=FIELD(No.);
@@ -837,6 +875,9 @@ OBJECT Page 50 Purchase Order
                              ShortcutDimension2CodeOnAfterV;
                            END;
                             }
+
+    { 1180250004;2;Field  ;
+                SourceExpr="Country Dimension Code" }
 
     { 34  ;2   ;Field     ;
                 SourceExpr="Payment Terms Code";
@@ -932,9 +973,25 @@ OBJECT Page 50 Purchase Order
     { 85  ;2   ;Field     ;
                 SourceExpr="Ship-to Code" }
 
+    { 1000000000;2;Field  ;
+                SourceExpr="Gross Weight" }
+
+    { 1000000001;2;Field  ;
+                SourceExpr="Net Weight" }
+
+    { 1000000002;2;Field  ;
+                SourceExpr=Volume }
+
+    { 1000000003;2;Field  ;
+                SourceExpr="Nbr. of Pallet" }
+
+    { 1000000004;2;Field  ;
+                SourceExpr="Nbr. of Package per Pallet" }
+
     { 1907468901;1;Group  ;
                 CaptionML=[ENU=Foreign Trade;
-                           FRA=International] }
+                           FRA=International];
+                Visible=FALSE }
 
     { 119 ;2   ;Field     ;
                 SourceExpr="Currency Code";
@@ -975,7 +1032,8 @@ OBJECT Page 50 Purchase Order
 
     { 1900201301;1;Group  ;
                 CaptionML=[ENU=Prepayment;
-                           FRA=Acompte] }
+                           FRA=Acompte];
+                Visible=false }
 
     { 197 ;2   ;Field     ;
                 SourceExpr="Prepayment %";
@@ -1175,6 +1233,17 @@ OBJECT Page 50 Purchase Order
       VendorInvoiceNoMandatory := PurchasesPayablesSetup."Ext. Doc. No. Mandatory"
     END;
 
+    PROCEDURE CustSalesOrderOnPush@1180250001();
+    VAR
+      PurchHeader@1180250001 : Record 38;
+    BEGIN
+      //AC1.00
+      PurchHeader.COPY(Rec);
+      CurrPage.SETSELECTIONFILTER(PurchHeader);
+
+      PurchHeader.ShowSalesOrder();
+    END;
+
     LOCAL PROCEDURE SetControlAppearance@5();
     VAR
       ApprovalsMgmt@1002 : Codeunit 1535;
@@ -1187,6 +1256,9 @@ OBJECT Page 50 Purchase Order
     END;
 
     BEGIN
+    {
+      AC1.00 Ajout Textbox "Order Reference Customer"
+    }
     END.
   }
 }

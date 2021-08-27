@@ -1,0 +1,41 @@
+OBJECT Table 50003 Segment
+{
+  OBJECT-PROPERTIES
+  {
+    Date=25/06/12;
+    Time=09:21:51;
+    Modified=Yes;
+    Version List=AC1.00;
+  }
+  PROPERTIES
+  {
+    CaptionML=[ENU=Segment;
+               FRA=Segment];
+    LookupPageID=Page50005;
+    DrillDownPageID=Page50005;
+  }
+  FIELDS
+  {
+    { 1   ;   ;Product Group Code  ;Code10        ;TableRelation="Product Group".Code WHERE (Code=FIELD(Product Group Code));
+                                                   CaptionML=[ENU=Product Group Code;
+                                                              FRA=Code groupe produits] }
+    { 2   ;   ;Code                ;Code10        ;CaptionML=[ENU=Code;
+                                                              FRA=Code] }
+    { 3   ;   ;Description         ;Text30        ;CaptionML=[ENU=Description;
+                                                              FRA=D‚signation] }
+  }
+  KEYS
+  {
+    {    ;Product Group Code,Code                 ;Clustered=Yes }
+  }
+  FIELDGROUPS
+  {
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

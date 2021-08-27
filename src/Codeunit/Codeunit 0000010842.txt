@@ -4,6 +4,7 @@ OBJECT Codeunit 10842 G/L Entry Application
   {
     Date=09/09/14;
     Time=12:00:00;
+    Modified=Yes;
     Version List=NAVFR8.00;
   }
   PROPERTIES
@@ -48,7 +49,7 @@ OBJECT Codeunit 10842 G/L Entry Application
           GLEntry."Letter Date" := LetterDate;
           GLEntry.MODIFY;
         UNTIL GLEntry.NEXT = 0;
-      MESSAGE('%1',Text1120006);
+      //MESSAGE('%1',Text1120006);
     END;
 
     PROCEDURE MarkEntries@1120001();

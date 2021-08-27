@@ -1,0 +1,129 @@
+OBJECT Report 50017 Batch Post Sales & Purch. Odr.
+{
+  OBJECT-PROPERTIES
+  {
+    Date=04/03/16;
+    Time=16:57:26;
+    Modified=Yes;
+    Version List=AC1.00,2016;
+  }
+  PROPERTIES
+  {
+    CaptionML=[ENU=Batch Post Sales & Purch. Order;
+               FRA=TPL valide commande vente et achat];
+    ShowPrintStatus=No;
+    ProcessingOnly=Yes;
+    UseRequestPage=No;
+  }
+  DATASET
+  {
+    { 5290;    ;DataItem;                    ;
+               DataItemTable=Table50001;
+               DataItemTableView=SORTING(EDI Code,Direction,Filename,Treatment Date);
+               MaxIteration=1;
+               OnAfterGetRecord=BEGIN
+                                  EDISetup.GET("EDI Code");
+
+                                  Window.OPEN(Text000);
+                                END;
+                                 }
+
+    { 5292;1   ;DataItem;                    ;
+               DataItemTable=Table38;
+               DataItemTableView=SORTING(Last EDI Code for Batch,Last EDI DT for Batch)
+                                 WHERE(Document Type=CONST(Order));
+               OnAfterGetRecord=BEGIN
+                                  PurchHeader := "Purchase Header";
+
+                                  PurchLine.RESET;
+                                  PurchLine.SETRANGE("Document Type",PurchHeader."Document Type");
+                                  PurchLine.SETRANGE("Document No.",PurchHeader."No.");
+                                  PurchLine.SETRANGE(Type,PurchLine.Type::Item);
+                                  PurchLine.SETFILTER("Qty. to Receive",'>%1',0);
+                                  IF PurchLine.FINDSET(FALSE,FALSE) THEN BEGIN
+                                    IF PurchHeader.Status = PurchHeader.Status::Open THEN BEGIN
+                                      CLEAR(ReleasePurchDoc);
+                                      ReleasePurchDoc.PerformManualRelease(PurchHeader);
+                                    END;
+
+                                    COMMIT;
+
+                                    CLEAR(BatchPostPurchOrders);
+                                    BatchPostPurchOrders.InitReport(TRUE,FALSE,0D,FALSE,FALSE,FALSE,FALSE);
+                                    BatchPostPurchOrders.USEREQUESTPAGE := FALSE;
+                                    BatchPostPurchOrders.SETTABLEVIEW(PurchHeader);
+                                    BatchPostPurchOrders.RUN;
+                                  END;
+                                END;
+
+               DataItemLink=Last EDI Code for Batch=FIELD(EDI Code),
+                            Last EDI DT for Batch=FIELD(Treatment Date) }
+
+    { 5291;1   ;DataItem;                    ;
+               DataItemTable=Table36;
+               DataItemTableView=SORTING(Last EDI Code for Batch,Last EDI DT for Batch)
+                                 WHERE(Document Type=CONST(Order));
+               OnAfterGetRecord=BEGIN
+                                  SalesHeader := "Sales Header";
+
+                                  SalesLine.RESET;
+                                  SalesLine.SETRANGE("Document Type",SalesHeader."Document Type");
+                                  SalesLine.SETRANGE("Document No.",SalesHeader."No.");
+                                  SalesLine.SETRANGE(Type,PurchLine.Type::Item);
+                                  SalesLine.SETFILTER("Qty. to Ship",'>%1',0);
+                                  IF SalesLine.FINDSET(FALSE,FALSE) THEN BEGIN
+                                    IF SalesHeader.Status = SalesHeader.Status::Open THEN BEGIN
+                                      CLEAR(ReleaseSalesDoc);
+                                      ReleaseSalesDoc.PerformManualRelease(SalesHeader);
+                                    END;
+
+                                    COMMIT;
+
+                                    CLEAR(BatchPostSalesOrders);
+                                    BatchPostSalesOrders.InitReport(TRUE,FALSE,0D,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE);
+                                    BatchPostSalesOrders.USEREQUESTPAGE := FALSE;
+                                    BatchPostSalesOrders.SETTABLEVIEW(SalesHeader);
+                                    BatchPostSalesOrders.RUN;
+                                  END;
+                                END;
+
+               DataItemLink=Last EDI Code for Batch=FIELD(EDI Code),
+                            Last EDI DT for Batch=FIELD(Treatment Date) }
+
+  }
+  REQUESTPAGE
+  {
+    PROPERTIES
+    {
+    }
+    CONTROLS
+    {
+    }
+  }
+  LABELS
+  {
+  }
+  CODE
+  {
+    VAR
+      Text000@1180250001 : TextConst 'ENU=Batch in process...;FRA=Traitement en cours...';
+      EDISetup@1180250003 : Record 50000;
+      EDIEntry@1180250005 : Record 50002;
+      SalesHeader@1180250008 : Record 36;
+      SalesLine@1180250010 : Record 37;
+      PurchHeader@1180250006 : Record 38;
+      PurchLine@1180250011 : Record 39;
+      ReleaseSalesDoc@1180250036 : Codeunit 414;
+      ReleasePurchDoc@1180250007 : Codeunit 415;
+      Window@1180250002 : Dialog;
+      BatchPostSalesOrders@1180250009 : Report 296;
+      BatchPostPurchOrders@1180250004 : Report 496;
+
+    BEGIN
+    END.
+  }
+  RDLDATA
+  {
+  }
+}
+

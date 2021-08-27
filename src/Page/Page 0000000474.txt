@@ -4,6 +4,7 @@ OBJECT Page 474 VAT Statement Preview
   {
     Date=15/09/15;
     Time=12:00:00;
+    Modified=Yes;
     Version List=NAVW19.00;
   }
   PROPERTIES
@@ -73,6 +74,9 @@ OBJECT Page 474 VAT Statement Preview
                              UseAmtsInAddCurrOnPush;
                            END;
                             }
+
+    { 1000000000;2;Field  ;
+                SourceExpr="Date Filter" }
 
     { 2   ;2   ;Field     ;
                 Name=DateFilter;

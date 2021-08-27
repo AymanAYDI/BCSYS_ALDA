@@ -2,14 +2,17 @@ OBJECT Codeunit 11 Gen. Jnl.-Check Line
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
+    Date=22/03/16;
+    Time=18:11:29;
+    Modified=Yes;
     Version List=NAVW19.00,NAVFR9.00;
   }
   PROPERTIES
   {
     TableNo=81;
-    Permissions=TableData 252=rimd;
+    Permissions=TableData 21=r,
+                TableData 252=r,
+                TableData 379=r;
     OnRun=BEGIN
             GLSetup.GET;
             RunCheck(Rec);

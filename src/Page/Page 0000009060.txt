@@ -2,9 +2,10 @@ OBJECT Page 9060 SO Processor Activities
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
-    Version List=NAVW19.00;
+    Date=20/04/16;
+    Time=18:14:20;
+    Modified=Yes;
+    Version List=NAVW19.00,BC6;
   }
   PROPERTIES
   {
@@ -22,6 +23,12 @@ OBJECT Page 9060 SO Processor Activities
                  SetRespCenterFilter;
                  SETRANGE("Date Filter",0D,WORKDATE - 1);
                  SETFILTER("Date Filter2",'>=%1',WORKDATE);
+                 //BC6>>
+                 ShipmentNotInvoicedCount.SETFILTER(Salesperson_Code, UserSetupMgt.GetSalesPersonFilter);
+                 ShipmentNotInvoicedCount.OPEN;
+                 WHILE(ShipmentNotInvoicedCount.READ) DO
+                   ShipNotInvoiced := ShipmentNotInvoicedCount.Count_;
+                 ShipmentNotInvoicedCount.CLOSE;
                END;
 
     OnAfterGetRecord=VAR
@@ -78,6 +85,10 @@ OBJECT Page 9060 SO Processor Activities
 
     { 4   ;2   ;Field     ;
                 SourceExpr="Sales Quotes - Open";
+                DrillDownPageID=Sales Quotes }
+
+    { 1000000000;2;Field  ;
+                SourceExpr="Sales Quotes - Released";
                 DrillDownPageID=Sales Quotes }
 
     { 6   ;2   ;Field     ;
@@ -177,12 +188,41 @@ OBJECT Page 9060 SO Processor Activities
                 SourceExpr="Sales CrM. - Pending Doc.Exch.";
                 Visible=ShowDocumentsPendingDodExchService }
 
+    { 1000000003;1;Group  ;
+                CaptionML=[ENU=Sales Orders Shipped Not Invoiced;
+                           FRA=Commandes livr‚es non factur‚es];
+                GroupType=CueGroup;
+                ActionList=ACTIONS
+                {
+                  { 1000000002;0 ;Action    ;
+                                  CaptionML=[ENU=Navigate;
+                                             FRA=Naviguer];
+                                  RunObject=Page 344;
+                                  Image=Navigate }
+                }
+                 }
+
+    { 1000000001;2;Field  ;
+                Name=ShipNotInvoiced;
+                CaptionML=[ENU=Ready To Invoice;
+                           FRA=Prˆt pour facturation];
+                SourceExpr=ShipNotInvoiced;
+                DrillDownPageID=Sales Order List;
+                OnDrillDown=BEGIN
+                              //BC6
+                              ShowShipments(FIELDNO("Ready to Ship"));
+                            END;
+                             }
+
   }
   CODE
   {
     VAR
       CueSetup@1000 : Codeunit 9701;
       ShowDocumentsPendingDodExchService@1001 : Boolean;
+      ShipNotInvoiced@1000000000 : Integer;
+      ShipmentNotInvoicedCount@1000000001 : Query 50001;
+      UserSetupMgt@1000000002 : Codeunit 5700;
 
     LOCAL PROCEDURE CalculateCueFieldValues@6();
     BEGIN

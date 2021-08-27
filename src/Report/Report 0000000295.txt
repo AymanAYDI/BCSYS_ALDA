@@ -2,8 +2,9 @@ OBJECT Report 295 Combine Shipments
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
+    Date=18/03/16;
+    Time=18:06:07;
+    Modified=Yes;
     Version List=NAVW19.00;
   }
   PROPERTIES
@@ -34,11 +35,31 @@ OBJECT Report 295 Combine Shipments
                                  Text005);
                              END;
 
-               OnAfterGetRecord=BEGIN
+               OnAfterGetRecord=VAR
+                                  SalesLine2@1000000000 : Record 37;
+                                BEGIN
                                   CurrReport.LANGUAGE := Language.GetLanguageID("Language Code");
 
                                   Window.UPDATE(1,"Bill-to Customer No.");
                                   Window.UPDATE(2,"No.");
+
+                                  //ACBDU 280513D.Begin
+                                  IF OnlyCompletelyShipped THEN BEGIN
+                                    Found := FALSE;
+                                    SalesLine2.RESET;
+                                    SalesLine2.SETRANGE("Document Type" ,"Document Type");
+                                    SalesLine2.SETRANGE("Document No." ,"No.");
+                                    SalesLine2.SETRANGE(Type,SalesLine2.Type::Item);
+                                    SalesLine2.SETFILTER(Quantity,'<>%1',0);
+                                    IF SalesLine2.FINDFIRST THEN
+                                      REPEAT
+                                        IF SalesLine2."Outstanding Quantity" <> 0 THEN
+                                          Found := TRUE;
+                                      UNTIL SalesLine2.NEXT = 0;
+                                    IF Found THEN
+                                      CurrReport.SKIP;
+                                  END;
+                                  //ACBDU 280513D.End
                                 END;
 
                OnPostDataItem=BEGIN
@@ -217,6 +238,11 @@ OBJECT Report 295 Combine Shipments
                              FRA=Copier lignes texte];
                   SourceExpr=CopyTextLines }
 
+      { 1000000000;2;Field  ;
+                  CaptionML=[ENU=Only Completely Shipped;
+                             FRA=Seulement entiŠrement exp‚di‚e];
+                  SourceExpr=OnlyCompletelyShipped }
+
     }
   }
   LABELS
@@ -258,6 +284,8 @@ OBJECT Report 295 Combine Shipments
       NoOfskippedShiment@1030 : Integer;
       CopyTextLines@1035 : Boolean;
       NotAllInvoicesCreatedMsg@1014 : TextConst 'ENU=Not all the invoices were created. A total of %1 invoices were not created.;FRA=Les factures n''ont pas toutes ‚t‚ cr‚‚es. Au total, %1 factures n''ont pas ‚t‚ cr‚‚es.';
+      Found@1000000001 : Boolean;
+      OnlyCompletelyShipped@1000000000 : Boolean;
 
     LOCAL PROCEDURE FinalizeSalesInvHeader@2();
     BEGIN

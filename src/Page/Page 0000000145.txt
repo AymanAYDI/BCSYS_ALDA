@@ -2,8 +2,9 @@ OBJECT Page 145 Posted Purchase Receipts
 {
   OBJECT-PROPERTIES
   {
-    Date=09/09/14;
-    Time=12:00:00;
+    Date=26/04/16;
+    Time=16:36:35;
+    Modified=Yes;
     Version List=NAVW18.00;
   }
   PROPERTIES
@@ -72,6 +73,7 @@ OBJECT Page 145 Posted Purchase Receipts
                       CaptionML=[ENU=&Navigate;
                                  FRA=Na&viguer];
                       Promoted=Yes;
+                      Visible=FALSE;
                       Image=Navigate;
                       PromotedCategory=Process;
                       OnAction=BEGIN
@@ -90,6 +92,9 @@ OBJECT Page 145 Posted Purchase Receipts
 
     { 4   ;2   ;Field     ;
                 SourceExpr="No." }
+
+    { 1180250002;2;Field  ;
+                SourceExpr="Order Reference Customer" }
 
     { 2   ;2   ;Field     ;
                 SourceExpr="Buy-from Vendor No." }
@@ -154,8 +159,7 @@ OBJECT Page 145 Posted Purchase Receipts
                 Visible=FALSE }
 
     { 71  ;2   ;Field     ;
-                SourceExpr="Posting Date";
-                Visible=FALSE }
+                SourceExpr="Posting Date" }
 
     { 57  ;2   ;Field     ;
                 SourceExpr="Purchaser Code";
@@ -171,10 +175,11 @@ OBJECT Page 145 Posted Purchase Receipts
 
     { 65  ;2   ;Field     ;
                 SourceExpr="Location Code";
-                Visible=TRUE }
+                Visible=FALSE }
 
     { 53  ;2   ;Field     ;
-                SourceExpr="No. Printed" }
+                SourceExpr="No. Printed";
+                Visible=FALSE }
 
     { 1102601001;2;Field  ;
                 SourceExpr="Document Date";
@@ -183,6 +188,13 @@ OBJECT Page 145 Posted Purchase Receipts
     { 1102601003;2;Field  ;
                 SourceExpr="Shipment Method Code";
                 Visible=FALSE }
+
+    { 1180250001;2;Field  ;
+                SourceExpr="Vendor Shipment No.";
+                Editable=FALSE }
+
+    { 1000000000;2;Field  ;
+                SourceExpr="Micro Order No." }
 
     { 1900000007;0;Container;
                 ContainerType=FactBoxArea }

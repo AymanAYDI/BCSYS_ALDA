@@ -2,8 +2,9 @@ OBJECT Query 9060 Count Sales Orders
 {
   OBJECT-PROPERTIES
   {
-    Date=22/12/15;
-    Time=12:00:00;
+    Date=22/03/16;
+    Time=15:46:28;
+    Modified=Yes;
     Version List=NAVW19.00.00.44365;
   }
   PROPERTIES
@@ -37,6 +38,9 @@ OBJECT Query 9060 Count Sales Orders
 
     { 5   ;1   ;Filter  ;                    ;
                DataSource=Shipment Date }
+
+    { 1000000000;1;Filter;                   ;
+               DataSource=Salesperson Code }
 
     { 2   ;1   ;Column  ;Count_Orders        ;
                MethodType=Totals;

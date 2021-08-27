@@ -1,0 +1,182 @@
+OBJECT Table 50000 E.D.I. Setup
+{
+  OBJECT-PROPERTIES
+  {
+    Date=04/02/16;
+    Time=11:23:05;
+    Modified=Yes;
+    Version List=AC1.00;
+  }
+  PROPERTIES
+  {
+    CaptionML=[ENU=Electronic Data Interchange Setup;
+               FRA=ParamŠtres d'‚change de Donn‚es Informatis‚];
+    LookupPageID=Page50000;
+    DrillDownPageID=Page50000;
+  }
+  FIELDS
+  {
+    { 1   ;   ;Code                ;Code10        ;CaptionML=[ENU=Code;
+                                                              FRA=Code] }
+    { 2   ;   ;Direction           ;Option        ;CaptionML=[ENU=Direction;
+                                                              FRA=Sens];
+                                                   OptionCaptionML=[ENU=Import,Export;
+                                                                    FRA=Import,Export];
+                                                   OptionString=Import,Export }
+    { 3   ;   ;Filename Filter     ;Text30        ;CaptionML=[ENU=Filename;
+                                                              FRA=Nom de fichier] }
+    { 4   ;   ;Source Type         ;Option        ;CaptionML=[ENU=Source Type;
+                                                              FRA=Type origine];
+                                                   OptionCaptionML=[ENU=" ,Customer,Vendor,Bank Account,Fixed Asset";
+                                                                    FRA=" ,Client,Fournisseur,Banque,Immobilisation"];
+                                                   OptionString=[ ,Customer,Vendor,Bank Account,Fixed Asset] }
+    { 5   ;   ;Source No.          ;Code20        ;TableRelation=IF (Source Type=CONST(Customer)) Customer
+                                                                 ELSE IF (Source Type=CONST(Vendor)) Vendor
+                                                                 ELSE IF (Source Type=CONST(Bank Account)) "Bank Account"
+                                                                 ELSE IF (Source Type=CONST(Fixed Asset)) "Fixed Asset";
+                                                   CaptionML=[ENU=Source No.;
+                                                              FRA=Nø origine] }
+    { 6   ;   ;Files Imp. Path     ;Text250       ;OnValidate=BEGIN
+                                                                TESTFIELD(Direction,Direction::Import);
+                                                              END;
+
+                                                   CaptionML=[ENU=Files Imp. Path;
+                                                              FRA=Chemin d'imp. fichier] }
+    { 7   ;   ;File Imp. Path (Err.);Text250      ;OnValidate=BEGIN
+                                                                TESTFIELD(Direction,Direction::Import);
+                                                              END;
+
+                                                   CaptionML=[ENU=File Imp. Path (Err.);
+                                                              FRA=Chemin d'imp. fichier (Err.)] }
+    { 8   ;   ;File Imp. Path (Saved);Text250     ;OnValidate=BEGIN
+                                                                TESTFIELD(Direction,Direction::Import);
+                                                              END;
+
+                                                   CaptionML=[ENU=File Imp. Path (Saved);
+                                                              FRA=Chemin d'imp. fichier (Enregistr‚)] }
+    { 9   ;   ;Files Exp. Path     ;Text250       ;OnValidate=BEGIN
+                                                                TESTFIELD(Direction,Direction::Export);
+                                                              END;
+
+                                                   CaptionML=[ENU=Files Exp. Path;
+                                                              FRA=Chemin d'exp. fichier] }
+    { 10  ;   ;Object Type to Run  ;Option        ;InitValue=Report;
+                                                   OnValidate=BEGIN
+                                                                IF "Object Type to Run" <> xRec."Object Type to Run" THEN
+                                                                  VALIDATE("Object ID to Run",0);
+                                                              END;
+
+                                                   CaptionML=[ENU=Object Type to Run;
+                                                              FRA=Type objet … ex‚cuter];
+                                                   OptionCaptionML=[ENU=Tabledata,Table,Form,Report,Dataport,Codeunit,XMLport,MenuSuite,Page,System,FieldNumber;
+                                                                    FRA=Tabledata,Table,Form,Report,Dataport,Codeunit,XMLport,MenuSuite,Page,System,FieldNumber];
+                                                   OptionString=Tabledata,Table,Form,Report,Dataport,Codeunit,XMLport,MenuSuite,Page,System,FieldNumber }
+    { 11  ;   ;Object ID to Run    ;Integer       ;TableRelation=AllObjWithCaption."Object ID" WHERE (Object Type=FIELD(Object Type to Run));
+                                                   OnValidate=VAR
+                                                                Object@1000 : Record 2000000001;
+                                                              BEGIN
+                                                                IF "Object ID to Run" <> 0 THEN
+                                                                  Object.GET("Object Type to Run",'',"Object ID to Run");
+                                                                CALCFIELDS("Object Name to Run");
+                                                              END;
+
+                                                   OnLookup=VAR
+                                                              Object@1001 : Record 2000000001;
+                                                              objects@1000000000 : Page 358;
+                                                            BEGIN
+                                                              IF Object.GET("Object Type to Run",'',"Object ID to Run") THEN;
+                                                              Object.FILTERGROUP(2);
+                                                              Object.SETRANGE(Type,"Object Type to Run");
+                                                              Object.FILTERGROUP(0);
+                                                              objects.SETRECORD(Object);
+                                                              objects.SETTABLEVIEW(Object);
+                                                              objects.LOOKUPMODE := TRUE;
+                                                              IF objects.RUNMODAL = ACTION::LookupOK THEN BEGIN
+                                                                objects.GETRECORD(Object);
+                                                                VALIDATE("Object ID to Run",Object.ID);
+                                                              END;
+                                                            END;
+
+                                                   CaptionML=[ENU=Object ID to Run;
+                                                              FRA=ID objet … ex‚cuter] }
+    { 12  ;   ;Object Name to Run  ;Text80        ;FieldClass=FlowField;
+                                                   CalcFormula=Lookup(AllObjWithCaption."Object Caption" WHERE (Object Type=FIELD(Object Type to Run),
+                                                                                                                Object ID=FIELD(Object ID to Run)));
+                                                   CaptionML=[ENU=Object Name to Run;
+                                                              FRA=Nom objet … ex‚cuter];
+                                                   Editable=No }
+    { 13  ;   ;Target Type         ;Option        ;CaptionML=[ENU=Target Type;
+                                                              FRA=Type cible];
+                                                   OptionCaptionML=[ENU=" ,Customer,Vendor,Bank Account,Fixed Asset";
+                                                                    FRA=" ,Client,Fournisseur,Banque,Immobilisation"];
+                                                   OptionString=[ ,Customer,Vendor,Bank Account,Fixed Asset] }
+    { 14  ;   ;Target No.          ;Code20        ;TableRelation=IF (Target Type=CONST(Customer)) Customer
+                                                                 ELSE IF (Target Type=CONST(Vendor)) Vendor
+                                                                 ELSE IF (Target Type=CONST(Bank Account)) "Bank Account"
+                                                                 ELSE IF (Target Type=CONST(Fixed Asset)) "Fixed Asset";
+                                                   CaptionML=[ENU=Target No.;
+                                                              FRA=Nø cible] }
+    { 15  ;   ;Description         ;Text50        ;CaptionML=[ENU=Description;
+                                                              FRA=D‚signation] }
+    { 50  ;   ;Default Base Unit of Measure;Code10;TableRelation="Unit of Measure";
+                                                   CaptionML=[ENU=Base Unit of Measure;
+                                                              FRA=Unit‚ de base par d‚faut] }
+    { 51  ;   ;Sales Order Nos     ;Code10        ;TableRelation="No. Series";
+                                                   CaptionML=[ENU=Numbering : Sales Order Nos.;
+                                                              FRA=Nø commande vente] }
+    { 52  ;   ;EDI Msg. Nos.       ;Code10        ;TableRelation="No. Series";
+                                                   CaptionML=[ENU=EDI Msg. Nos.;
+                                                              FRA=Nø message EDI] }
+    { 53  ;   ;Create Sales/Purch. Doc.;Boolean   ;CaptionML=[ENU=Create Sales/Purch. Doc.;
+                                                              FRA=Cr‚er doc. vente/achat] }
+    { 54  ;No ;Item Charge Code for Shipment;Code20;
+                                                   TableRelation="Item Charge";
+                                                   CaptionML=[ENU=Item Charge for Shipment;
+                                                              FRA=Code frais annexe pour transport] }
+    { 55  ;   ;EDI Lot Nos.        ;Code10        ;TableRelation="No. Series";
+                                                   CaptionML=[ENU=EDI Lot Nos.;
+                                                              FRA=Nø Lot EDI] }
+    { 56  ;   ;Data Temp. Code for CEA Cust.;Code10;
+                                                   TableRelation="Config. Template Header";
+                                                   CaptionML=[ENU=Data Template Code for CEA Cust.;
+                                                              FRA=Code modŠle donn‚es pour client CEA] }
+    { 57  ;   ;EDI Micro Order Nos.;Code10        ;TableRelation="No. Series";
+                                                   CaptionML=[ENU=EDI Micro Order Nos. (Micro);
+                                                              FRA=Nø commande micro EDI] }
+    { 58  ;   ;Item No. Itentification Prefix;Text30;
+                                                   CaptionML=[ENU=Item No. Itentification Prefix;
+                                                              FRA=pr‚fixe d'itentification du nø article] }
+    { 59  ;   ;Customer Nos.       ;Code10        ;TableRelation="No. Series";
+                                                   CaptionML=[ENU=Customer Nos.;
+                                                              FRA=Nø client] }
+    { 60  ;   ;Bill-to Customer Filter;Code250    ;CaptionML=[ENU=Bill-to Customer Filter;
+                                                              FRA=Filtre client factur‚] }
+    { 61  ;   ;Control of Time (milliseconds);Integer;
+                                                   CaptionML=[ENU=Control of Time (milliseconds);
+                                                              FRA=Contr“le du temps (millisecondes)] }
+    { 62  ;   ;Hide Validation Dialog;Boolean     ;CaptionML=[ENU=Hide Validation Dialog;
+                                                              FRA=Cach‚ boite de dialogue de validation] }
+    { 63  ;   ;Starting Date       ;Date          ;CaptionML=[ENU=Starting Date;
+                                                              FRA=Date d‚but] }
+    { 64  ;   ;Ending Date         ;Date          ;CaptionML=[ENU=Ending Date;
+                                                              FRA=Date fin] }
+    { 65  ;   ;Sales Invoice       ;Boolean       ;CaptionML=[ENU=Sales Invoice;
+                                                              FRA=Facture vente] }
+    { 66  ;   ;Sales Cr. Memo      ;Boolean       ;CaptionML=[ENU=Sales Cr. Memo;
+                                                              FRA=Avoir vente] }
+  }
+  KEYS
+  {
+    {    ;Code                                    ;Clustered=Yes }
+  }
+  FIELDGROUPS
+  {
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

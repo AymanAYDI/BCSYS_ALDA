@@ -2,12 +2,14 @@ OBJECT Page 41 Sales Quote
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
-    Version List=NAVW19.00;
+    Date=23/10/18;
+    Time=12:04:41;
+    Modified=Yes;
+    Version List=NAVW19.00,AB6.JME.001;
   }
   PROPERTIES
   {
+    Permissions=TableData 36=m;
     CaptionML=[ENU=Sales Quote;
                FRA=Devis];
     SourceTable=Table36;
@@ -117,6 +119,7 @@ OBJECT Page 41 Sales Quote
       { 189     ;2   ;Action    ;
                       CaptionML=[ENU=Approvals;
                                  FRA=Approbations];
+                      Visible=FALSE;
                       Image=Approvals;
                       OnAction=VAR
                                  ApprovalEntries@1001 : Page 658;
@@ -443,6 +446,7 @@ OBJECT Page 41 Sales Quote
 
     { 120 ;2   ;Field     ;
                 SourceExpr="Sell-to Contact No.";
+                Visible=FALSE;
                 OnValidate=BEGIN
                              SelltoContactNoOnAfterValidate;
                            END;
@@ -452,6 +456,7 @@ OBJECT Page 41 Sales Quote
     { 127 ;2   ;Field     ;
                 SourceExpr="Sell-to Customer Template Code";
                 Importance=Additional;
+                Visible=FALSE;
                 Enabled=SelltoCustomerTemplateCodeEnab;
                 OnValidate=BEGIN
                              SelltoCustomerTemplateCodeOnAf;
@@ -470,6 +475,9 @@ OBJECT Page 41 Sales Quote
                 SourceExpr="Sell-to Address 2";
                 Importance=Additional }
 
+    { 1000000001;2;Field  ;
+                SourceExpr="Sell-to County" }
+
     { 77  ;2   ;Field     ;
                 SourceExpr="Sell-to Post Code";
                 Importance=Additional }
@@ -481,6 +489,9 @@ OBJECT Page 41 Sales Quote
     { 8   ;2   ;Field     ;
                 SourceExpr="Sell-to Contact";
                 Importance=Additional }
+
+    { 1000000000;2;Field  ;
+                SourceExpr="Customer Price Group" }
 
     { 163 ;2   ;Field     ;
                 SourceExpr="No. of Archived Versions";
@@ -517,26 +528,39 @@ OBJECT Page 41 Sales Quote
 
                 QuickEntry=FALSE }
 
+    { 1180250001;2;Field  ;
+                SourceExpr="External Document No." }
+
     { 103 ;2   ;Field     ;
                 SourceExpr="Campaign No.";
+                Visible=FALSE;
                 QuickEntry=FALSE }
 
     { 170 ;2   ;Field     ;
                 SourceExpr="Opportunity No.";
+                Visible=FALSE;
                 QuickEntry=FALSE }
 
     { 108 ;2   ;Field     ;
                 SourceExpr="Responsibility Center";
-                Importance=Additional }
+                Importance=Additional;
+                Visible=FALSE }
 
     { 192 ;2   ;Field     ;
                 SourceExpr="Assigned User ID";
-                Importance=Additional }
+                Importance=Additional;
+                Visible=FALSE }
 
     { 106 ;2   ;Field     ;
                 SourceExpr=Status;
                 Importance=Promoted;
                 QuickEntry=FALSE }
+
+    { 1180250002;2;Field  ;
+                SourceExpr="Order Reference Customer" }
+
+    { 1180250003;2;Field  ;
+                SourceExpr="Order Type" }
 
     { 58  ;1   ;Part      ;
                 Name=SalesLines;
@@ -614,11 +638,13 @@ OBJECT Page 41 Sales Quote
                 Importance=Promoted }
 
     { 32  ;2   ;Field     ;
-                SourceExpr="Payment Discount %" }
+                SourceExpr="Payment Discount %";
+                Visible=FALSE }
 
     { 34  ;2   ;Field     ;
                 SourceExpr="Pmt. Discount Date";
-                Importance=Additional }
+                Importance=Additional;
+                Visible=FALSE }
 
     { 90  ;2   ;Field     ;
                 SourceExpr="Payment Method Code" }
@@ -632,6 +658,9 @@ OBJECT Page 41 Sales Quote
 
     { 187 ;2   ;Field     ;
                 SourceExpr="VAT Bus. Posting Group" }
+
+    { 1000000003;2;Field  ;
+                SourceExpr="Customer Disc. Group" }
 
     { 1906801201;1;Group  ;
                 CaptionML=[ENU=Shipping;
@@ -672,11 +701,16 @@ OBJECT Page 41 Sales Quote
 
     { 50  ;2   ;Field     ;
                 SourceExpr="Shipment Date";
-                Importance=Promoted }
+                Importance=Promoted;
+                Visible=FALSE }
+
+    { 1000000002;2;Field  ;
+                SourceExpr="Sell-to E-Mail" }
 
     { 1907468901;1;Group  ;
                 CaptionML=[ENU=Foreign Trade;
-                           FRA=International] }
+                           FRA=International];
+                Visible=FALSE }
 
     { 97  ;2   ;Field     ;
                 SourceExpr="Currency Code";
@@ -714,6 +748,10 @@ OBJECT Page 41 Sales Quote
 
     { 45  ;2   ;Field     ;
                 SourceExpr=Area }
+
+    { 1180250004;2;Field  ;
+                SourceExpr="VAT Registration No.";
+                Editable=FALSE }
 
     { 1900000007;0;Container;
                 ContainerType=FactBoxArea }
@@ -763,7 +801,6 @@ OBJECT Page 41 Sales Quote
                             Line No.=FIELD(Line No.);
                 PagePartID=Page9087;
                 ProviderID=58;
-                Visible=TRUE;
                 PartType=Page }
 
     { 1901314507;1;Part   ;

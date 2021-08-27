@@ -1,0 +1,68 @@
+OBJECT Page 50027 GIM Purch Line FactBox
+{
+  OBJECT-PROPERTIES
+  {
+    Date=07/10/15;
+    Time=11:55:37;
+    Modified=Yes;
+    Version List=GIM;
+  }
+  PROPERTIES
+  {
+    CaptionML=[ENU=Receipt Lines;
+               FRA=Lignes r‚ceptions];
+    SourceTable=Table50009;
+    PageType=CardPart;
+    OnAfterGetRecord=BEGIN
+                       IF Rec.IsError THEN
+                       BEGIN
+                         //UpdatePurchRcptLineBuffer;
+                         NbPurchRcptLine := CountPurchRcptLine;
+                       END
+                       ELSE
+                         NbPurchRcptLine := 1;
+                     END;
+
+  }
+  CONTROLS
+  {
+    { 1000000000;0;Container;
+                ContainerType=ContentArea }
+
+    { 1000000001;1;Group  ;
+                GroupType=Group }
+
+    { 1000000002;2;Field  ;
+                CaptionML=[ENU=Nb receipt lines;
+                           FRA=Nb. lignes r‚ceptions];
+                SourceExpr=NbPurchRcptLine;
+                OnLookup=BEGIN
+                           UpdatePurchRcptLineBuffer(PurchRcptLineBuffer);
+                           PAGE.RUN(0,PurchRcptLineBuffer);
+                         END;
+                          }
+
+  }
+  CODE
+  {
+    VAR
+      PurchRcptLineBuffer@1000000001 : TEMPORARY Record 121;
+      NbPurchRcptLine@1000000000 : Integer;
+
+    PROCEDURE CountPurchRcptLine@1000000000() : Decimal;
+    VAR
+      PurchRcptLine@1000000000 : Record 121;
+    BEGIN
+      PurchRcptLine.SETRANGE("Buy-from Vendor No.","Buy-from Vendor No.");
+      //PurchRcptLine.SETRANGE("No.","No.");
+      PurchRcptLine.SETRANGE("Vendor Item No.","Vendor Item No.");
+
+      PurchRcptLine.SETFILTER("Qty. Rcd. Not Invoiced",'>0');
+      EXIT(PurchRcptLine.COUNT);
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

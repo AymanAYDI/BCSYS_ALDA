@@ -2,12 +2,14 @@ OBJECT Codeunit 5790 Available to Promise
 {
   OBJECT-PROPERTIES
   {
-    Date=26/11/15;
-    Time=12:00:00;
+    Date=22/03/16;
+    Time=17:08:01;
+    Modified=Yes;
     Version List=NAVW19.00.00.43897;
   }
   PROPERTIES
   {
+    Permissions=TableData 37=r;
     OnRun=BEGIN
           END;
 

@@ -1,0 +1,57 @@
+OBJECT Codeunit 50063 BOUM
+{
+  OBJECT-PROPERTIES
+  {
+    Date=02/03/18;
+    Time=14:19:48;
+    Modified=Yes;
+    Version List=;
+  }
+  PROPERTIES
+  {
+    TableNo=27;
+    OnRun=VAR
+            BaseUnitOfMeasure@1000000000 : Code[10];
+            CompanyInfo@1000000001 : Record 79;
+            Cust@1000000002 : Record 18;
+          BEGIN
+            //AC1.00 BEGIN
+            IF COMPANYNAME <> 'SCOOL' THEN EXIT;
+            CompanyInfo.CHANGECOMPANY('SCOOL');
+            Cust.CHANGECOMPANY('SCOOL');
+            CompanyInfo.GET();
+
+            IF ItemCrossReference.FINDSET THEN
+              REPEAT
+                ItemCrossReference2 := ItemCrossReference;
+                ItemCrossReference2."Cross-Reference Type" := ItemCrossReference."Cross-Reference Type"::Customer;
+                ItemCrossReference2."Cross-Reference Type No." := '';
+                ItemCrossReference2."Bar Code" := '';
+                ItemCrossReference2."Vendor Traide Item No." := '';
+                ItemCrossReference2.INSERT;
+              UNTIL ItemCrossReference.NEXT = 0;
+            //AC1.00 END
+            //AC2.00
+            MESSAGE('OK');
+            EXIT;
+            BaseUnitOfMeasure := "Base Unit of Measure";
+
+            VALIDATE("Base Unit of Measure",'') ;
+
+            MODIFY(TRUE) ;
+            VALIDATE("Base Unit of Measure",BaseUnitOfMeasure);
+            MODIFY(TRUE);
+          END;
+
+  }
+  CODE
+  {
+    VAR
+      ItemCrossReference@1000000000 : Record 5717;
+      ItemCrossReference2@1000000001 : Record 5717;
+
+    BEGIN
+    END.
+  }
+}
+

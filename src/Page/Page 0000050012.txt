@@ -1,0 +1,92 @@
+OBJECT Page 50012 Activit‚s commerciales ALDA
+{
+  OBJECT-PROPERTIES
+  {
+    Date=21/09/15;
+    Time=15:53:07;
+    Modified=Yes;
+    Version List=AB6.JME.001,J;
+  }
+  PROPERTIES
+  {
+    CaptionML=[ENU=Activities;
+               FRA=Activit‚s commerciales ALDA];
+    SourceTable=Table50005;
+    PageType=CardPart;
+    OnOpenPage=BEGIN
+                 IF G_ParamUti.GET(USERID) THEN BEGIN
+                   FILTERGROUP(6);
+                   SETFILTER("Code vendeur",G_ParamUti."Salespers./Purch. Code");
+                 END;
+
+
+
+                 RESET;
+                 IF NOT GET THEN BEGIN
+                   INIT;
+                   INSERT;
+                 END;
+
+                 SETRANGE("Date Filter",0D,WORKDATE - 1);
+                 SETFILTER("Date Filter2",'>=%1',WORKDATE);
+               END;
+
+  }
+  CONTROLS
+  {
+    { 1900000001;0;Container;
+                ContainerType=ContentArea }
+
+    { 1   ;1   ;Group     ;
+                CaptionML=[ENU=For Release;
+                           FRA=Documents commerciaux];
+                GroupType=CueGroup;
+                ActionList=ACTIONS
+                {
+                  { 3       ;0   ;Action    ;
+                                  CaptionML=[ENU=New Sales Quote;
+                                             FRA=Nouveau devis];
+                                  RunObject=Page 41;
+                                  Image=Quote;
+                                  RunPageMode=Create }
+                  { 1180250007;  ;Action    ;
+                                  Name=<Action1180250006>;
+                                  CaptionML=FRA=Liste des devis;
+                                  RunObject=Page 9300 }
+                  { 1180250001;  ;Action    ;
+                                  CaptionML=FRA=Liste des commandes;
+                                  RunObject=Page 9305 }
+                }
+                 }
+
+    { 1180250002;1;Group  ;
+                CaptionML=FRA=Listes;
+                GroupType=CueGroup;
+                ActionList=ACTIONS
+                {
+                  { 1180250003;  ;Action    ;
+                                  Name=<Action1180250003>;
+                                  CaptionML=FRA=Clients;
+                                  RunObject=Page 22 }
+                  { 1180250004;  ;Action    ;
+                                  Name=<Action1180250004>;
+                                  CaptionML=FRA=Fournisseurs;
+                                  RunObject=Page 27 }
+                  { 1180250005;  ;Action    ;
+                                  Name=<Action1180250005>;
+                                  CaptionML=FRA=Articles;
+                                  RunObject=Page 31 }
+                }
+                 }
+
+  }
+  CODE
+  {
+    VAR
+      G_ParamUti@1180250001 : Record 91;
+
+    BEGIN
+    END.
+  }
+}
+

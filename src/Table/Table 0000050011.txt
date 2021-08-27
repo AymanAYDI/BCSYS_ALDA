@@ -1,0 +1,41 @@
+OBJECT Table 50011 GIM XML Mapping
+{
+  OBJECT-PROPERTIES
+  {
+    Date=28/09/15;
+    Time=11:08:29;
+    Modified=Yes;
+    Version List=GIM;
+  }
+  PROPERTIES
+  {
+  }
+  FIELDS
+  {
+    { 1   ;   ;Entry No.           ;Integer       ;AutoIncrement=Yes }
+    { 2   ;   ;Xpath               ;Text250        }
+    { 3   ;   ;Table No.           ;Integer       ;TableRelation=Object.ID WHERE (Type=CONST(Table)) }
+    { 4   ;   ;Field No.           ;Integer       ;TableRelation=Field.No. WHERE (TableNo=FIELD(Table No.)) }
+    { 5   ;   ;ValueFromNodeType   ;Option        ;OptionString=Element,Attribute,Text }
+    { 6   ;   ;ValueFromNodeName   ;Text80         }
+    { 7   ;   ;Flow Setup No.      ;Code20         }
+    { 8   ;   ;Entry type          ;Option        ;OptionString=Data,Namespace }
+    { 9   ;   ;Alias               ;Text30         }
+    { 10  ;   ;URI                 ;Text250        }
+    { 11  ;   ;Indent              ;Integer        }
+  }
+  KEYS
+  {
+    {    ;Entry No.                               ;Clustered=Yes }
+  }
+  FIELDGROUPS
+  {
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

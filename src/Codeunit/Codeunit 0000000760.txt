@@ -2,8 +2,9 @@ OBJECT Codeunit 760 Trailing Sales Orders Mgt.
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
+    Date=23/03/16;
+    Time=10:07:24;
+    Modified=Yes;
     Version List=NAVW19.00;
   }
   PROPERTIES
@@ -17,8 +18,11 @@ OBJECT Codeunit 760 Trailing Sales Orders Mgt.
     VAR
       TrailingSalesOrdersSetup@1006 : Record 760;
       SalesHeader@1010 : Record 36;
+      UserSetupMgt@1000000000 : Codeunit 5700;
 
     PROCEDURE OnOpenPage@3(VAR TrailingSalesOrdersSetup@1000 : Record 760);
+    VAR
+      SalesHeader@1000000000 : Record 36;
     BEGIN
       WITH TrailingSalesOrdersSetup DO
         IF NOT GET(USERID) THEN BEGIN
@@ -30,6 +34,9 @@ OBJECT Codeunit 760 Trailing Sales Orders Mgt.
           "Chart Type" := "Chart Type"::"Stacked Column";
           INSERT;
         END;
+      //BC6>>
+        TrailingSalesOrdersSetup.SETFILTER("Salesperson Code Filter", UserSetupMgt.GetSalesPersonFilter);
+      //BC6<<
     END;
 
     PROCEDURE DrillDown@4(VAR BusChartBuf@1003 : Record 485);
@@ -64,6 +71,11 @@ OBJECT Codeunit 760 Trailing Sales Orders Mgt.
       SalesHeaderStatus@1006 : Integer;
     BEGIN
       TrailingSalesOrdersSetup.GET(USERID);
+      //BC6>>
+      SalesHeader.SETFILTER("Salesperson Code", UserSetupMgt.GetSalesPersonFilter);
+      TrailingSalesOrdersSetup.SETFILTER("Salesperson Code Filter", UserSetupMgt.GetSalesPersonFilter);
+      //BC6<<
+
       WITH BusChartBuf DO BEGIN
         Initialize;
         "Period Length" := TrailingSalesOrdersSetup."Period Length";

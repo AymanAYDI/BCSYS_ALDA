@@ -2,9 +2,10 @@ OBJECT Page 6630 Sales Return Order
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
-    Version List=NAVW19.00;
+    Date=08/01/19;
+    Time=16:47:23;
+    Modified=Yes;
+    Version List=NAVW19.00,AB6.JME.001;
   }
   PROPERTIES
   {
@@ -91,6 +92,7 @@ OBJECT Page 6630 Sales Return Order
                       CaptionML=[ENU=Approvals;
                                  FRA=Approbations];
                       Promoted=No;
+                      Visible=FALSE;
                       PromotedIsBig=No;
                       Image=Approvals;
                       OnAction=VAR
@@ -140,6 +142,7 @@ OBJECT Page 6630 Sales Return Order
                       RunPageView=SORTING(Source Document,Source No.,Location Code);
                       RunPageLink=Source Document=CONST(Sales Return Order),
                                   Source No.=FIELD(No.);
+                      Visible=FALSE;
                       Image=PickLines }
       { 120     ;2   ;Action    ;
                       CaptionML=[ENU=Whse. Receipt Lines;
@@ -149,6 +152,7 @@ OBJECT Page 6630 Sales Return Order
                       RunPageLink=Source Type=CONST(37),
                                   Source Subtype=FIELD(Document Type),
                                   Source No.=FIELD(No.);
+                      Visible=FALSE;
                       Image=ReceiptLines }
       { 1900000004;0 ;ActionContainer;
                       ActionContainerType=ActionItems }
@@ -271,6 +275,7 @@ OBJECT Page 6630 Sales Return Order
                       CaptionML=[ENU=Apply Entries;
                                  FRA=Lettrer ‚critures];
                       Promoted=Yes;
+                      Visible=FALSE;
                       Image=ApplyEntries;
                       PromotedCategory=Process;
                       OnAction=BEGIN
@@ -282,6 +287,7 @@ OBJECT Page 6630 Sales Return Order
                       CaptionML=[ENU=Create Return-Related &Documents;
                                  FRA=Cr‚er documents ass&oci‚s retour];
                       Promoted=Yes;
+                      Visible=FALSE;
                       Image=ApplyEntries;
                       PromotedCategory=Process;
                       OnAction=BEGIN
@@ -311,6 +317,7 @@ OBJECT Page 6630 Sales Return Order
                       Ellipsis=Yes;
                       CaptionML=[ENU=Move Negative Lines;
                                  FRA=D‚placer lignes n‚gatives];
+                      Visible=FALSE;
                       Image=MoveNegativeLines;
                       OnAction=BEGIN
                                  CLEAR(MoveNegSalesLines);
@@ -325,6 +332,7 @@ OBJECT Page 6630 Sales Return Order
                       CaptionML=[ENU=Get Posted Doc&ument Lines to Reverse;
                                  FRA=Extraire lignes doc&ument enreg. … contrepasser];
                       Promoted=Yes;
+                      Visible=FALSE;
                       PromotedIsBig=Yes;
                       Image=ReverseLines;
                       PromotedCategory=Process;
@@ -345,6 +353,7 @@ OBJECT Page 6630 Sales Return Order
                       AccessByPermission=TableData 410=R;
                       CaptionML=[ENU=Send IC Return Order Cnfmn.;
                                  FRA=Confirmation envoi retour IC];
+                      Visible=FALSE;
                       Image=IntercompanyOrder;
                       OnAction=VAR
                                  ICInOutboxMgt@1000 : Codeunit 427;
@@ -364,6 +373,7 @@ OBJECT Page 6630 Sales Return Order
                       AccessByPermission=TableData 7316=R;
                       CaptionML=[ENU=Create &Whse. Receipt;
                                  FRA=Cr‚er &r‚ception entrep“t];
+                      Visible=FALSE;
                       Image=NewReceipt;
                       OnAction=VAR
                                  GetSourceDocInbound@1000 : Codeunit 5751;
@@ -376,6 +386,7 @@ OBJECT Page 6630 Sales Return Order
                       Ellipsis=Yes;
                       CaptionML=[ENU=Create Inventor&y Put-away/Pick;
                                  FRA=Cr‚er pr‚lŠv./rangement stoc&k];
+                      Visible=FALSE;
                       Image=CreateInventoryPickup;
                       OnAction=BEGIN
                                  CreateInvtPutAwayPick;
@@ -457,6 +468,7 @@ OBJECT Page 6630 Sales Return Order
                       CaptionML=[ENU=Send A&pproval Request;
                                  FRA=Envoyer demande d'a&pprobation];
                       Promoted=Yes;
+                      Visible=FALSE;
                       Enabled=NOT OpenApprovalEntriesExist;
                       Image=SendApprovalRequest;
                       PromotedCategory=Category9;
@@ -472,6 +484,7 @@ OBJECT Page 6630 Sales Return Order
                       CaptionML=[ENU=Cancel Approval Re&quest;
                                  FRA=Annuler demande d'appro&bation];
                       Promoted=Yes;
+                      Visible=FALSE;
                       Enabled=OpenApprovalEntriesExist;
                       Image=Cancel;
                       PromotedCategory=Category9;
@@ -530,6 +543,9 @@ OBJECT Page 6630 Sales Return Order
     { 67  ;2   ;Field     ;
                 SourceExpr="Sell-to Address 2" }
 
+    { 1000000000;2;Field  ;
+                SourceExpr="Sell-to County" }
+
     { 70  ;2   ;Field     ;
                 SourceExpr="Sell-to Post Code" }
 
@@ -569,13 +585,16 @@ OBJECT Page 6630 Sales Return Order
                 QuickEntry=FALSE }
 
     { 104 ;2   ;Field     ;
-                SourceExpr="Campaign No." }
+                SourceExpr="Campaign No.";
+                Visible=FALSE }
 
     { 107 ;2   ;Field     ;
-                SourceExpr="Responsibility Center" }
+                SourceExpr="Responsibility Center";
+                Visible=FALSE }
 
     { 141 ;2   ;Field     ;
-                SourceExpr="Assigned User ID" }
+                SourceExpr="Assigned User ID";
+                Visible=FALSE }
 
     { 5   ;2   ;Field     ;
                 SourceExpr="Job Queue Status";
@@ -586,11 +605,61 @@ OBJECT Page 6630 Sales Return Order
                 Importance=Promoted;
                 QuickEntry=FALSE }
 
+    { 1180250001;2;Field  ;
+                SourceExpr="Applies-to Doc. Type";
+                Importance=Additional }
+
+    { 1000000001;2;Field  ;
+                SourceExpr="Order Reference Customer" }
+
+    { 1180250002;2;Field  ;
+                SourceExpr="Applies-to Doc. No." }
+
     { 48  ;1   ;Part      ;
                 Name=SalesLines;
                 SubPageLink=Document No.=FIELD(No.);
                 PagePartID=Page6631;
                 UpdatePropagation=Both }
+
+    { 1000000007;1;Group  ;
+                CaptionML=[ENU=Defence Office;
+                           FRA=D‚fense Bureau];
+                GroupType=Group }
+
+    { 1000000006;2;Field  ;
+                CaptionML=[ENU=NUM_SUBSEQUENT;
+                           FRA=Nø du march‚ subs‚quent];
+                SourceExpr="EDI Add. Info. 1" }
+
+    { 1000000005;2;Field  ;
+                CaptionML=[ENU=REF_ENGAGEMENT;
+                           FRA=R‚f‚rence engagement];
+                SourceExpr="EDI Add. Info. 2" }
+
+    { 1000000004;2;Field  ;
+                CaptionML=[ENU=NUM_EJ;
+                           FRA=Nø d'engagement juridique];
+                SourceExpr="EDI Add. Info. 3" }
+
+    { 1000000003;2;Field  ;
+                CaptionML=[ENU=NUM_EJ;
+                           FRA=Nø de transaction];
+                SourceExpr="EDI Add. Info. 4" }
+
+    { 1000000002;2;Field  ;
+                CaptionML=[ENU=TRS_ID_AUTORISATION;
+                           FRA=Nø de paiement INGENICO];
+                SourceExpr=TRS_ID_AUTORISATION }
+
+    { 1000000008;2;Field  ;
+                CaptionML=[ENU=CODE_WCP;
+                           FRA=Nø Client g‚n‚r‚ par le site];
+                SourceExpr="EDI Add. Info. 5" }
+
+    { 1000000009;2;Field  ;
+                CaptionML=[ENU=Market Nø;
+                           FRA=Code march‚];
+                SourceExpr="EDI Add. Info. 6" }
 
     { 1905885101;1;Group  ;
                 CaptionML=[ENU=Invoicing;
@@ -640,15 +709,20 @@ OBJECT Page 6630 Sales Return Order
                             }
 
     { 14  ;2   ;Field     ;
+                Name=Applies-to Doc. Type_2;
                 SourceExpr="Applies-to Doc. Type";
-                Importance=Promoted }
+                Importance=Promoted;
+                Visible=FALSE }
 
     { 16  ;2   ;Field     ;
+                Name=Applies-to Doc. No._2;
                 SourceExpr="Applies-to Doc. No.";
-                Importance=Promoted }
+                Importance=Promoted;
+                Visible=FALSE }
 
     { 94  ;2   ;Field     ;
-                SourceExpr="Applies-to ID" }
+                SourceExpr="Applies-to ID";
+                Visible=FALSE }
 
     { 100 ;2   ;Field     ;
                 SourceExpr="Prices Including VAT";
@@ -659,6 +733,9 @@ OBJECT Page 6630 Sales Return Order
 
     { 137 ;2   ;Field     ;
                 SourceExpr="VAT Bus. Posting Group" }
+
+    { 1000000010;2;Field  ;
+                SourceExpr="Executing Service Code" }
 
     { 1906801201;1;Group  ;
                 CaptionML=[ENU=Shipping;
@@ -688,11 +765,13 @@ OBJECT Page 6630 Sales Return Order
 
     { 96  ;2   ;Field     ;
                 SourceExpr="Shipment Date";
-                Importance=Promoted }
+                Importance=Promoted;
+                Visible=FALSE }
 
     { 1907468901;1;Group  ;
                 CaptionML=[ENU=Foreign Trade;
-                           FRA=International] }
+                           FRA=International];
+                Visible=FALSE }
 
     { 91  ;2   ;Field     ;
                 SourceExpr="Currency Code";
@@ -774,7 +853,6 @@ OBJECT Page 6630 Sales Return Order
                             Line No.=FIELD(Line No.);
                 PagePartID=Page9087;
                 ProviderID=48;
-                Visible=FALSE;
                 PartType=Page }
 
     { 1906354007;1;Part   ;

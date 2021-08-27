@@ -2,9 +2,10 @@ OBJECT Table 114 Sales Cr.Memo Header
 {
   OBJECT-PROPERTIES
   {
-    Date=26/11/15;
-    Time=12:00:00;
-    Version List=NAVW19.00.00.43897;
+    Date=14/02/20;
+    Time=11:29:58;
+    Modified=Yes;
+    Version List=NAVW19.00.00.43897,AC2.00,CTD,BC6AUTOINV;
   }
   PROPERTIES
   {
@@ -380,6 +381,110 @@ OBJECT Table 114 Sales Cr.Memo Header
                                                               FRA=Autoriser remise ligne] }
     { 7200;   ;Get Return Receipt Used;Boolean    ;CaptionML=[ENU=Get Return Receipt Used;
                                                               FRA=Extraire r‚cep retour utilis‚e] }
+    { 50002;  ;Order Reference Customer;Text35    ;CaptionML=[ENU=Order Reference Customer;
+                                                              FRA=R‚f‚rence commande client];
+                                                   Description=AC1.00 }
+    { 50007;  ;Gross Weight        ;Decimal       ;CaptionML=[ENU=Gross Weight;
+                                                              FRA=Poids brut];
+                                                   DecimalPlaces=0:5;
+                                                   Description=AC1.00 }
+    { 50008;  ;Net Weight          ;Decimal       ;CaptionML=[ENU=Net Weight;
+                                                              FRA=Poids net];
+                                                   DecimalPlaces=0:5;
+                                                   Description=AC1.00 }
+    { 50009;  ;Volume              ;Decimal       ;CaptionML=[ENU=Volume;
+                                                              FRA=Volume];
+                                                   Description=AC1.00 }
+    { 50010;  ;Nbr. of Pallet      ;Integer       ;CaptionML=[ENU=Nbr. of Pallet;
+                                                              FRA=Nb. de palette];
+                                                   Description=AC1.00 }
+    { 50011;  ;Nbr. of Package     ;Integer       ;CaptionML=[ENU=Nbr. of Package;
+                                                              FRA=Nb. de colis];
+                                                   Description=AC1.00 }
+    { 50012;  ;Nbr. of Package per Pallet;Integer ;CaptionML=[ENU=Nbr. of Package per Pallet;
+                                                              FRA=Nb. de colis par palette];
+                                                   Description=AC1.00 }
+    { 50015;  ;EDI Code            ;Code20        ;TableRelation="E.D.I. Setup";
+                                                   CaptionML=[ENU=E.D.I. Code;
+                                                              FRA=Code E.D.I.];
+                                                   Description=AC1.00 -  CTD Passage … 20 car;
+                                                   Editable=No }
+    { 50016;  ;EDI No.             ;Code20        ;CaptionML=[ENU=EDI No.;
+                                                              FRA=Nø EDI];
+                                                   Description=AC1.00;
+                                                   Editable=No }
+    { 50020;  ;Exported            ;Boolean       ;OnValidate=BEGIN
+                                                                IF Exported = FALSE THEN BEGIN
+                                                                  "Date Exported" := 0DT;
+                                                                  "EDI Code" := '';
+                                                                  "EDI No." := '';
+                                                                END;
+                                                              END;
+
+                                                   CaptionML=[ENU=Exported;
+                                                              FRA=Export‚e];
+                                                   Description=AC1.00 }
+    { 50021;  ;Date Exported       ;DateTime      ;CaptionML=[ENU=Date Exported;
+                                                              FRA=Date export‚];
+                                                   Description=AC1.00;
+                                                   Editable=No }
+    { 50022;  ;Last Date of Sending by Mail;Date  ;CaptionML=[ENU="Last Date of Sending by Mail ";
+                                                              FRA=DerniŠre date d'envoi par mail];
+                                                   Description=ALDA 040813D;
+                                                   Editable=No }
+    { 50024;  ;Cost Center Code    ;Code20        ;CaptionML=[ENU=Cost Center Code;
+                                                              FRA=Code centre de co–t];
+                                                   Description=ACBDU 100314D }
+    { 50025;  ;Area Code           ;Code20        ;TableRelation="Dynamic Field".Code WHERE (Table No.=CONST(18),
+                                                                                             Field No.=CONST(50021));
+                                                   CaptionML=[ENU=Area Code;
+                                                              FRA=Code site];
+                                                   Description=ACBDU 160414D }
+    { 50029;  ;Validated by        ;Text50        ;CaptionML=[ENU=Validated by;
+                                                              FRA=Valid‚ par];
+                                                   Description=ALDA 031114D;
+                                                   Editable=No }
+    { 50033;  ;Micro Order No.     ;Code20        ;CaptionML=[ENU=Micro Order No.;
+                                                              FRA=Nø commande micro];
+                                                   Description=ALDA 061015D }
+    { 50035;  ;NUM_SUBSEQUENT      ;Code50        ;CaptionML=[ENU=NUM_SUBSEQUENT;
+                                                              FRA=NUM_SUBSEQUENT];
+                                                   Description=Nø du march‚ subs‚quent }
+    { 50036;  ;REF_ENGAGEMENT      ;Code50        ;CaptionML=[ENU=REF_ENGAGEMENT;
+                                                              FRA=REF_ENGAGEMENT];
+                                                   Description=R‚f‚rence engagement }
+    { 50037;  ;NUM_EJ              ;Code50        ;CaptionML=[ENU=NUM_EJ;
+                                                              FRA=NUM_EJ];
+                                                   Description=Nø d'engagement juridique }
+    { 50038;  ;TRS_ID              ;Code50        ;CaptionML=[ENU=NUM_EJ;
+                                                              FRA=TRS_ID];
+                                                   Description=Nø de transaction unique }
+    { 50039;  ;TRS_ID_AUTORISATION ;Decimal       ;CaptionML=[ENU=TRS_ID_AUTORISATION;
+                                                              FRA=TRS_ID_AUTORISATION];
+                                                   Description=Nø de paiment Ingenico }
+    { 50040;  ;CODE_WCP            ;Code20        ;CaptionML=FRA=CODE_WCP;
+                                                   Description=Nø client g‚n‚r‚ par le site D‚fense Bureau }
+    { 50041;  ;NUM_MARKET          ;Code50        ;CaptionML=[ENU=NUM_MARKET;
+                                                              FRA=NUM_MARKET];
+                                                   Description=Num‚ro de march‚ }
+    { 50060;  ;Executing Service Code;Code100     ;CaptionML=[ENU=Executing Service Code;
+                                                              FRA=Code service ‚xecutant] }
+    { 50061;  ;Registration No.    ;Text20        ;CaptionML=[ENU=Registration No.;
+                                                              FRA=Nø SIRET] }
+    { 50100;  ;Acquitted by EDI    ;Boolean       ;CaptionML=[ENU=Acquitted by the EDI platform;
+                                                              FRA=Acquitt‚ par CHORUS] }
+    { 60200;  ;Data Flow Code      ;Code20        ;TableRelation="Data Flow";
+                                                   CaptionML=[ENU=Data Flow Code;
+                                                              FRA=Code flux de donn‚es] }
+    { 60201;  ;Data Flow Status No.;Integer       ;TableRelation="Data Flow Status".No. WHERE (Data Flow Code=FIELD(Data Flow Code));
+                                                   CaptionML=[ENU=Data Flow Status No.;
+                                                              FRA=Nø statut flux de donn‚es] }
+    { 60202;  ;Data Flow Status Caption;Text250   ;FieldClass=FlowField;
+                                                   CalcFormula=Lookup("Data Flow Status".Name WHERE (Data Flow Code=FIELD(Data Flow Code),
+                                                                                                     No.=FIELD(Data Flow Status No.)));
+                                                   CaptionML=[ENU=Data Flow Status Caption;
+                                                              FRA=L‚gende statut flux donn‚es];
+                                                   Editable=No }
   }
   KEYS
   {
@@ -391,6 +496,7 @@ OBJECT Table 114 Sales Cr.Memo Header
     {    ;Sell-to Customer No.                     }
     {    ;Prepayment Order No.                     }
     {    ;Bill-to Customer No.                     }
+    {    ;Data Flow Code,Data Flow Status No.      }
   }
   FIELDGROUPS
   {
@@ -599,6 +705,12 @@ OBJECT Table 114 Sales Cr.Memo Header
     END;
 
     BEGIN
+    {
+      AC1.00 Ajout Field "Order Reference Customer"
+      //CTD CLE 08/07/13 Passage … 20 car du code EDI
+      BC6 EABO 03.02.20 Integration of Chorus invoice status
+        - Add field 50100 "Acquitted by EDI"
+    }
     END.
   }
 }

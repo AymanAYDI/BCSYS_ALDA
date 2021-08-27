@@ -2,8 +2,9 @@ OBJECT Page 142 Posted Sales Shipments
 {
   OBJECT-PROPERTIES
   {
-    Date=09/09/14;
-    Time=12:00:00;
+    Date=03/09/19;
+    Time=19:39:51;
+    Modified=Yes;
     Version List=NAVW18.00;
   }
   PROPERTIES
@@ -84,6 +85,7 @@ OBJECT Page 142 Posted Sales Shipments
       { 1102601002;2 ;Action    ;
                       CaptionML=[ENU=&Track Package;
                                  FRA=&Suivre colis];
+                      Visible=FALSE;
                       Image=ItemTracking;
                       OnAction=BEGIN
                                  StartTrackingSite;
@@ -100,13 +102,16 @@ OBJECT Page 142 Posted Sales Shipments
                                  SalesShptHeader@1102 : Record 110;
                                BEGIN
                                  CurrPage.SETSELECTIONFILTER(SalesShptHeader);
-                                 SalesShptHeader.PrintRecords(TRUE);
+                                 //BCSYS 210417
+                                 //SalesShptHeader.PrintRecords(TRUE);
+                                 SalesShptHeader.PrintRecords2(TRUE,Rec);
                                END;
                                 }
       { 22      ;1   ;Action    ;
                       CaptionML=[ENU=&Navigate;
                                  FRA=Na&viguer];
                       Promoted=Yes;
+                      Visible=FALSE;
                       Image=Navigate;
                       PromotedCategory=Process;
                       OnAction=BEGIN
@@ -126,6 +131,9 @@ OBJECT Page 142 Posted Sales Shipments
     { 2   ;2   ;Field     ;
                 SourceExpr="No." }
 
+    { 1180250004;2;Field  ;
+                SourceExpr="External Document No." }
+
     { 4   ;2   ;Field     ;
                 SourceExpr="Sell-to Customer No." }
 
@@ -135,6 +143,9 @@ OBJECT Page 142 Posted Sales Shipments
     { 23  ;2   ;Field     ;
                 SourceExpr="Sell-to Post Code";
                 Visible=FALSE }
+
+    { 1000000001;2;Field  ;
+                SourceExpr="Sell-to City" }
 
     { 19  ;2   ;Field     ;
                 SourceExpr="Sell-to Country/Region Code";
@@ -184,13 +195,27 @@ OBJECT Page 142 Posted Sales Shipments
                 SourceExpr="Ship-to Contact";
                 Visible=FALSE }
 
+    { 1180250002;2;Field  ;
+                SourceExpr="Order Reference Customer" }
+
+    { 1180250003;2;Field  ;
+                Name=External Document No._2;
+                SourceExpr="External Document No." }
+
+    { 1000000000;2;Field  ;
+                SourceExpr="Your Reference" }
+
     { 67  ;2   ;Field     ;
                 SourceExpr="Posting Date";
-                Visible=FALSE }
+                Editable=false }
 
     { 53  ;2   ;Field     ;
                 SourceExpr="Salesperson Code";
-                Visible=FALSE }
+                Editable=false }
+
+    { 1180250001;2;Field  ;
+                SourceExpr="Vendor Shipment No.";
+                Editable=false }
 
     { 59  ;2   ;Field     ;
                 SourceExpr="Shortcut Dimension 1 Code";
@@ -201,14 +226,16 @@ OBJECT Page 142 Posted Sales Shipments
                 Visible=FALSE }
 
     { 16  ;2   ;Field     ;
-                SourceExpr="Currency Code" }
+                SourceExpr="Currency Code";
+                Visible=FALSE }
 
     { 61  ;2   ;Field     ;
                 SourceExpr="Location Code";
-                Visible=TRUE }
+                Visible=FALSE }
 
     { 8   ;2   ;Field     ;
-                SourceExpr="No. Printed" }
+                SourceExpr="No. Printed";
+                Visible=FALSE }
 
     { 1102601003;2;Field  ;
                 SourceExpr="Document Date";

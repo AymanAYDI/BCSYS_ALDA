@@ -1,0 +1,55 @@
+OBJECT Table 50004 E.D.I. Log Entry
+{
+  OBJECT-PROPERTIES
+  {
+    Date=18/09/12;
+    Time=12:37:20;
+    Modified=Yes;
+    Version List=AC1.00;
+  }
+  PROPERTIES
+  {
+    OnDelete=VAR
+               EDIEntry@1180250001 : Record 50002;
+             BEGIN
+             END;
+
+    CaptionML=[ENU=Electronic Data Interchange Log Entry;
+               FRA=Ecriture trace d'‚change de Donn‚es Informatis‚];
+    LookupPageID=Page50031;
+    DrillDownPageID=Page50031;
+  }
+  FIELDS
+  {
+    { 1   ;   ;EDI Code            ;Code10        ;TableRelation="E.D.I. Setup";
+                                                   CaptionML=[ENU=EDI No.;
+                                                              FRA=Code EDI] }
+    { 4   ;   ;Treatment Date      ;DateTime      ;CaptionML=[ENU=Treatment Date;
+                                                              FRA=Date de traitement] }
+    { 5   ;   ;Ligne No.           ;Integer       ;CaptionML=[ENU=Status;
+                                                              FRA=Statut] }
+    { 6   ;   ;Error Text          ;Text250       ;CaptionML=[ENU=Error Text;
+                                                              FRA=Message d'erreur] }
+    { 7   ;   ;Status              ;Option        ;CaptionML=[ENU=Status;
+                                                              FRA=Statut];
+                                                   OptionCaptionML=[ENU=" ,OK,Error";
+                                                                    FRA=" ,OK,Erreur"];
+                                                   OptionString=[ ,OK,Error] }
+    { 8   ;   ;Applied E.D.I. Entry No.;Integer   ;CaptionML=[ENU=Applied Electronic Data Interchange Entry No.;
+                                                              FRA=Nø ‚criture d'‚change de Donn‚es Informatis‚] }
+  }
+  KEYS
+  {
+    {    ;EDI Code,Treatment Date,Ligne No.       ;Clustered=Yes }
+  }
+  FIELDGROUPS
+  {
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

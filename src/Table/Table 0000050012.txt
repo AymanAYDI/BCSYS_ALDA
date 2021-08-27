@@ -1,0 +1,47 @@
+OBJECT Table 50012 Xml Buffer2
+{
+  OBJECT-PROPERTIES
+  {
+    Date=13/10/15;
+    Time=15:07:54;
+    Modified=Yes;
+    Version List=GIM;
+  }
+  PROPERTIES
+  {
+    LookupPageID=Page50026;
+    DrillDownPageID=Page50026;
+  }
+  FIELDS
+  {
+    { 1   ;   ;Entry No.           ;Integer        }
+    { 2   ;   ;Table No.           ;Integer       ;TableRelation=Object WHERE (Type=CONST(Table)) }
+    { 3   ;   ;Field No.           ;Integer       ;TableRelation=Field.No. WHERE (TableNo=FIELD(Table No.)) }
+    { 4   ;   ;Field Caption       ;Text100       ;FieldClass=FlowField;
+                                                   CalcFormula=Lookup(Field."Field Caption" WHERE (TableNo=FIELD(Table No.),
+                                                                                                   No.=FIELD(Field No.))) }
+    { 5   ;   ;ValueAsText         ;Text250        }
+    { 6   ;   ;Path                ;Text250        }
+    { 7   ;   ;Xml ID              ;Text80         }
+    { 8   ;   ;Parent Entry No.    ;Integer        }
+    { 9   ;   ;Indent              ;Integer        }
+    { 10  ;   ;NodeType            ;Option        ;OptionString=Element,Attribute,Text }
+    { 11  ;   ;NodeName            ;Text80         }
+    { 12  ;   ;NewValueAsText      ;Text250        }
+  }
+  KEYS
+  {
+    {    ;Entry No.                               ;Clustered=Yes }
+    {    ;Xml ID                                   }
+  }
+  FIELDGROUPS
+  {
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

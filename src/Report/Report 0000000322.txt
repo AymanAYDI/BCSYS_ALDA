@@ -2,8 +2,9 @@ OBJECT Report 322 Aged Accounts Payable
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
+    Date=07/11/18;
+    Time=17:26:13;
+    Modified=Yes;
     Version List=NAVW19.00;
   }
   PROPERTIES
@@ -220,6 +221,7 @@ OBJECT Report 322 Aged Accounts Payable
                                   CurrReport.SKIP;
                                 END;
 
+               ReqFilterFields=Due Date;
                DataItemLink=Vendor No.=FIELD(No.) }
 
     { 6523;1   ;DataItem;CurrencyLoop        ;

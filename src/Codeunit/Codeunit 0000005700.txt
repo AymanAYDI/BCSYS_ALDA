@@ -2,8 +2,9 @@ OBJECT Codeunit 5700 User Setup Management
 {
   OBJECT-PROPERTIES
   {
-    Date=07/09/12;
-    Time=12:00:00;
+    Date=22/03/16;
+    Time=16:26:41;
+    Modified=Yes;
     Version List=NAVW17.00;
   }
   PROPERTIES
@@ -167,6 +168,17 @@ OBJECT Codeunit 5700 User Setup Management
         EXIT(AccLocation);
 
       EXIT(UserLocation);
+    END;
+
+    PROCEDURE GetSalesPersonFilter@1000000000() : Text;
+    VAR
+      SalesPerson@1000000000 : Record 13;
+    BEGIN
+      //BC6>>
+      SalesPerson.SETPERMISSIONFILTER;
+      SalesPerson.FILTERGROUP(6);
+      EXIT(SalesPerson.GETFILTER(Code));
+      //BC6<<
     END;
 
     BEGIN

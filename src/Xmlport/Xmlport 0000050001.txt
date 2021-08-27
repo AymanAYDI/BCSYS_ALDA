@@ -1,0 +1,95 @@
+OBJECT XMLport 50001 Import DPAM
+{
+  OBJECT-PROPERTIES
+  {
+    Date=23/02/16;
+    Time=12:28:49;
+    Modified=Yes;
+    Version List=AC1.00;
+  }
+  PROPERTIES
+  {
+    Direction=Import;
+    Format=Variable Text;
+    FieldDelimiter=<None>;
+    FieldSeparator=[;];
+    UseRequestPage=No;
+  }
+  ELEMENTS
+  {
+    { [{7D55EEBD-8229-4282-992C-3AD434644609}];  ;root                ;Element ;Text     }
+
+    { [{158DA423-86F7-49C8-A293-A0408D03CB5A}];1 ;integer             ;Element ;Table   ;
+                                                  SourceTable=Table2000000026;
+                                                  SourceTableView=SORTING(Field1)
+                                                                  ORDER(Ascending);
+                                                  AutoSave=No;
+                                                  AutoUpdate=No;
+                                                  AutoReplace=No;
+                                                  Import::OnBeforeInsertRecord=BEGIN
+
+                                                                                 IF Item.GET(ItemNo) THEN BEGIN
+                                                                                   Item."Account No. (DPAM)" := AccNo;
+
+                                                                                   Code.RESET;
+                                                                                   Code.SETRANGE("Table No.",27);
+                                                                                   Code.SETRANGE("Field No.",50014);
+                                                                                   Code.SETRANGE(Description,TypologyDescr);
+                                                                                   IF NOT Code.FINDFIRST THEN BEGIN
+                                                                                     i += 1;
+                                                                                     NextCode := FORMAT(i);
+                                                                                     CASE STRLEN(NextCode) OF
+                                                                                       1:NextCode := '000' + FORMAT(i);
+                                                                                       2:NextCode := '00' + FORMAT(i);
+                                                                                       3:NextCode := '0' + FORMAT(i);
+                                                                                       4:NextCode := FORMAT(i);
+                                                                                     END;//CASE
+
+                                                                                     Code.INIT;
+                                                                                     Code."Table No." := 27;
+                                                                                     Code."Field No." := 50014;
+                                                                                     Code.Code := NextCode;
+                                                                                     Code.Description := TypologyDescr;
+                                                                                     Code.INSERT;
+                                                                                   END;
+                                                                                   Item."Typology Code (DPAM)" := Code.Code;
+                                                                                   Item.MODIFY;
+                                                                                 END;
+                                                                               END;
+                                                                                }
+
+    { [{DAEC0C36-D901-4358-95DD-5BE6C2D98D6F}];2 ;ItemNo              ;Element ;Text    ;
+                                                  VariableName=ItemNo }
+
+    { [{CA411999-99F1-4159-905C-05B65F6F4D03}];2 ;AccNo               ;Element ;Text    ;
+                                                  VariableName=AccNo }
+
+    { [{939BC4AB-22A5-494B-8728-A5BFE8B88FA5}];2 ;TypologyDescr       ;Element ;Text    ;
+                                                  VariableName=TypologyDescr }
+
+  }
+  EVENTS
+  {
+  }
+  REQUESTPAGE
+  {
+    PROPERTIES
+    {
+    }
+    CONTROLS
+    {
+    }
+  }
+  CODE
+  {
+    VAR
+      Item@1000000006 : Record 27;
+      Code@1000000005 : Record 50007;
+      i@1000000001 : Integer;
+      NextCode@1000000000 : Text[20];
+
+    BEGIN
+    END.
+  }
+}
+

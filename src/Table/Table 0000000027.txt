@@ -2,13 +2,14 @@ OBJECT Table 27 Item
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
-    Version List=NAVW19.00;
+    Date=27/08/21;
+    Time=10:28:19;
+    Modified=Yes;
+    Version List=NAVW19.00,AC3.00,ALDA;
   }
   PROPERTIES
   {
-    Permissions=;
+    Permissions=TableData 37=r;
     DataCaptionFields=No.,Description;
     OnInsert=BEGIN
                IF "No." = '' THEN BEGIN
@@ -171,9 +172,9 @@ OBJECT Table 27 Item
                                                               END;
 
                                                    CaptionML=[ENU=No.;
-                                                              FRA=N¯] }
+                                                              FRA=NÔøΩ] }
     { 2   ;   ;No. 2               ;Code20        ;CaptionML=[ENU=No. 2;
-                                                              FRA=N¯ 2] }
+                                                              FRA=NÔøΩ 2] }
     { 3   ;   ;Description         ;Text50        ;OnValidate=BEGIN
                                                                 IF ("Search Description" = UPPERCASE(xRec.Description)) OR ("Search Description" = '') THEN
                                                                   "Search Description" := Description;
@@ -190,15 +191,15 @@ OBJECT Table 27 Item
                                                               END;
 
                                                    CaptionML=[ENU=Description;
-                                                              FRA=DÇsignation] }
+                                                              FRA=DÔøΩsignation] }
     { 4   ;   ;Search Description  ;Code50        ;CaptionML=[ENU=Search Description;
-                                                              FRA=DÇsignation de recherche] }
+                                                              FRA=DÔøΩsignation de recherche] }
     { 5   ;   ;Description 2       ;Text50        ;CaptionML=[ENU=Description 2;
-                                                              FRA=DÇsignation 2] }
+                                                              FRA=DÔøΩsignation 2] }
     { 6   ;   ;Assembly BOM        ;Boolean       ;FieldClass=FlowField;
                                                    CalcFormula=Exist("BOM Component" WHERE (Parent Item No.=FIELD(No.)));
                                                    CaptionML=[ENU=Assembly BOM;
-                                                              FRA=Nomenclature d'ÇlÇment d'assemblage];
+                                                              FRA=Nomenclature d'ÔøΩlÔøΩment d'assemblage];
                                                    Editable=No }
     { 8   ;   ;Base Unit of Measure;Code10        ;TableRelation="Unit of Measure";
                                                    OnValidate=VAR
@@ -228,9 +229,9 @@ OBJECT Table 27 Item
 
                                                    ValidateTableRelation=No;
                                                    CaptionML=[ENU=Base Unit of Measure;
-                                                              FRA=UnitÇ de base] }
+                                                              FRA=UnitÔøΩ de base] }
     { 9   ;   ;Price Unit Conversion;Integer      ;CaptionML=[ENU=Price Unit Conversion;
-                                                              FRA=Conversion unitÇ de prix] }
+                                                              FRA=Conversion unitÔøΩ de prix] }
     { 10  ;   ;Type                ;Option        ;OnValidate=VAR
                                                                 ItemLedgEntry@1000 : Record 32;
                                                               BEGIN
@@ -276,13 +277,13 @@ OBJECT Table 27 Item
                                                    CaptionML=[ENU=Inventory Posting Group;
                                                               FRA=Groupe compta. stock] }
     { 12  ;   ;Shelf No.           ;Code10        ;CaptionML=[ENU=Shelf No.;
-                                                              FRA=N¯ emplacement] }
+                                                              FRA=NÔøΩ emplacement] }
     { 14  ;   ;Item Disc. Group    ;Code20        ;TableRelation="Item Discount Group";
                                                    CaptionML=[ENU=Item Disc. Group;
                                                               FRA=Groupe rem. article] }
     { 15  ;   ;Allow Invoice Disc. ;Boolean       ;InitValue=Yes;
                                                    CaptionML=[ENU=Allow Invoice Disc.;
-                                                              FRA=Remise facture autorisÇe] }
+                                                              FRA=Remise facture autorisÔøΩe] }
     { 16  ;   ;Statistics Group    ;Integer       ;CaptionML=[ENU=Statistics Group;
                                                               FRA=Groupe statistiques] }
     { 17  ;   ;Commission Group    ;Integer       ;CaptionML=[ENU=Commission Group;
@@ -323,7 +324,7 @@ OBJECT Table 27 Item
                                                    CaptionML=[ENU=Price/Profit Calculation;
                                                               FRA=Calcul prix ou marge];
                                                    OptionCaptionML=[ENU="Profit=Price-Cost,Price=Cost+Profit,No Relationship";
-                                                                    FRA="Marge=Prix-Coñt,Prix=Coñt+Marge,Sans relation"];
+                                                                    FRA="Marge=Prix-CoÔøΩt,Prix=CoÔøΩt+Marge,Sans relation"];
                                                    OptionString=Profit=Price-Cost,Price=Cost+Profit,No Relationship }
     { 20  ;   ;Profit %            ;Decimal       ;OnValidate=BEGIN
                                                                 VALIDATE("Price/Profit Calculation");
@@ -357,9 +358,9 @@ OBJECT Table 27 Item
                                                               END;
 
                                                    CaptionML=[ENU=Costing Method;
-                                                              FRA=Mode Çvaluation stock];
+                                                              FRA=Mode ÔøΩvaluation stock];
                                                    OptionCaptionML=[ENU=FIFO,LIFO,Specific,Average,Standard;
-                                                                    FRA=FIFO,LIFO,SpÇcifique,Moyen,Standard];
+                                                                    FRA=FIFO,LIFO,SpÔøΩcifique,Moyen,Standard];
                                                    OptionString=FIFO,LIFO,Specific,Average,Standard }
     { 22  ;   ;Unit Cost           ;Decimal       ;OnValidate=BEGIN
                                                                 IF "Costing Method" = "Costing Method"::Standard THEN
@@ -370,7 +371,7 @@ OBJECT Table 27 Item
                                                               END;
 
                                                    CaptionML=[ENU=Unit Cost;
-                                                              FRA=Coñt unitaire];
+                                                              FRA=CoÔøΩt unitaire];
                                                    MinValue=0;
                                                    AutoFormatType=2 }
     { 24  ;   ;Standard Cost       ;Decimal       ;OnValidate=BEGIN
@@ -394,11 +395,11 @@ OBJECT Table 27 Item
                                                               END;
 
                                                    CaptionML=[ENU=Standard Cost;
-                                                              FRA=Coñt standard];
+                                                              FRA=CoÔøΩt standard];
                                                    MinValue=0;
                                                    AutoFormatType=2 }
     { 25  ;   ;Last Direct Cost    ;Decimal       ;CaptionML=[ENU=Last Direct Cost;
-                                                              FRA=Dernier coñt direct];
+                                                              FRA=Dernier coÔøΩt direct];
                                                    MinValue=0;
                                                    AutoFormatType=2 }
     { 28  ;   ;Indirect Cost %     ;Decimal       ;OnValidate=BEGIN
@@ -406,12 +407,12 @@ OBJECT Table 27 Item
                                                               END;
 
                                                    CaptionML=[ENU=Indirect Cost %;
-                                                              FRA=% coñt indirect];
+                                                              FRA=% coÔøΩt indirect];
                                                    DecimalPlaces=0:5;
                                                    MinValue=0 }
     { 29  ;   ;Cost is Adjusted    ;Boolean       ;InitValue=Yes;
                                                    CaptionML=[ENU=Cost is Adjusted;
-                                                              FRA=Coñt ajustÇ];
+                                                              FRA=CoÔøΩt ajustÔøΩ];
                                                    Editable=No }
     { 30  ;   ;Allow Online Adjustment;Boolean    ;InitValue=Yes;
                                                    CaptionML=[ENU=Allow Online Adjustment;
@@ -429,12 +430,12 @@ OBJECT Table 27 Item
                                                    ValidateTableRelation=Yes;
                                                    TestTableRelation=Yes;
                                                    CaptionML=[ENU=Vendor No.;
-                                                              FRA=N¯ fournisseur] }
+                                                              FRA=NÔøΩ fournisseur] }
     { 32  ;   ;Vendor Item No.     ;Text20        ;CaptionML=[ENU=Vendor Item No.;
-                                                              FRA=RÇfÇrence fournisseur] }
+                                                              FRA=RÔøΩfÔøΩrence fournisseur] }
     { 33  ;   ;Lead Time Calculation;DateFormula  ;AccessByPermission=TableData 120=R;
                                                    CaptionML=[ENU=Lead Time Calculation;
-                                                              FRA=DÇlai de rÇappro.] }
+                                                              FRA=DÔøΩlai de rÔøΩappro.] }
     { 34  ;   ;Reorder Point       ;Decimal       ;AccessByPermission=TableData 244=R;
                                                    CaptionML=[ENU=Reorder Point;
                                                               FRA=Point de commande];
@@ -445,11 +446,11 @@ OBJECT Table 27 Item
                                                    DecimalPlaces=0:5 }
     { 36  ;   ;Reorder Quantity    ;Decimal       ;AccessByPermission=TableData 244=R;
                                                    CaptionML=[ENU=Reorder Quantity;
-                                                              FRA=QuantitÇ de rÇappro.];
+                                                              FRA=QuantitÔøΩ de rÔøΩappro.];
                                                    DecimalPlaces=0:5 }
     { 37  ;   ;Alternative Item No.;Code20        ;TableRelation=Item;
                                                    CaptionML=[ENU=Alternative Item No.;
-                                                              FRA=RÇfÇrence de remplacement] }
+                                                              FRA=RÔøΩfÔøΩrence de remplacement] }
     { 38  ;   ;Unit List Price     ;Decimal       ;CaptionML=[ENU=Unit List Price;
                                                               FRA=Prix unitaire catalogue];
                                                    MinValue=0;
@@ -478,27 +479,27 @@ OBJECT Table 27 Item
                                                    DecimalPlaces=0:5;
                                                    MinValue=0 }
     { 45  ;   ;Durability          ;Code10        ;CaptionML=[ENU=Durability;
-                                                              FRA=DurabilitÇ] }
+                                                              FRA=DurabilitÔøΩ] }
     { 46  ;   ;Freight Type        ;Code10        ;CaptionML=[ENU=Freight Type;
                                                               FRA=Type fret] }
     { 47  ;   ;Tariff No.          ;Code20        ;TableRelation="Tariff Number";
                                                    CaptionML=[ENU=Tariff No.;
                                                               FRA=Nomenclature produits] }
     { 48  ;   ;Duty Unit Conversion;Decimal       ;CaptionML=[ENU=Duty Unit Conversion;
-                                                              FRA=UnitÇ de conversion douaniäre];
+                                                              FRA=UnitÔøΩ de conversion douaniÔøΩre];
                                                    DecimalPlaces=0:5 }
     { 49  ;   ;Country/Region Purchased Code;Code10;
                                                    TableRelation=Country/Region;
                                                    CaptionML=[ENU=Country/Region Purchased Code;
-                                                              FRA=Code pays/rÇgion achat] }
+                                                              FRA=Code pays/rÔøΩgion achat] }
     { 50  ;   ;Budget Quantity     ;Decimal       ;CaptionML=[ENU=Budget Quantity;
-                                                              FRA=QuantitÇ budgÇtÇe];
+                                                              FRA=QuantitÔøΩ budgÔøΩtÔøΩe];
                                                    DecimalPlaces=0:5 }
     { 51  ;   ;Budgeted Amount     ;Decimal       ;CaptionML=[ENU=Budgeted Amount;
-                                                              FRA=Montant budgÇtÇ];
+                                                              FRA=Montant budgÔøΩtÔøΩ];
                                                    AutoFormatType=1 }
     { 52  ;   ;Budget Profit       ;Decimal       ;CaptionML=[ENU=Budget Profit;
-                                                              FRA=Marge budgÇtÇe];
+                                                              FRA=Marge budgÔøΩtÔøΩe];
                                                    AutoFormatType=1 }
     { 53  ;   ;Comment             ;Boolean       ;FieldClass=FlowField;
                                                    CalcFormula=Exist("Comment Line" WHERE (Table Name=CONST(Item),
@@ -507,11 +508,11 @@ OBJECT Table 27 Item
                                                               FRA=Commentaires];
                                                    Editable=No }
     { 54  ;   ;Blocked             ;Boolean       ;CaptionML=[ENU=Blocked;
-                                                              FRA=BloquÇ] }
+                                                              FRA=BloquÔøΩ] }
     { 55  ;   ;Cost is Posted to G/L;Boolean      ;FieldClass=FlowField;
                                                    CalcFormula=-Exist("Post Value Entry to G/L" WHERE (Item No.=FIELD(No.)));
                                                    CaptionML=[ENU=Cost is Posted to G/L;
-                                                              FRA=Le coñt est validÇ en comptabilitÇ];
+                                                              FRA=Le coÔøΩt est validÔøΩ en comptabilitÔøΩ];
                                                    Editable=No }
     { 62  ;   ;Last Date Modified  ;Date          ;CaptionML=[ENU=Last Date Modified;
                                                               FRA=Date dern. modification];
@@ -541,7 +542,8 @@ OBJECT Table 27 Item
                                                                                                        Drop Shipment=FIELD(Drop Shipment Filter),
                                                                                                        Variant Code=FIELD(Variant Filter),
                                                                                                        Lot No.=FIELD(Lot No. Filter),
-                                                                                                       Serial No.=FIELD(Serial No. Filter)));
+                                                                                                       Serial No.=FIELD(Serial No. Filter),
+                                                                                                       Posting Date=FIELD(Date Filter)));
                                                    CaptionML=[ENU=Inventory;
                                                               FRA=Stocks];
                                                    DecimalPlaces=0:5;
@@ -556,7 +558,7 @@ OBJECT Table 27 Item
                                                                                                                   Lot No.=FIELD(Lot No. Filter),
                                                                                                                   Serial No.=FIELD(Serial No. Filter)));
                                                    CaptionML=[ENU=Net Invoiced Qty.;
-                                                              FRA=Solde quantitÇs facturÇes];
+                                                              FRA=Solde quantitÔøΩs facturÔøΩes];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 70  ;   ;Net Change          ;Decimal       ;FieldClass=FlowField;
@@ -570,7 +572,7 @@ OBJECT Table 27 Item
                                                                                                        Lot No.=FIELD(Lot No. Filter),
                                                                                                        Serial No.=FIELD(Serial No. Filter)));
                                                    CaptionML=[ENU=Net Change;
-                                                              FRA=Solde pÇriode];
+                                                              FRA=Solde pÔøΩriode];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 71  ;   ;Purchases (Qty.)    ;Decimal       ;FieldClass=FlowField;
@@ -585,7 +587,7 @@ OBJECT Table 27 Item
                                                                                                                   Lot No.=FIELD(Lot No. Filter),
                                                                                                                   Serial No.=FIELD(Serial No. Filter)));
                                                    CaptionML=[ENU=Purchases (Qty.);
-                                                              FRA=Achats (qtÇ)];
+                                                              FRA=Achats (qtÔøΩ)];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 72  ;   ;Sales (Qty.)        ;Decimal       ;FieldClass=FlowField;
@@ -598,7 +600,7 @@ OBJECT Table 27 Item
                                                                                                              Variant Code=FIELD(Variant Filter),
                                                                                                              Posting Date=FIELD(Date Filter)));
                                                    CaptionML=[ENU=Sales (Qty.);
-                                                              FRA=Ventes (qtÇ)];
+                                                              FRA=Ventes (qtÔøΩ)];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 73  ;   ;Positive Adjmt. (Qty.);Decimal     ;FieldClass=FlowField;
@@ -613,7 +615,7 @@ OBJECT Table 27 Item
                                                                                                                   Lot No.=FIELD(Lot No. Filter),
                                                                                                                   Serial No.=FIELD(Serial No. Filter)));
                                                    CaptionML=[ENU=Positive Adjmt. (Qty.);
-                                                              FRA=Ajust. positif (qtÇ)];
+                                                              FRA=Ajust. positif (qtÔøΩ)];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 74  ;   ;Negative Adjmt. (Qty.);Decimal     ;FieldClass=FlowField;
@@ -628,7 +630,7 @@ OBJECT Table 27 Item
                                                                                                                    Lot No.=FIELD(Lot No. Filter),
                                                                                                                    Serial No.=FIELD(Serial No. Filter)));
                                                    CaptionML=[ENU=Negative Adjmt. (Qty.);
-                                                              FRA=Ajust. nÇgatif (qtÇ)];
+                                                              FRA=Ajust. nÔøΩgatif (qtÔøΩ)];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 77  ;   ;Purchases (LCY)     ;Decimal       ;FieldClass=FlowField;
@@ -680,7 +682,7 @@ OBJECT Table 27 Item
                                                                                                                Variant Code=FIELD(Variant Filter),
                                                                                                                Posting Date=FIELD(Date Filter)));
                                                    CaptionML=[ENU=Negative Adjmt. (LCY);
-                                                              FRA=Ajust. nÇgatif DS];
+                                                              FRA=Ajust. nÔøΩgatif DS];
                                                    Editable=No;
                                                    AutoFormatType=1 }
     { 83  ;   ;COGS (LCY)          ;Decimal       ;FieldClass=FlowField;
@@ -708,7 +710,7 @@ OBJECT Table 27 Item
                                                                                                                     Expected Receipt Date=FIELD(Date Filter)));
                                                    AccessByPermission=TableData 120=R;
                                                    CaptionML=[ENU=Qty. on Purch. Order;
-                                                              FRA=QtÇ sur commande achat];
+                                                              FRA=QtÔøΩ sur commande achat];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 85  ;   ;Qty. on Sales Order ;Decimal       ;FieldClass=FlowField;
@@ -723,7 +725,7 @@ OBJECT Table 27 Item
                                                                                                                  Shipment Date=FIELD(Date Filter)));
                                                    AccessByPermission=TableData 110=R;
                                                    CaptionML=[ENU=Qty. on Sales Order;
-                                                              FRA=QtÇ sur commande vente];
+                                                              FRA=QtÔøΩ sur commande vente];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 87  ;   ;Price Includes VAT  ;Boolean       ;OnValidate=VAR
@@ -751,7 +753,7 @@ OBJECT Table 27 Item
                                                               END;
 
                                                    CaptionML=[ENU=VAT Bus. Posting Gr. (Price);
-                                                              FRA=Gpe compta. marchÇ TVA (prix)] }
+                                                              FRA=Gpe compta. marchÔøΩ TVA (prix)] }
     { 91  ;   ;Gen. Prod. Posting Group;Code10    ;TableRelation="Gen. Product Posting Group";
                                                    OnValidate=BEGIN
                                                                 IF xRec."Gen. Prod. Posting Group" <> "Gen. Prod. Posting Group" THEN BEGIN
@@ -790,7 +792,7 @@ OBJECT Table 27 Item
                                                                                                                   Lot No.=FIELD(Lot No. Filter),
                                                                                                                   Serial No.=FIELD(Serial No. Filter)));
                                                    CaptionML=[ENU=Transferred (Qty.);
-                                                              FRA=QuantitÇ transfÇrÇe];
+                                                              FRA=QuantitÔøΩ transfÔøΩrÔøΩe];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 94  ;   ;Transferred (LCY)   ;Decimal       ;FieldClass=FlowField;
@@ -803,18 +805,18 @@ OBJECT Table 27 Item
                                                                                                                 Variant Code=FIELD(Variant Filter),
                                                                                                                 Posting Date=FIELD(Date Filter)));
                                                    CaptionML=[ENU=Transferred (LCY);
-                                                              FRA=Montant transfÇrÇ DS];
+                                                              FRA=Montant transfÔøΩrÔøΩ DS];
                                                    Editable=No;
                                                    AutoFormatType=1 }
     { 95  ;   ;Country/Region of Origin Code;Code10;
                                                    TableRelation=Country/Region;
                                                    CaptionML=[ENU=Country/Region of Origin Code;
-                                                              FRA=Code pays/rÇgion origine] }
+                                                              FRA=Code pays/rÔøΩgion origine] }
     { 96  ;   ;Automatic Ext. Texts;Boolean       ;CaptionML=[ENU=Automatic Ext. Texts;
-                                                              FRA=Textes Çtendus automatiques] }
+                                                              FRA=Textes ÔøΩtendus automatiques] }
     { 97  ;   ;No. Series          ;Code10        ;TableRelation="No. Series";
                                                    CaptionML=[ENU=No. Series;
-                                                              FRA=Souches de n¯];
+                                                              FRA=Souches de nÔøΩ];
                                                    Editable=No }
     { 98  ;   ;Tax Group Code      ;Code10        ;TableRelation="Tax Group";
                                                    CaptionML=[ENU=Tax Group Code;
@@ -834,7 +836,7 @@ OBJECT Table 27 Item
 
                                                    AccessByPermission=TableData 120=R;
                                                    CaptionML=[ENU=Reserve;
-                                                              FRA=RÇserver];
+                                                              FRA=RÔøΩserver];
                                                    OptionCaptionML=[ENU=Never,Optional,Always;
                                                                     FRA=Jamais,Manuel,Toujours];
                                                    OptionString=Never,Optional,Always }
@@ -849,7 +851,7 @@ OBJECT Table 27 Item
                                                                                                                 Variant Code=FIELD(Variant Filter)));
                                                    AccessByPermission=TableData 120=R;
                                                    CaptionML=[ENU=Reserved Qty. on Inventory;
-                                                              FRA=QuantitÇ rÇservÇe sur stock];
+                                                              FRA=QuantitÔøΩ rÔøΩservÔøΩe sur stock];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 102 ;   ;Reserved Qty. on Purch. Orders;Decimal;
@@ -863,7 +865,7 @@ OBJECT Table 27 Item
                                                                                                                 Expected Receipt Date=FIELD(Date Filter)));
                                                    AccessByPermission=TableData 120=R;
                                                    CaptionML=[ENU=Reserved Qty. on Purch. Orders;
-                                                              FRA=QuantitÇ rÇservÇe cdes achat];
+                                                              FRA=QuantitÔøΩ rÔøΩservÔøΩe cdes achat];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 103 ;   ;Reserved Qty. on Sales Orders;Decimal;
@@ -877,7 +879,7 @@ OBJECT Table 27 Item
                                                                                                                  Shipment Date=FIELD(Date Filter)));
                                                    AccessByPermission=TableData 110=R;
                                                    CaptionML=[ENU=Reserved Qty. on Sales Orders;
-                                                              FRA=QuantitÇ rÇservÇe cdes vente];
+                                                              FRA=QuantitÔøΩ rÔøΩservÔøΩe cdes vente];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 105 ;   ;Global Dimension 1 Code;Code20     ;TableRelation="Dimension Value".Code WHERE (Global Dimension No.=CONST(1));
@@ -907,7 +909,7 @@ OBJECT Table 27 Item
                                                                                                                  Shipment Date=FIELD(Date Filter)));
                                                    AccessByPermission=TableData 5740=R;
                                                    CaptionML=[ENU=Res. Qty. on Outbound Transfer;
-                                                              FRA=QtÇ rÇs. dÇsenlogt transfert];
+                                                              FRA=QtÔøΩ rÔøΩs. dÔøΩsenlogt transfert];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 108 ;   ;Res. Qty. on Inbound Transfer;Decimal;
@@ -921,7 +923,7 @@ OBJECT Table 27 Item
                                                                                                                 Expected Receipt Date=FIELD(Date Filter)));
                                                    AccessByPermission=TableData 5740=R;
                                                    CaptionML=[ENU=Res. Qty. on Inbound Transfer;
-                                                              FRA=QtÇ rÇs. enlogt transfert];
+                                                              FRA=QtÔøΩ rÔøΩs. enlogt transfert];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 109 ;   ;Res. Qty. on Sales Returns;Decimal ;FieldClass=FlowField;
@@ -934,7 +936,7 @@ OBJECT Table 27 Item
                                                                                                                 Shipment Date=FIELD(Date Filter)));
                                                    AccessByPermission=TableData 6660=R;
                                                    CaptionML=[ENU=Res. Qty. on Sales Returns;
-                                                              FRA=QtÇ rÇserv. sur retours vente];
+                                                              FRA=QtÔøΩ rÔøΩserv. sur retours vente];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 110 ;   ;Res. Qty. on Purch. Returns;Decimal;FieldClass=FlowField;
@@ -947,25 +949,25 @@ OBJECT Table 27 Item
                                                                                                                  Expected Receipt Date=FIELD(Date Filter)));
                                                    AccessByPermission=TableData 6650=R;
                                                    CaptionML=[ENU=Res. Qty. on Purch. Returns;
-                                                              FRA=QtÇ rÇserv. sur retours achat];
+                                                              FRA=QtÔøΩ rÔøΩserv. sur retours achat];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 120 ;   ;Stockout Warning    ;Option        ;CaptionML=[ENU=Stockout Warning;
                                                               FRA=Alerte rupture stock];
                                                    OptionCaptionML=[ENU=Default,No,Yes;
-                                                                    FRA=Par dÇfaut,Non,Oui];
+                                                                    FRA=Par dÔøΩfaut,Non,Oui];
                                                    OptionString=Default,No,Yes }
     { 121 ;   ;Prevent Negative Inventory;Option  ;CaptionML=[ENU=Prevent Negative Inventory;
-                                                              FRA=êviter stock nÇgatif];
+                                                              FRA=ÔøΩviter stock nÔøΩgatif];
                                                    OptionCaptionML=[ENU=Default,No,Yes;
-                                                                    FRA=Par dÇfaut,Non,Oui];
+                                                                    FRA=Par dÔøΩfaut,Non,Oui];
                                                    OptionString=Default,No,Yes }
     { 200 ;   ;Cost of Open Production Orders;Decimal;
                                                    FieldClass=FlowField;
                                                    CalcFormula=Sum("Prod. Order Line"."Cost Amount" WHERE (Status=FILTER(Planned|Firm Planned|Released),
                                                                                                            Item No.=FIELD(No.)));
                                                    CaptionML=[ENU=Cost of Open Production Orders;
-                                                              FRA=Coñt des O.F. ouverts] }
+                                                              FRA=CoÔøΩt des O.F. ouverts] }
     { 521 ;   ;Application Wksh. User ID;Code128  ;CaptionML=[ENU=Application Wksh. User ID;
                                                               FRA=Code utilisateur de la feuille lettrage] }
     { 910 ;   ;Assembly Policy     ;Option        ;OnValidate=BEGIN
@@ -977,7 +979,7 @@ OBJECT Table 27 Item
 
                                                    AccessByPermission=TableData 90=R;
                                                    CaptionML=[ENU=Assembly Policy;
-                                                              FRA=StratÇgie d'assemblage];
+                                                              FRA=StratÔøΩgie d'assemblage];
                                                    OptionCaptionML=[ENU=Assemble-to-Stock,Assemble-to-Order;
                                                                     FRA=Assembler pour stock,Assembler pour commande];
                                                    OptionString=Assemble-to-Stock,Assemble-to-Order }
@@ -991,7 +993,7 @@ OBJECT Table 27 Item
                                                                                                                 Expected Receipt Date=FIELD(Date Filter)));
                                                    AccessByPermission=TableData 90=R;
                                                    CaptionML=[ENU=Res. Qty. on Assembly Order;
-                                                              FRA=QtÇ rÇs. sur ordre d'assemblage];
+                                                              FRA=QtÔøΩ rÔøΩs. sur ordre d'assemblage];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 930 ;   ;Res. Qty. on  Asm. Comp.;Decimal   ;FieldClass=FlowField;
@@ -1004,7 +1006,7 @@ OBJECT Table 27 Item
                                                                                                                  Shipment Date=FIELD(Date Filter)));
                                                    AccessByPermission=TableData 90=R;
                                                    CaptionML=[ENU=Res. Qty. on  Asm. Comp.;
-                                                              FRA=QtÇ rÇs. sur composant d'assemblage];
+                                                              FRA=QtÔøΩ rÔøΩs. sur composant d'assemblage];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 977 ;   ;Qty. on Assembly Order;Decimal     ;FieldClass=FlowField;
@@ -1016,7 +1018,7 @@ OBJECT Table 27 Item
                                                                                                                         Variant Code=FIELD(Variant Filter),
                                                                                                                         Due Date=FIELD(Date Filter)));
                                                    CaptionML=[ENU=Qty. on Assembly Order;
-                                                              FRA=QtÇ sur ordre d'assemblage];
+                                                              FRA=QtÔøΩ sur ordre d'assemblage];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 978 ;   ;Qty. on Asm. Component;Decimal     ;FieldClass=FlowField;
@@ -1029,7 +1031,7 @@ OBJECT Table 27 Item
                                                                                                                       Variant Code=FIELD(Variant Filter),
                                                                                                                       Due Date=FIELD(Date Filter)));
                                                    CaptionML=[ENU=Qty. on Asm. Component;
-                                                              FRA=QtÇ sur composant d'assemblage];
+                                                              FRA=QtÔøΩ sur composant d'assemblage];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 1001;   ;Qty. on Job Order   ;Decimal       ;FieldClass=FlowField;
@@ -1040,7 +1042,7 @@ OBJECT Table 27 Item
                                                                                                                       Variant Code=FIELD(Variant Filter),
                                                                                                                       Planning Date=FIELD(Date Filter)));
                                                    CaptionML=[ENU=Qty. on Job Order;
-                                                              FRA=QtÇ sur ordre de travail];
+                                                              FRA=QtÔøΩ sur ordre de travail];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 1002;   ;Res. Qty. on Job Order;Decimal     ;FieldClass=FlowField;
@@ -1053,7 +1055,7 @@ OBJECT Table 27 Item
                                                                                                                  Shipment Date=FIELD(Date Filter)));
                                                    AccessByPermission=TableData 167=R;
                                                    CaptionML=[ENU=Res. Qty. on Job Order;
-                                                              FRA=QtÇ rÇs. sur ordre de travail];
+                                                              FRA=QtÔøΩ rÔøΩs. sur ordre de travail];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 1217;   ;GTIN                ;Code14        ;CaptionML=[ENU=GTIN;
@@ -1062,7 +1064,7 @@ OBJECT Table 27 Item
     { 1700;   ;Default Deferral Template Code;Code10;
                                                    TableRelation="Deferral Template"."Deferral Code";
                                                    CaptionML=[ENU=Default Deferral Template Code;
-                                                              FRA=Code modäle Çchelonnement par dÇfaut] }
+                                                              FRA=Code modÔøΩle ÔøΩchelonnement par dÔøΩfaut] }
     { 5400;   ;Low-Level Code      ;Integer       ;CaptionML=[ENU=Low-Level Code;
                                                               FRA=Code plus bas niveau];
                                                    Editable=No }
@@ -1078,17 +1080,17 @@ OBJECT Table 27 Item
                                                               END;
 
                                                    CaptionML=[ENU=Serial Nos.;
-                                                              FRA=N¯ de sÇrie] }
+                                                              FRA=NÔøΩ de sÔøΩrie] }
     { 5403;   ;Last Unit Cost Calc. Date;Date     ;CaptionML=[ENU=Last Unit Cost Calc. Date;
-                                                              FRA=Date dern. calcul coñt unitaire];
+                                                              FRA=Date dern. calcul coÔøΩt unitaire];
                                                    Editable=No }
     { 5404;   ;Rolled-up Material Cost;Decimal    ;CaptionML=[ENU=Rolled-up Material Cost;
-                                                              FRA=Coñt matiäre multi-niveau];
+                                                              FRA=CoÔøΩt matiÔøΩre multi-niveau];
                                                    DecimalPlaces=2:5;
                                                    Editable=No;
                                                    AutoFormatType=2 }
     { 5405;   ;Rolled-up Capacity Cost;Decimal    ;CaptionML=[ENU=Rolled-up Capacity Cost;
-                                                              FRA=Coñt opÇratoire multi-niveau];
+                                                              FRA=CoÔøΩt opÔøΩratoire multi-niveau];
                                                    DecimalPlaces=2:5;
                                                    Editable=No;
                                                    AutoFormatType=2 }
@@ -1103,38 +1105,38 @@ OBJECT Table 27 Item
                                                               END;
 
                                                    CaptionML=[ENU=Inventory Value Zero;
-                                                              FRA=Exclure Çvaluation stock] }
+                                                              FRA=Exclure ÔøΩvaluation stock] }
     { 5410;   ;Discrete Order Quantity;Integer    ;CaptionML=[ENU=Discrete Order Quantity;
-                                                              FRA=QuantitÇ commande discräte];
+                                                              FRA=QuantitÔøΩ commande discrÔøΩte];
                                                    MinValue=0 }
     { 5411;   ;Minimum Order Quantity;Decimal     ;AccessByPermission=TableData 244=R;
                                                    CaptionML=[ENU=Minimum Order Quantity;
-                                                              FRA=QtÇ minimum commande];
+                                                              FRA=QtÔøΩ minimum commande];
                                                    DecimalPlaces=0:5;
                                                    MinValue=0 }
     { 5412;   ;Maximum Order Quantity;Decimal     ;AccessByPermission=TableData 244=R;
                                                    CaptionML=[ENU=Maximum Order Quantity;
-                                                              FRA=QtÇ maximum commande];
+                                                              FRA=QtÔøΩ maximum commande];
                                                    DecimalPlaces=0:5;
                                                    MinValue=0 }
     { 5413;   ;Safety Stock Quantity;Decimal      ;AccessByPermission=TableData 244=R;
                                                    CaptionML=[ENU=Safety Stock Quantity;
-                                                              FRA=Stock de sÇcuritÇ];
+                                                              FRA=Stock de sÔøΩcuritÔøΩ];
                                                    DecimalPlaces=0:5;
                                                    MinValue=0 }
     { 5414;   ;Order Multiple      ;Decimal       ;AccessByPermission=TableData 244=R;
                                                    CaptionML=[ENU=Order Multiple;
-                                                              FRA=CommandÇ par];
+                                                              FRA=CommandÔøΩ par];
                                                    DecimalPlaces=0:5;
                                                    MinValue=0 }
     { 5415;   ;Safety Lead Time    ;DateFormula   ;AccessByPermission=TableData 244=R;
                                                    CaptionML=[ENU=Safety Lead Time;
-                                                              FRA=DÇlai de sÇcuritÇ] }
+                                                              FRA=DÔøΩlai de sÔøΩcuritÔøΩ] }
     { 5417;   ;Flushing Method     ;Option        ;AccessByPermission=TableData 5405=R;
                                                    CaptionML=[ENU=Flushing Method;
-                                                              FRA=MÇthode consommation];
+                                                              FRA=MÔøΩthode consommation];
                                                    OptionCaptionML=[ENU=Manual,Forward,Backward,Pick + Forward,Pick + Backward;
-                                                                    FRA=Manuelle,PrÇ-dÇduction,Post-dÇduction,PrÇlävement + PrÇ-dÇduction,PrÇlävement + Post-dÇduction];
+                                                                    FRA=Manuelle,PrÔøΩ-dÔøΩduction,Post-dÔøΩduction,PrÔøΩlÔøΩvement + PrÔøΩ-dÔøΩduction,PrÔøΩlÔøΩvement + Post-dÔøΩduction];
                                                    OptionString=Manual,Forward,Backward,Pick + Forward,Pick + Backward }
     { 5419;   ;Replenishment System;Option        ;OnValidate=BEGIN
                                                                 IF "Replenishment System" <> "Replenishment System"::Assembly THEN
@@ -1145,7 +1147,7 @@ OBJECT Table 27 Item
 
                                                    AccessByPermission=TableData 244=R;
                                                    CaptionML=[ENU=Replenishment System;
-                                                              FRA=Systäme rÇappro.];
+                                                              FRA=SystÔøΩme rÔøΩappro.];
                                                    OptionCaptionML=[ENU=Purchase,Prod. Order,,Assembly;
                                                                     FRA=Achat,O.F.,,Assemblage];
                                                    OptionString=Purchase,Prod. Order,,Assembly }
@@ -1158,7 +1160,7 @@ OBJECT Table 27 Item
                                                                                                                      Location Code=FIELD(Location Filter),
                                                                                                                      Due Date=FIELD(Date Filter)));
                                                    CaptionML=[ENU=Scheduled Receipt (Qty.);
-                                                              FRA=RÇception planifiÇe (qtÇ)];
+                                                              FRA=RÔøΩception planifiÔøΩe (qtÔøΩ)];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 5421;   ;Scheduled Need (Qty.);Decimal      ;FieldClass=FlowField;
@@ -1170,7 +1172,7 @@ OBJECT Table 27 Item
                                                                                                                           Location Code=FIELD(Location Filter),
                                                                                                                           Due Date=FIELD(Date Filter)));
                                                    CaptionML=[ENU=Scheduled Need (Qty.);
-                                                              FRA=Besoin planifiÇ (qtÇ)];
+                                                              FRA=Besoin planifiÔøΩ (qtÔøΩ)];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 5422;   ;Rounding Precision  ;Decimal       ;InitValue=1;
@@ -1181,7 +1183,7 @@ OBJECT Table 27 Item
 
                                                    AccessByPermission=TableData 5405=R;
                                                    CaptionML=[ENU=Rounding Precision;
-                                                              FRA=PrÇcision arrondi];
+                                                              FRA=PrÔøΩcision arrondi];
                                                    DecimalPlaces=0:5 }
     { 5423;   ;Bin Filter          ;Code20        ;FieldClass=FlowFilter;
                                                    TableRelation=Bin.Code WHERE (Location Code=FIELD(Location Filter));
@@ -1194,11 +1196,11 @@ OBJECT Table 27 Item
     { 5425;   ;Sales Unit of Measure;Code10       ;TableRelation=IF (No.=FILTER(<>'')) "Item Unit of Measure".Code WHERE (Item No.=FIELD(No.))
                                                                  ELSE "Unit of Measure";
                                                    CaptionML=[ENU=Sales Unit of Measure;
-                                                              FRA=UnitÇ de vente] }
+                                                              FRA=UnitÔøΩ de vente] }
     { 5426;   ;Purch. Unit of Measure;Code10      ;TableRelation=IF (No.=FILTER(<>'')) "Item Unit of Measure".Code WHERE (Item No.=FIELD(No.))
                                                                  ELSE "Unit of Measure";
                                                    CaptionML=[ENU=Purch. Unit of Measure;
-                                                              FRA=UnitÇ d'achat] }
+                                                              FRA=UnitÔøΩ d'achat] }
     { 5428;   ;Time Bucket         ;DateFormula   ;OnValidate=BEGIN
                                                                 CalendarMgt.CheckDateFormulaPositive("Time Bucket");
                                                               END;
@@ -1217,7 +1219,7 @@ OBJECT Table 27 Item
                                                                                                                 Expected Receipt Date=FIELD(Date Filter)));
                                                    AccessByPermission=TableData 5405=R;
                                                    CaptionML=[ENU=Reserved Qty. on Prod. Order;
-                                                              FRA=QtÇ rÇservÇe sur O.F.];
+                                                              FRA=QtÔøΩ rÔøΩservÔøΩe sur O.F.];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 5430;   ;Res. Qty. on Prod. Order Comp.;Decimal;
@@ -1231,7 +1233,7 @@ OBJECT Table 27 Item
                                                                                                                  Shipment Date=FIELD(Date Filter)));
                                                    AccessByPermission=TableData 5405=R;
                                                    CaptionML=[ENU=Res. Qty. on Prod. Order Comp.;
-                                                              FRA=QtÇ rÇs. sur comp. O.F.];
+                                                              FRA=QtÔøΩ rÔøΩs. sur comp. O.F.];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 5431;   ;Res. Qty. on Req. Line;Decimal     ;FieldClass=FlowField;
@@ -1244,7 +1246,7 @@ OBJECT Table 27 Item
                                                                                                                 Expected Receipt Date=FIELD(Date Filter)));
                                                    AccessByPermission=TableData 244=R;
                                                    CaptionML=[ENU=Res. Qty. on Req. Line;
-                                                              FRA=QtÇ rÇs. sur dem. achat];
+                                                              FRA=QtÔøΩ rÔøΩs. sur dem. achat];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 5440;   ;Reordering Policy   ;Option        ;OnValidate=BEGIN
@@ -1259,9 +1261,9 @@ OBJECT Table 27 Item
 
                                                    AccessByPermission=TableData 244=R;
                                                    CaptionML=[ENU=Reordering Policy;
-                                                              FRA=MÇthode rÇapprovisionnement];
+                                                              FRA=MÔøΩthode rÔøΩapprovisionnement];
                                                    OptionCaptionML=[ENU=" ,Fixed Reorder Qty.,Maximum Qty.,Order,Lot-for-Lot";
-                                                                    FRA=" ,QtÇ fixe de commande,QtÇ maximum,Commande,Lot pour lot"];
+                                                                    FRA=" ,QtÔøΩ fixe de commande,QtÔøΩ maximum,Commande,Lot pour lot"];
                                                    OptionString=[ ,Fixed Reorder Qty.,Maximum Qty.,Order,Lot-for-Lot] }
     { 5441;   ;Include Inventory   ;Boolean       ;AccessByPermission=TableData 244=R;
                                                    CaptionML=[ENU=Include Inventory;
@@ -1270,7 +1272,7 @@ OBJECT Table 27 Item
                                                    CaptionML=[ENU=Manufacturing Policy;
                                                               FRA=Mode de lancement];
                                                    OptionCaptionML=[ENU=Make-to-Stock,Make-to-Order;
-                                                                    FRA=Fabrication sur stock,Fabrication Ö la commande];
+                                                                    FRA=Fabrication sur stock,Fabrication ÔøΩ la commande];
                                                    OptionString=Make-to-Stock,Make-to-Order }
     { 5443;   ;Rescheduling Period ;DateFormula   ;OnValidate=BEGIN
                                                                 CalendarMgt.CheckDateFormulaPositive("Rescheduling Period");
@@ -1278,29 +1280,29 @@ OBJECT Table 27 Item
 
                                                    AccessByPermission=TableData 244=R;
                                                    CaptionML=[ENU=Rescheduling Period;
-                                                              FRA=PÇriode de replanification] }
+                                                              FRA=PÔøΩriode de replanification] }
     { 5444;   ;Lot Accumulation Period;DateFormula;OnValidate=BEGIN
                                                                 CalendarMgt.CheckDateFormulaPositive("Lot Accumulation Period");
                                                               END;
 
                                                    AccessByPermission=TableData 244=R;
                                                    CaptionML=[ENU=Lot Accumulation Period;
-                                                              FRA=PÇriode de groupement de lots] }
+                                                              FRA=PÔøΩriode de groupement de lots] }
     { 5445;   ;Dampener Period     ;DateFormula   ;OnValidate=BEGIN
                                                                 CalendarMgt.CheckDateFormulaPositive("Dampener Period");
                                                               END;
 
                                                    AccessByPermission=TableData 244=R;
                                                    CaptionML=[ENU=Dampener Period;
-                                                              FRA=PÇriode tampon] }
+                                                              FRA=PÔøΩriode tampon] }
     { 5446;   ;Dampener Quantity   ;Decimal       ;AccessByPermission=TableData 244=R;
                                                    CaptionML=[ENU=Dampener Quantity;
-                                                              FRA=QuantitÇ tampon];
+                                                              FRA=QuantitÔøΩ tampon];
                                                    DecimalPlaces=0:5;
                                                    MinValue=0 }
     { 5447;   ;Overflow Level      ;Decimal       ;AccessByPermission=TableData 244=R;
                                                    CaptionML=[ENU=Overflow Level;
-                                                              FRA=Niveau de dÇpassement de capacitÇ];
+                                                              FRA=Niveau de dÔøΩpassement de capacitÔøΩ];
                                                    DecimalPlaces=0:5;
                                                    MinValue=0 }
     { 5449;   ;Planning Transfer Ship. (Qty).;Decimal;
@@ -1312,7 +1314,7 @@ OBJECT Table 27 Item
                                                                                                                Transfer-from Code=FIELD(Location Filter),
                                                                                                                Transfer Shipment Date=FIELD(Date Filter)));
                                                    CaptionML=[ENU=Planning Transfer Ship. (Qty).;
-                                                              FRA=Planning expÇdition transfert (QtÇ).];
+                                                              FRA=Planning expÔøΩdition transfert (QtÔøΩ).];
                                                    Editable=No }
     { 5450;   ;Planning Worksheet (Qty.);Decimal  ;FieldClass=FlowField;
                                                    CalcFormula=Sum("Requisition Line"."Quantity (Base)" WHERE (Planning Line Origin=CONST(Planning),
@@ -1324,7 +1326,7 @@ OBJECT Table 27 Item
                                                                                                                Shortcut Dimension 1 Code=FIELD(Global Dimension 1 Filter),
                                                                                                                Shortcut Dimension 2 Code=FIELD(Global Dimension 2 Filter)));
                                                    CaptionML=[ENU=Planning Worksheet (Qty.);
-                                                              FRA=Feuille planning (QtÇ)];
+                                                              FRA=Feuille planning (QtÔøΩ)];
                                                    Editable=No }
     { 5700;   ;Stockkeeping Unit Exists;Boolean   ;FieldClass=FlowField;
                                                    CalcFormula=Exist("Stockkeeping Unit" WHERE (Item No.=FIELD(No.)));
@@ -1361,12 +1363,21 @@ OBJECT Table 27 Item
                                                               END;
 
                                                    CaptionML=[ENU=Item Category Code;
-                                                              FRA=Code catÇgorie article] }
+                                                              FRA=Code catÔøΩgorie article] }
     { 5703;   ;Created From Nonstock Item;Boolean ;AccessByPermission=TableData 5718=R;
                                                    CaptionML=[ENU=Created From Nonstock Item;
-                                                              FRA=Lien article non stockÇ];
+                                                              FRA=Lien article non stockÔøΩ];
                                                    Editable=No }
     { 5704;   ;Product Group Code  ;Code10        ;TableRelation="Product Group".Code WHERE (Item Category Code=FIELD(Item Category Code));
+                                                   OnValidate=BEGIN
+                                                                IF "Product Group Code" <> xRec."Product Group Code" THEN BEGIN
+                                                                  IF NOT Segment.GET("Product Group Code","Product Group Code") THEN
+                                                                    VALIDATE("Segment Code",'')
+                                                                  ELSE
+                                                                    VALIDATE("Segment Code");
+                                                                END;
+                                                              END;
+
                                                    CaptionML=[ENU=Product Group Code;
                                                               FRA=Code groupe produits] }
     { 5706;   ;Substitutes Exist   ;Boolean       ;FieldClass=FlowField;
@@ -1384,7 +1395,7 @@ OBJECT Table 27 Item
                                                                                                                    Shortcut Dimension 2 Code=FIELD(Global Dimension 2 Filter),
                                                                                                                    Receipt Date=FIELD(Date Filter)));
                                                    CaptionML=[ENU=Qty. in Transit;
-                                                              FRA=QtÇ en transit];
+                                                              FRA=QtÔøΩ en transit];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 5708;   ;Trans. Ord. Receipt (Qty.);Decimal ;FieldClass=FlowField;
@@ -1396,7 +1407,7 @@ OBJECT Table 27 Item
                                                                                                                     Shortcut Dimension 2 Code=FIELD(Global Dimension 2 Filter),
                                                                                                                     Receipt Date=FIELD(Date Filter)));
                                                    CaptionML=[ENU=Trans. Ord. Receipt (Qty.);
-                                                              FRA=RÇception transfert (qtÇ)];
+                                                              FRA=RÔøΩception transfert (qtÔøΩ)];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 5709;   ;Trans. Ord. Shipment (Qty.);Decimal;FieldClass=FlowField;
@@ -1408,7 +1419,7 @@ OBJECT Table 27 Item
                                                                                                                     Shortcut Dimension 2 Code=FIELD(Global Dimension 2 Filter),
                                                                                                                     Shipment Date=FIELD(Date Filter)));
                                                    CaptionML=[ENU=Trans. Ord. Shipment (Qty.);
-                                                              FRA=ExpÇdition transfert (qtÇ)];
+                                                              FRA=ExpÔøΩdition transfert (qtÔøΩ)];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 5776;   ;Qty. Assigned to ship;Decimal      ;FieldClass=FlowField;
@@ -1417,7 +1428,7 @@ OBJECT Table 27 Item
                                                                                                                               Variant Code=FIELD(Variant Filter),
                                                                                                                               Due Date=FIELD(Date Filter)));
                                                    CaptionML=[ENU=Qty. Assigned to ship;
-                                                              FRA=QtÇ affectÇe Ö expÇdier];
+                                                              FRA=QtÔøΩ affectÔøΩe ÔøΩ expÔøΩdier];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 5777;   ;Qty. Picked         ;Decimal       ;FieldClass=FlowField;
@@ -1426,7 +1437,7 @@ OBJECT Table 27 Item
                                                                                                                          Variant Code=FIELD(Variant Filter),
                                                                                                                          Due Date=FIELD(Date Filter)));
                                                    CaptionML=[ENU=Qty. Picked;
-                                                              FRA=QtÇ prÇlevÇe];
+                                                              FRA=QtÔøΩ prÔøΩlevÔøΩe];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 5900;   ;Service Item Group  ;Code10        ;TableRelation="Service Item Group".Code;
@@ -1462,7 +1473,7 @@ OBJECT Table 27 Item
                                                                                                                    Variant Code=FIELD(Variant Filter),
                                                                                                                    Needed by Date=FIELD(Date Filter)));
                                                    CaptionML=[ENU=Qty. on Service Order;
-                                                              FRA=QtÇ sur commande service];
+                                                              FRA=QtÔøΩ sur commande service];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 5902;   ;Res. Qty. on Service Orders;Decimal;FieldClass=FlowField;
@@ -1475,7 +1486,7 @@ OBJECT Table 27 Item
                                                                                                                  Shipment Date=FIELD(Date Filter)));
                                                    AccessByPermission=TableData 5900=R;
                                                    CaptionML=[ENU=Res. Qty. on Service Orders;
-                                                              FRA=QtÇ rÇs. sur commande service];
+                                                              FRA=QtÔøΩ rÔøΩs. sur commande service];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 6500;   ;Item Tracking Code  ;Code10        ;TableRelation="Item Tracking Code";
@@ -1514,7 +1525,7 @@ OBJECT Table 27 Item
                                                               END;
 
                                                    CaptionML=[ENU=Item Tracking Code;
-                                                              FRA=Code traáabilitÇ] }
+                                                              FRA=Code traÔøΩabilitÔøΩ] }
     { 6501;   ;Lot Nos.            ;Code10        ;TableRelation="No. Series";
                                                    OnValidate=BEGIN
                                                                 IF "Lot Nos." <> '' THEN
@@ -1522,15 +1533,15 @@ OBJECT Table 27 Item
                                                               END;
 
                                                    CaptionML=[ENU=Lot Nos.;
-                                                              FRA=N¯ lot] }
+                                                              FRA=NÔøΩ lot] }
     { 6502;   ;Expiration Calculation;DateFormula ;CaptionML=[ENU=Expiration Calculation;
-                                                              FRA=Calcul pÇremption] }
+                                                              FRA=Calcul pÔøΩremption] }
     { 6503;   ;Lot No. Filter      ;Code20        ;FieldClass=FlowFilter;
                                                    CaptionML=[ENU=Lot No. Filter;
-                                                              FRA=Filtre n¯ lot] }
+                                                              FRA=Filtre nÔøΩ lot] }
     { 6504;   ;Serial No. Filter   ;Code20        ;FieldClass=FlowFilter;
                                                    CaptionML=[ENU=Serial No. Filter;
-                                                              FRA=Filtre n¯ de sÇrie] }
+                                                              FRA=Filtre nÔøΩ de sÔøΩrie] }
     { 6650;   ;Qty. on Purch. Return;Decimal      ;FieldClass=FlowField;
                                                    CalcFormula=Sum("Purchase Line"."Outstanding Qty. (Base)" WHERE (Document Type=CONST(Return Order),
                                                                                                                     Type=CONST(Item),
@@ -1543,7 +1554,7 @@ OBJECT Table 27 Item
                                                                                                                     Expected Receipt Date=FIELD(Date Filter)));
                                                    AccessByPermission=TableData 6660=R;
                                                    CaptionML=[ENU=Qty. on Purch. Return;
-                                                              FRA=QtÇ sur retour achat];
+                                                              FRA=QtÔøΩ sur retour achat];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 6660;   ;Qty. on Sales Return;Decimal       ;FieldClass=FlowField;
@@ -1558,7 +1569,7 @@ OBJECT Table 27 Item
                                                                                                                  Shipment Date=FIELD(Date Filter)));
                                                    AccessByPermission=TableData 6650=R;
                                                    CaptionML=[ENU=Qty. on Sales Return;
-                                                              FRA=QtÇ sur retour vente];
+                                                              FRA=QtÔøΩ sur retour vente];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 7171;   ;No. of Substitutes  ;Integer       ;FieldClass=FlowField;
@@ -1569,16 +1580,16 @@ OBJECT Table 27 Item
                                                    Editable=No }
     { 7301;   ;Special Equipment Code;Code10      ;TableRelation="Special Equipment";
                                                    CaptionML=[ENU=Special Equipment Code;
-                                                              FRA=Code Çquipement spÇcial] }
+                                                              FRA=Code ÔøΩquipement spÔøΩcial] }
     { 7302;   ;Put-away Template Code;Code10      ;TableRelation="Put-away Template Header";
                                                    CaptionML=[ENU=Put-away Template Code;
-                                                              FRA=Code modäle rangement] }
+                                                              FRA=Code modÔøΩle rangement] }
     { 7307;   ;Put-away Unit of Measure Code;Code10;
                                                    TableRelation=IF (No.=FILTER(<>'')) "Item Unit of Measure".Code WHERE (Item No.=FIELD(No.))
                                                                  ELSE "Unit of Measure";
                                                    AccessByPermission=TableData 7340=R;
                                                    CaptionML=[ENU=Put-away Unit of Measure Code;
-                                                              FRA=Code unitÇ rangement] }
+                                                              FRA=Code unitÔøΩ rangement] }
     { 7380;   ;Phys Invt Counting Period Code;Code10;
                                                    TableRelation="Phys. Invt. Counting Period";
                                                    OnValidate=VAR
@@ -1616,10 +1627,10 @@ OBJECT Table 27 Item
                                                               END;
 
                                                    CaptionML=[ENU=Phys Invt Counting Period Code;
-                                                              FRA=Code pÇriode inventaire stock] }
+                                                              FRA=Code pÔøΩriode inventaire stock] }
     { 7381;   ;Last Counting Period Update;Date   ;AccessByPermission=TableData 7380=R;
                                                    CaptionML=[ENU=Last Counting Period Update;
-                                                              FRA=Dern. MAJ pÇriode d'inventaire];
+                                                              FRA=Dern. MAJ pÔøΩriode d'inventaire];
                                                    Editable=No }
     { 7383;   ;Last Phys. Invt. Date;Date         ;FieldClass=FlowField;
                                                    CalcFormula=Max("Phys. Inventory Ledger Entry"."Posting Date" WHERE (Item No.=FIELD(No.),
@@ -1632,7 +1643,7 @@ OBJECT Table 27 Item
                                                    CaptionML=[ENU=Use Cross-Docking;
                                                               FRA=Utiliser transbordement] }
     { 7385;   ;Next Counting Start Date;Date      ;CaptionML=[ENU=Next Counting Start Date;
-                                                              FRA=Proch. date dÇbut d'inventaire];
+                                                              FRA=Proch. date dÔøΩbut d'inventaire];
                                                    Editable=No }
     { 7386;   ;Next Counting End Date;Date        ;CaptionML=[ENU=Next Counting End Date;
                                                               FRA=Proch. date fin d'inventaire];
@@ -1642,6 +1653,126 @@ OBJECT Table 27 Item
                                                    CaptionML=[ENU=Identifier Code;
                                                               FRA=Code identifiant];
                                                    Editable=No }
+    { 50000;  ;Segment Code        ;Code10        ;TableRelation=Segment.Code WHERE (Product Group Code=FIELD(Product Group Code));
+                                                   CaptionML=[ENU=Segment Code;
+                                                              FRA=Code Segment];
+                                                   Description=AC1.00 }
+    { 50001;  ;Item Management     ;Option        ;CaptionML=[ENU=Item Management;
+                                                              FRA=Gestion article];
+                                                   OptionCaptionML=FRA=GÔøΩrÔøΩ en stock,GÔøΩrÔøΩ en rÔøΩf./prix uniquement,Fiche art. hors stock,Plus fabriquÔøΩ (ÔøΩ ÔøΩpuisement),Non dispo.,MomentanÔøΩement indispo.,DÔøΩfinitivemlent chainÔøΩ,Prochainement proposÔøΩe en CG,En cours de CG,CG livrÔøΩ (gÔøΩrÔøΩ en prix uniquement),CG assimilÔøΩ,CG (ÔøΩ ÔøΩpuisement fournisseur);
+                                                   OptionString=S,P,H,F,N,M,T,W,X,G,Y,Z;
+                                                   Description=AC1.00 }
+    { 50002;  ;Update Circulation Date;Date       ;CaptionML=[ENU=Update Circulation Date;
+                                                              FRA=Date de diffusion de la mise ÔøΩ jour];
+                                                   Description=AC1.00;
+                                                   Editable=No }
+    { 50003;  ;Transfer Price (LCY);Decimal       ;CaptionML=[ENU=Transfer Price (LCY);
+                                                              FRA=Prix de cession DS];
+                                                   Description=AC1.00;
+                                                   AutoFormatType=2 }
+    { 50004;  ;Price List Type     ;Option        ;CaptionML=[ENU=Prrice List Type;
+                                                              FRA=BarÔøΩmisation];
+                                                   OptionCaptionML=[ENU=Differently,,Price List;
+                                                                    FRA=Autrement,,BarÔøΩmisÔøΩ];
+                                                   OptionString=0,1,2;
+                                                   Description=AC1.00 }
+    { 50005;  ;Discount Type       ;Option        ;CaptionML=[ENU=Discount Type;
+                                                              FRA=Type remise];
+                                                   OptionCaptionML=[ENU=Item Protected,,Normal Discount;
+                                                                    FRA=Article protÔøΩgÔøΩ,,Remise normale];
+                                                   OptionString=0,1,2;
+                                                   Description=AC1.00 }
+    { 50006;  ;Sending of EDI Sales OrderType;Option;
+                                                   CaptionML=[ENU=Sending of EDI Sales OrderType;
+                                                              FRA=Type d'envoi de commade vente EDI];
+                                                   OptionCaptionML=[ENU=Majuscule,Paper,No EDI,auther EDI;
+                                                                    FRA=Majuscule,Papier,Non EDI,Autre EDI];
+                                                   OptionString=Majuscule,Paper,No EDI,auther EDI;
+                                                   Description=AC1.00 }
+    { 50007;  ;Last Import Code    ;Code10        ;CaptionML=[ENU=Last Import Code;
+                                                              FRA=Code dernier import];
+                                                   Description=AC1.00;
+                                                   Editable=No }
+    { 50008;  ;Last Import Date    ;DateTime      ;CaptionML=[ENU=Last Import Date;
+                                                              FRA=Date dernier import];
+                                                   Description=AC1.00;
+                                                   Editable=No }
+    { 50009;  ;Cross-Reference No. of Vendor;Code20;
+                                                   FieldClass=FlowField;
+                                                   CalcFormula=Lookup("Item Cross Reference"."Cross-Reference No." WHERE (Item No.=FIELD(No.),
+                                                                                                                          Cross-Reference Type=FILTER(Vendor),
+                                                                                                                          Cross-Reference Type No.=FIELD(Vendor No.)));
+                                                   OnValidate=VAR
+                                                                ReturnedCrossRef@1000 : Record 5717;
+                                                              BEGIN
+                                                              END;
+
+                                                   CaptionML=[ENU=Cross-Reference No. of Vendor;
+                                                              FRA=RÔøΩf. ext. du fournisseur];
+                                                   Description=AC1.00;
+                                                   Editable=No }
+    { 50010;  ;Ecotaxe             ;Decimal       ;Description=AB6.TAH.001;
+                                                   AutoFormatType=2 }
+    { 50011;  ;Check Availability on Order;Boolean;CaptionML=[ENU=Check Availability on Order;
+                                                              FRA=VÔøΩrifier disponibilitÔøΩ sur commande];
+                                                   Description=ACBDU 110314D }
+    { 50012;  ;Not Valued Cost on Sales Line;Boolean;
+                                                   OnValidate=BEGIN
+                                                                // ACBDU 160414D.Begin
+                                                                IF "Not Valued Cost on Sales Line" = TRUE THEN
+                                                                  IF NOT CONFIRM(STRSUBSTNO(Text50000,TABLECAPTION,"No."),FALSE) THEN
+                                                                    "Not Valued Cost on Sales Line" := FALSE;
+                                                                // ACBDU 160414D.End
+                                                              END;
+
+                                                   CaptionML=[ENU=Not Valued Cost on Sales Line;
+                                                              FRA=Ne pas valoriser coÔøΩt sur ligne vente];
+                                                   Description=ACBDU 160414D }
+    { 50013;  ;Account No. (DPAM)  ;Code20        ;TableRelation="Dynamic Field".Code WHERE (Table No.=CONST(27),
+                                                                                             Field No.=CONST(50013));
+                                                   CaptionML=[ENU=Account No. (DPAM);
+                                                              FRA=NÔøΩ compte (DPAM)];
+                                                   Description=ACBDU 130614D }
+    { 50014;  ;Typology Code (DPAM);Code20        ;TableRelation="Dynamic Field".Code WHERE (Table No.=CONST(27),
+                                                                                             Field No.=CONST(50014));
+                                                   CaptionML=[ENU=Typology Code (DPAM);
+                                                              FRA=Code typologie (DPAM)];
+                                                   Description=ACBDU 130614D }
+    { 50015;  ;Typology Description (DPAM);Text50 ;FieldClass=FlowField;
+                                                   CalcFormula=Lookup("Dynamic Field".Description WHERE (Table No.=CONST(27),
+                                                                                                         Field No.=CONST(50014),
+                                                                                                         Code=FIELD("Typology Code (DPAM)")));
+                                                   CaptionML=[ENU=Typology Description (DPAM);
+                                                              FRA=Description typologie (DPAM)];
+                                                   Description=ACBDU 130614D;
+                                                   Editable=No }
+    { 50016;  ;Item Ledger Entries ;Boolean       ;FieldClass=FlowField;
+                                                   CalcFormula=Exist("Item Ledger Entry" WHERE (Item No.=FIELD(No.)));
+                                                   CaptionML=[ENU=Item Ledger Entries;
+                                                              FRA=ÔøΩcritures comptables article];
+                                                   Description=ALDA 041114D }
+    { 50017;  ;HS Code             ;Code20        ;TableRelation="Dynamic Field".Code WHERE (Table No.=CONST(27),
+                                                                                             Field No.=CONST(50017));
+                                                   CaptionML=[ENU=HS Code;
+                                                              FRA=Code HS];
+                                                   Description=ALDA 301214D }
+    { 50018;  ;Length (meter)      ;Decimal       ;CaptionML=[ENU=Length (meter);
+                                                              FRA=Longueur (mÔøΩtre)];
+                                                   Description=ALDA 080115D }
+    { 50019;  ;Width (meter)       ;Decimal       ;CaptionML=[ENU=Width (meter);
+                                                              FRA=Largeur (mÔøΩtre)];
+                                                   Description=ALDA 080115D }
+    { 50020;  ;Height (meter)      ;Decimal       ;CaptionML=[ENU=Height (meter);
+                                                              FRA=Hauteur (mÔøΩtre)];
+                                                   Description=ALDA 080115D }
+    { 50021;  ;Volume (m3)         ;Decimal       ;CaptionML=[ENU=Volume (m3);
+                                                              FRA=Volume (m3)];
+                                                   Description=ALDA 080115D }
+    { 50022;  ;SkipCycleLoop       ;Boolean        }
+    { 70000;  ;Bar Code            ;Boolean       ;FieldClass=FlowField;
+                                                   CalcFormula=Lookup("Item Cross Reference"."Cross-Reference No." WHERE (Cross-Reference Type=CONST("Bar Code"),"Item No."=FIELD("No."),"Discontinue Bar Code"=FILTER(<>Yes)));
+                                                   CaptionML=[ENU=Bar Code;
+                                                              FRA=Code barre]; }
     { 99000750;;Routing No.        ;Code20        ;TableRelation="Routing Header";
                                                    OnValidate=BEGIN
                                                                 IF "Routing No." <> '' THEN
@@ -1654,7 +1785,7 @@ OBJECT Table 27 Item
                                                               END;
 
                                                    CaptionML=[ENU=Routing No.;
-                                                              FRA=N¯ gamme] }
+                                                              FRA=NÔøΩ gamme] }
     { 99000751;;Production BOM No. ;Code20        ;TableRelation="Production BOM Header";
                                                    OnValidate=VAR
                                                                 MfgSetup@1000 : Record 99000765;
@@ -1682,47 +1813,47 @@ OBJECT Table 27 Item
                                                               END;
 
                                                    CaptionML=[ENU=Production BOM No.;
-                                                              FRA=N¯ nomenclature production] }
+                                                              FRA=NÔøΩ nomenclature production] }
     { 99000752;;Single-Level Material Cost;Decimal;CaptionML=[ENU=Single-Level Material Cost;
-                                                              FRA=Coñt matiäre mono-niveau];
+                                                              FRA=CoÔøΩt matiÔøΩre mono-niveau];
                                                    Editable=No;
                                                    AutoFormatType=2 }
     { 99000753;;Single-Level Capacity Cost;Decimal;CaptionML=[ENU=Single-Level Capacity Cost;
-                                                              FRA=Coñt opÇratoire mono-niveau];
+                                                              FRA=CoÔøΩt opÔøΩratoire mono-niveau];
                                                    Editable=No;
                                                    AutoFormatType=2 }
     { 99000754;;Single-Level Subcontrd. Cost;Decimal;
                                                    CaptionML=[ENU=Single-Level Subcontrd. Cost;
-                                                              FRA=Coñt s/traitance mono-niveau];
+                                                              FRA=CoÔøΩt s/traitance mono-niveau];
                                                    Editable=No;
                                                    AutoFormatType=2 }
     { 99000755;;Single-Level Cap. Ovhd Cost;Decimal;
                                                    CaptionML=[ENU=Single-Level Cap. Ovhd Cost;
-                                                              FRA=Frais gÇn. opÇrat. mono-niv.];
+                                                              FRA=Frais gÔøΩn. opÔøΩrat. mono-niv.];
                                                    Editable=No;
                                                    AutoFormatType=2 }
     { 99000756;;Single-Level Mfg. Ovhd Cost;Decimal;
                                                    CaptionML=[ENU=Single-Level Mfg. Ovhd Cost;
-                                                              FRA=Frais gÇn. matiäre mono-niv.];
+                                                              FRA=Frais gÔøΩn. matiÔøΩre mono-niv.];
                                                    Editable=No;
                                                    AutoFormatType=2 }
     { 99000757;;Overhead Rate      ;Decimal       ;AccessByPermission=TableData 5405=R;
                                                    CaptionML=[ENU=Overhead Rate;
-                                                              FRA=Frais gÇnÇraux];
+                                                              FRA=Frais gÔøΩnÔøΩraux];
                                                    AutoFormatType=2 }
     { 99000758;;Rolled-up Subcontracted Cost;Decimal;
                                                    AccessByPermission=TableData 5405=R;
                                                    CaptionML=[ENU=Rolled-up Subcontracted Cost;
-                                                              FRA=Coñt s/traitance multi-niv.];
+                                                              FRA=CoÔøΩt s/traitance multi-niv.];
                                                    Editable=No;
                                                    AutoFormatType=2 }
     { 99000759;;Rolled-up Mfg. Ovhd Cost;Decimal  ;CaptionML=[ENU=Rolled-up Mfg. Ovhd Cost;
-                                                              FRA=Frais gÇn. matiäre multi-niv.];
+                                                              FRA=Frais gÔøΩn. matiÔøΩre multi-niv.];
                                                    Editable=No;
                                                    AutoFormatType=2 }
     { 99000760;;Rolled-up Cap. Overhead Cost;Decimal;
                                                    CaptionML=[ENU=Rolled-up Cap. Overhead Cost;
-                                                              FRA=Frais gÇn. opÇrat. multi-niv.];
+                                                              FRA=Frais gÔøΩn. opÔøΩrat. multi-niv.];
                                                    Editable=No;
                                                    AutoFormatType=2 }
     { 99000761;;Planning Issues (Qty.);Decimal    ;FieldClass=FlowField;
@@ -1734,7 +1865,7 @@ OBJECT Table 27 Item
                                                                                                                           Shortcut Dimension 2 Code=FIELD(Global Dimension 2 Filter),
                                                                                                                           Planning Line Origin=CONST(" ")));
                                                    CaptionML=[ENU=Planning Issues (Qty.);
-                                                              FRA=Sorties planning (qtÇ)];
+                                                              FRA=Sorties planning (qtÔøΩ)];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 99000762;;Planning Receipt (Qty.);Decimal   ;FieldClass=FlowField;
@@ -1746,7 +1877,7 @@ OBJECT Table 27 Item
                                                                                                                Shortcut Dimension 1 Code=FIELD(Global Dimension 1 Filter),
                                                                                                                Shortcut Dimension 2 Code=FIELD(Global Dimension 2 Filter)));
                                                    CaptionML=[ENU=Planning Receipt (Qty.);
-                                                              FRA=RÇception planning (qtÇ)];
+                                                              FRA=RÔøΩception planning (qtÔøΩ)];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 99000765;;Planned Order Receipt (Qty.);Decimal;
@@ -1759,7 +1890,7 @@ OBJECT Table 27 Item
                                                                                                                      Location Code=FIELD(Location Filter),
                                                                                                                      Due Date=FIELD(Date Filter)));
                                                    CaptionML=[ENU=Planned Order Receipt (Qty.);
-                                                              FRA=RÇception ordre planifiÇe (qtÇ)];
+                                                              FRA=RÔøΩception ordre planifiÔøΩe (qtÔøΩ)];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 99000766;;FP Order Receipt (Qty.);Decimal   ;FieldClass=FlowField;
@@ -1771,7 +1902,7 @@ OBJECT Table 27 Item
                                                                                                                      Location Code=FIELD(Location Filter),
                                                                                                                      Due Date=FIELD(Date Filter)));
                                                    CaptionML=[ENU=FP Order Receipt (Qty.);
-                                                              FRA=RÇcep. ordre plan. ferme (qtÇ)];
+                                                              FRA=RÔøΩcep. ordre plan. ferme (qtÔøΩ)];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 99000767;;Rel. Order Receipt (Qty.);Decimal ;FieldClass=FlowField;
@@ -1783,7 +1914,7 @@ OBJECT Table 27 Item
                                                                                                                      Location Code=FIELD(Location Filter),
                                                                                                                      Due Date=FIELD(Date Filter)));
                                                    CaptionML=[ENU=Rel. Order Receipt (Qty.);
-                                                              FRA=RÇception ordre lancÇ (qtÇ)];
+                                                              FRA=RÔøΩception ordre lancÔøΩ (qtÔøΩ)];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 99000768;;Planning Release (Qty.);Decimal   ;FieldClass=FlowField;
@@ -1795,7 +1926,7 @@ OBJECT Table 27 Item
                                                                                                                Shortcut Dimension 1 Code=FIELD(Global Dimension 1 Filter),
                                                                                                                Shortcut Dimension 2 Code=FIELD(Global Dimension 2 Filter)));
                                                    CaptionML=[ENU=Planning Release (Qty.);
-                                                              FRA=Lancement planning (qtÇ)];
+                                                              FRA=Lancement planning (qtÔøΩ)];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 99000769;;Planned Order Release (Qty.);Decimal;
@@ -1808,7 +1939,7 @@ OBJECT Table 27 Item
                                                                                                                      Location Code=FIELD(Location Filter),
                                                                                                                      Starting Date=FIELD(Date Filter)));
                                                    CaptionML=[ENU=Planned Order Release (Qty.);
-                                                              FRA=Lancement ordre planifiÇ (qtÇ)];
+                                                              FRA=Lancement ordre planifiÔøΩ (qtÔøΩ)];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 99000770;;Purch. Req. Receipt (Qty.);Decimal;FieldClass=FlowField;
@@ -1821,7 +1952,7 @@ OBJECT Table 27 Item
                                                                                                                Due Date=FIELD(Date Filter),
                                                                                                                Planning Line Origin=CONST(" ")));
                                                    CaptionML=[ENU=Purch. Req. Receipt (Qty.);
-                                                              FRA=RÇception dem. achat (qtÇ)];
+                                                              FRA=RÔøΩception dem. achat (qtÔøΩ)];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 99000771;;Purch. Req. Release (Qty.);Decimal;FieldClass=FlowField;
@@ -1833,7 +1964,7 @@ OBJECT Table 27 Item
                                                                                                                Shortcut Dimension 2 Code=FIELD(Global Dimension 2 Filter),
                                                                                                                Order Date=FIELD(Date Filter)));
                                                    CaptionML=[ENU=Purch. Req. Release (Qty.);
-                                                              FRA=Lancement dem. achat (qtÇ)];
+                                                              FRA=Lancement dem. achat (qtÔøΩ)];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 99000773;;Order Tracking Policy;Option      ;OnValidate=VAR
@@ -1876,9 +2007,9 @@ OBJECT Table 27 Item
                                                               END;
 
                                                    CaptionML=[ENU=Order Tracking Policy;
-                                                              FRA=Chaånage dynamique];
+                                                              FRA=ChaÔøΩnage dynamique];
                                                    OptionCaptionML=[ENU=None,Tracking Only,Tracking & Action Msg.;
-                                                                    FRA=Aucun,Chaånage seul,Chaånage & message d'action];
+                                                                    FRA=Aucun,ChaÔøΩnage seul,ChaÔøΩnage & message d'action];
                                                    OptionString=None,Tracking Only,Tracking & Action Msg. }
     { 99000774;;Prod. Forecast Quantity (Base);Decimal;
                                                    FieldClass=FlowField;
@@ -1888,15 +2019,15 @@ OBJECT Table 27 Item
                                                                                                                                  Location Code=FIELD(Location Filter),
                                                                                                                                  Component Forecast=FIELD(Component Forecast)));
                                                    CaptionML=[ENU=Prod. Forecast Quantity (Base);
-                                                              FRA=QtÇ prÇvision prod. (base)];
+                                                              FRA=QtÔøΩ prÔøΩvision prod. (base)];
                                                    DecimalPlaces=0:5 }
     { 99000775;;Production Forecast Name;Code10   ;FieldClass=FlowFilter;
                                                    TableRelation="Production Forecast Name";
                                                    CaptionML=[ENU=Production Forecast Name;
-                                                              FRA=Nom prÇvision production] }
+                                                              FRA=Nom prÔøΩvision production] }
     { 99000776;;Component Forecast ;Boolean       ;FieldClass=FlowFilter;
                                                    CaptionML=[ENU=Component Forecast;
-                                                              FRA=PrÇvision composant] }
+                                                              FRA=PrÔøΩvision composant] }
     { 99000777;;Qty. on Prod. Order;Decimal       ;FieldClass=FlowField;
                                                    CalcFormula=Sum("Prod. Order Line"."Remaining Qty. (Base)" WHERE (Status=FILTER(Planned..Released),
                                                                                                                      Item No.=FIELD(No.),
@@ -1906,7 +2037,7 @@ OBJECT Table 27 Item
                                                                                                                      Variant Code=FIELD(Variant Filter),
                                                                                                                      Due Date=FIELD(Date Filter)));
                                                    CaptionML=[ENU=Qty. on Prod. Order;
-                                                              FRA=QtÇ sur ordre fabrication];
+                                                              FRA=QtÔøΩ sur ordre fabrication];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 99000778;;Qty. on Component Lines;Decimal   ;FieldClass=FlowField;
@@ -1918,13 +2049,13 @@ OBJECT Table 27 Item
                                                                                                                           Variant Code=FIELD(Variant Filter),
                                                                                                                           Due Date=FIELD(Date Filter)));
                                                    CaptionML=[ENU=Qty. on Component Lines;
-                                                              FRA=QtÇ sur lignes composant];
+                                                              FRA=QtÔøΩ sur lignes composant];
                                                    DecimalPlaces=0:5;
                                                    Editable=No }
     { 99000875;;Critical           ;Boolean       ;CaptionML=[ENU=Critical;
                                                               FRA=Critique] }
     { 99008500;;Common Item No.    ;Code20        ;CaptionML=[ENU=Common Item No.;
-                                                              FRA=N¯ article commun] }
+                                                              FRA=NÔøΩ article commun] }
   }
   KEYS
   {
@@ -1957,31 +2088,31 @@ OBJECT Table 27 Item
       Text001@1001 : TextConst 'ENU=You cannot delete %1 %2 because there is at least one outstanding Sales %3 that includes this item.;FRA=Vous ne pouvez pas supprimer %1 %2 car il existe encore au moins une %3 vente ouverte qui inclut cet article.';
       Text002@1002 : TextConst 'ENU=You cannot delete %1 %2 because there are one or more outstanding production orders that include this item.;FRA=Vous ne pouvez pas supprimer %1 %2 car il existe des ordres de fabrication qui contiennent cet article.';
       Text003@1057 : TextConst 'ENU=Do you want to change %1?;FRA=Souhaitez-vous modifier la valeur du champ %1 ?';
-      Text004@1064 : TextConst 'ENU=You cannot delete %1 %2 because there are one or more certified Production BOM that include this item.;FRA=Vous ne pouvez pas supprimer le %1 %2 car il existe une ou plusieurs nomenclatures validÇes qui contiennent cet article.';
-      Text006@1003 : TextConst 'ENU=Prices including VAT cannot be calculated when %1 is %2.;FRA=Les prix TTC ne peuvent pas àtre calculÇs quand %1 est identique Ö %2.';
-      Text007@1004 : TextConst 'ENU=You cannot change %1 because there are one or more ledger entries for this item.;FRA=Vous ne pouvez pas modifier %1 car il existe des Çcritures comptables associÇes Ö cet article.';
-      Text008@1005 : TextConst 'ENU=You cannot change %1 because there is at least one outstanding Purchase %2 that include this item.;FRA=L''enregistrement %1 ne peut àtre modifiÇ car il existe au moins une %2 achat ouverte comprenant cet article.';
-      Text014@1006 : TextConst 'ENU=You cannot delete %1 %2 because there are one or more production order component lines that include this item with a remaining quantity that is not 0.;FRA=L''enregistrement %1 %2 ne peut àtre supprimÇ car il existe une ou plusieurs lignes composant O.F. comprenant cet article avec une quantitÇ restante diffÇrente de 0.';
+      Text004@1064 : TextConst 'ENU=You cannot delete %1 %2 because there are one or more certified Production BOM that include this item.;FRA=Vous ne pouvez pas supprimer le %1 %2 car il existe une ou plusieurs nomenclatures validÔøΩes qui contiennent cet article.';
+      Text006@1003 : TextConst 'ENU=Prices including VAT cannot be calculated when %1 is %2.;FRA=Les prix TTC ne peuvent pas ÔøΩtre calculÔøΩs quand %1 est identique ÔøΩ %2.';
+      Text007@1004 : TextConst 'ENU=You cannot change %1 because there are one or more ledger entries for this item.;FRA=Vous ne pouvez pas modifier %1 car il existe des ÔøΩcritures comptables associÔøΩes ÔøΩ cet article.';
+      Text008@1005 : TextConst 'ENU=You cannot change %1 because there is at least one outstanding Purchase %2 that include this item.;FRA=L''enregistrement %1 ne peut ÔøΩtre modifiÔøΩ car il existe au moins une %2 achat ouverte comprenant cet article.';
+      Text014@1006 : TextConst 'ENU=You cannot delete %1 %2 because there are one or more production order component lines that include this item with a remaining quantity that is not 0.;FRA=L''enregistrement %1 %2 ne peut ÔøΩtre supprimÔøΩ car il existe une ou plusieurs lignes composant O.F. comprenant cet article avec une quantitÔøΩ restante diffÔøΩrente de 0.';
       Text016@1008 : TextConst 'ENU=You cannot delete %1 %2 because there are one or more outstanding transfer orders that include this item.;FRA=Vous ne pouvez pas supprimer %1 %2 car un ou plusieurs ordre(s) de transfert en attente contiennent cet article.';
       Text017@1009 : TextConst 'ENU=You cannot delete %1 %2 because there is at least one outstanding Service %3 that includes this item.;FRA=Vous ne pouvez pas supprimer %1 %2 car au moins un(e) %3 service en attente contient cet article.';
       Text018@1010 : TextConst 'ENU=%1 must be %2 in %3 %4 when %5 is %6.;FRA=Le champ %1 doit indiquer %2 pour le %3 %4 si %5 est %6.';
-      Text019@1011 : TextConst 'ENU=You cannot change %1 because there are one or more open ledger entries for this item.;FRA=Vous ne pouvez pas modifier %1 car il existe des Çcritures comptables ouvertes associÇes Ö cet ÇlÇment.';
-      Text020@1012 : TextConst 'ENU="There may be orders and open ledger entries for the item. ";FRA="Il existe probablement des Çcritures comptables ouvertes et des ordres pour cet ÇlÇment. "';
-      Text021@1013 : TextConst 'ENU=If you change %1 it may affect new orders and entries.\\;FRA=Si vous modifiez la valeur du champ %1, cela peut affecter les nouveaux ordres et Çcritures.\\';
+      Text019@1011 : TextConst 'ENU=You cannot change %1 because there are one or more open ledger entries for this item.;FRA=Vous ne pouvez pas modifier %1 car il existe des ÔøΩcritures comptables ouvertes associÔøΩes ÔøΩ cet ÔøΩlÔøΩment.';
+      Text020@1012 : TextConst 'ENU="There may be orders and open ledger entries for the item. ";FRA="Il existe probablement des ÔøΩcritures comptables ouvertes et des ordres pour cet ÔøΩlÔøΩment. "';
+      Text021@1013 : TextConst 'ENU=If you change %1 it may affect new orders and entries.\\;FRA=Si vous modifiez la valeur du champ %1, cela peut affecter les nouveaux ordres et ÔøΩcritures.\\';
       Text022@1014 : TextConst 'ENU=Do you want to change %1?;FRA=Souhaitez-vous modifier la valeur du champ %1?';
       GLSetup@1053 : Record 98;
       InvtSetup@1015 : Record 313;
       Text023@1066 : TextConst 'ENU=You cannot delete %1 %2 because there is at least one %3 that includes this item.;FRA=Vous ne pouvez pas supprimer l''%1 %2 car il existe au moins une %3 qui contient cet article.';
-      Text024@1072 : TextConst 'ENU=If you change %1 it may affect existing production orders.\;FRA=La modification de %1 peut avoir des rÇpercussions sur les O.F. existants.\';
-      Text025@1055 : TextConst 'ENU=%1 must be an integer because %2 %3 is set up to use %4.;FRA=%1 doit àtre un entier car %2 %3 est dÇfini(e) pour utiliser %4.';
-      Text026@1077 : TextConst 'ENU=%1 cannot be changed because the %2 has work in process (WIP). Changing the value may offset the WIP account.;FRA=%1 ne peut pas àtre modifiÇ car le %2 prÇsente un encours (TEC). Si vous modifiez la valeur, le compte TEC risque d''àtre dÇcalÇ.';
-      Text7380@1058 : TextConst '@@@=If you change the Phys Invt Counting Period Code, the Next Counting Start Date and Next Counting End Date are calculated.\Do you still want to change the Phys Invt Counting Period Code?;ENU=If you change the %1, the %2 and %3 are calculated.\Do you still want to change the %1?;FRA=Si vous modifiez le %1, la %2 et la %3 sont calculÇes.\Souhaitez-vous quand màme modifier le %1ˇ?';
-      Text7381@1056 : TextConst 'ENU=Cancelled.;FRA=AnnulÇ.';
-      Text99000000@1017 : TextConst 'ENU=The change will not affect existing entries.\;FRA=Cette modification n''affectera pas les Çcritures existantes.\';
+      Text024@1072 : TextConst 'ENU=If you change %1 it may affect existing production orders.\;FRA=La modification de %1 peut avoir des rÔøΩpercussions sur les O.F. existants.\';
+      Text025@1055 : TextConst 'ENU=%1 must be an integer because %2 %3 is set up to use %4.;FRA=%1 doit ÔøΩtre un entier car %2 %3 est dÔøΩfini(e) pour utiliser %4.';
+      Text026@1077 : TextConst 'ENU=%1 cannot be changed because the %2 has work in process (WIP). Changing the value may offset the WIP account.;FRA=%1 ne peut pas ÔøΩtre modifiÔøΩ car le %2 prÔøΩsente un encours (TEC). Si vous modifiez la valeur, le compte TEC risque d''ÔøΩtre dÔøΩcalÔøΩ.';
+      Text7380@1058 : TextConst '@@@=If you change the Phys Invt Counting Period Code, the Next Counting Start Date and Next Counting End Date are calculated.\Do you still want to change the Phys Invt Counting Period Code?;ENU=If you change the %1, the %2 and %3 are calculated.\Do you still want to change the %1?;FRA=Si vous modifiez le %1, la %2 et la %3 sont calculÔøΩes.\Souhaitez-vous quand mÔøΩme modifier le %1ÔøΩ?';
+      Text7381@1056 : TextConst 'ENU=Cancelled.;FRA=AnnulÔøΩ.';
+      Text99000000@1017 : TextConst 'ENU=The change will not affect existing entries.\;FRA=Cette modification n''affectera pas les ÔøΩcritures existantes.\';
       CommentLine@1018 : Record 97;
-      Text99000001@1019 : TextConst 'ENU=If you want to generate %1 for existing entries, you must run a regenerative planning.;FRA=Si vous souhaitez gÇnÇrer %1 pour les Çcritures existantes, vous devez lancer un calcul planning rÇgÇnÇratif.';
+      Text99000001@1019 : TextConst 'ENU=If you want to generate %1 for existing entries, you must run a regenerative planning.;FRA=Si vous souhaitez gÔøΩnÔøΩrer %1 pour les ÔøΩcritures existantes, vous devez lancer un calcul planning rÔøΩgÔøΩnÔøΩratif.';
       ItemVend@1020 : Record 99;
-      Text99000002@1021 : TextConst 'ENU=tracking,tracking and action messages;FRA=chaånage, chaånage et message d''action';
+      Text99000002@1021 : TextConst 'ENU=tracking,tracking and action messages;FRA=chaÔøΩnage, chaÔøΩnage et message d''action';
       SalesPrice@1022 : Record 7002;
       SalesLineDisc@1059 : Record 7004;
       SalesPrepmtPct@1051 : Record 459;
@@ -2031,11 +2162,14 @@ OBJECT Table 27 Item
       CalendarMgt@1054 : Codeunit 7600;
       HasInvtSetup@1049 : Boolean;
       GLSetupRead@1052 : Boolean;
-      Text027@1078 : TextConst '@@@=starts with "Rounding Precision";ENU=must be greater than 0.;FRA=doit àtre supÇrieur(e) Ö 0.';
-      Text028@1080 : TextConst 'ENU=You cannot perform this action because entries for item %1 are unapplied in %2 by user %3.;FRA=Il est impossible d''effectuer cette opÇration car les Çcritures de l''article %1 ne sont pas lettrÇes dans%2 par l''utilisateur %3.';
+      Text027@1078 : TextConst '@@@=starts with "Rounding Precision";ENU=must be greater than 0.;FRA=doit ÔøΩtre supÔøΩrieur(e) ÔøΩ 0.';
+      Text028@1080 : TextConst 'ENU=You cannot perform this action because entries for item %1 are unapplied in %2 by user %3.;FRA=Il est impossible d''effectuer cette opÔøΩration car les ÔøΩcritures de l''article %1 ne sont pas lettrÔøΩes dans%2 par l''utilisateur %3.';
       CannotChangeFieldErr@1079 : TextConst '@@@="%1 = field name, %2 = item table name, %3 = item No., %4 = table name";ENU=You cannot change the %1 field on %2 %3 because there exists at least one %4 then includes this item.;FRA=Vous ne pouvez pas modifier le champ %1 de %2 %3, car il existe au moins un %4 incluant cet article.';
-      BaseUnitOfMeasureQtyMustBeOneErr@1081 : TextConst '@@@="%1 Name of Unit of measure (e.g. BOX, PCS, KG...), %2 Qty. of %1 per base unit of measure ";ENU=The quantity per base unit of measure must be 1. %1 is set up with %2 per unit of measure.\\You can change this setup in the Item Units of Measure window.;FRA=La quantitÇ par unitÇ de base doit correspondre Ö 1. %1 est configurÇ avec %2 par unitÇ.\\Vous pouvez modifier ce paramätre dans la fenàtre UnitÇs article.';
-      OpenDocumentTrackingErr@1082 : TextConst 'ENU="You cannot change ""Item Tracking Code"" because there is at least one open document that includes this item with specified tracking: Source Type = %1, Document No. = %2.";FRA="Vous ne pouvez pas modifier le Code traáabilitÇ car au moins un document ouvert inclut cet article avec traáabilitÇ spÇcifiÇeˇ: Type origine = %1, N¯ document = %2."';
+      BaseUnitOfMeasureQtyMustBeOneErr@1081 : TextConst '@@@="%1 Name of Unit of measure (e.g. BOX, PCS, KG...), %2 Qty. of %1 per base unit of measure ";ENU=The quantity per base unit of measure must be 1. %1 is set up with %2 per unit of measure.\\You can change this setup in the Item Units of Measure window.;FRA=La quantitÔøΩ par unitÔøΩ de base doit correspondre ÔøΩ 1. %1 est configurÔøΩ avec %2 par unitÔøΩ.\\Vous pouvez modifier ce paramÔøΩtre dans la fenÔøΩtre UnitÔøΩs article.';
+      OpenDocumentTrackingErr@1082 : TextConst 'ENU="You cannot change ""Item Tracking Code"" because there is at least one open document that includes this item with specified tracking: Source Type = %1, Document No. = %2.";FRA="Vous ne pouvez pas modifier le Code traÔøΩabilitÔøΩ car au moins un document ouvert inclut cet article avec traÔøΩabilitÔøΩ spÔøΩcifiÔøΩeÔøΩ: Type origine = %1, NÔøΩ document = %2."';
+      "-"@1180250001 : Integer;
+      Segment@1180250002 : Record 50003;
+      Text50000@1180250004 : TextConst 'ENU=%1 %2 will not be valued in sales lines. Do you want to continue?;FRA=%1 %2 ne sera pas valorisÔøΩ dans les lignes de vente. Voulez-vous continuer ?';
 
     PROCEDURE AssistEdit@2() : Boolean;
     BEGIN
@@ -2543,7 +2677,33 @@ OBJECT Table 27 Item
       EXIT(ROUND("Unit Price" / (1 + CalcVAT),GLSetup."Unit-Amount Rounding Precision"));
     END;
 
+    PROCEDURE GetTypologyDescrDPAM@1180250002(FromCode@1180250001 : Code[20]) : Text[50];
+    VAR
+      Code@1180250002 : Record 50007;
     BEGIN
+      // ACBDU 130614D.Begin
+      Code.RESET;
+      Code.SETRANGE("Table No.",27);
+      Code.SETRANGE("Field No.",50014);
+      Code.SETRANGE(Code,FromCode);
+      IF Code.FINDFIRST THEN
+        EXIT(Code.Description)
+      ELSE
+        EXIT('');
+      // ACBDU 130614D.End
+    END;
+
+    BEGIN
+    {
+      AC1.00 BDU Ajout Champ : "Segment Code" "Item Management" "Update Circulation Date" "Transfer Price (LCY)" "Price List Type",
+                               "Discount Type"
+                       Code CAL : "Segment Code".onValidate()
+                       Variable global : Segment
+      AB6.TAH.001 05/09/2012
+       -Ajout du champ 50010
+
+      AC3.00 ACBDU 160414D Ajout champ : 50013..50015
+    }
     END.
   }
 }

@@ -1,0 +1,67 @@
+OBJECT Table 50014 Data Flow
+{
+  OBJECT-PROPERTIES
+  {
+    Date=19/05/16;
+    Time=16:44:38;
+    Modified=Yes;
+    Version List=BC6AUTOINV;
+  }
+  PROPERTIES
+  {
+    OnDelete=VAR
+               DataFlowStep@1000000000 : Record 50018;
+               DataFlowStatus@1000000001 : Record 50019;
+             BEGIN
+               DataFlowStep.SETRANGE("Data Flow Code", Code);
+               IF NOT DataFlowStep.ISEMPTY THEN
+                 ERROR(errNotEmptySteps);
+               DataFlowStep.DELETEALL;
+
+               DataFlowStatus.SETRANGE("Data Flow Code", Code);
+               DataFlowStatus.DELETEALL;
+             END;
+
+    CaptionML=[ENU=Data Flow;
+               FRA=Flux de donn‚es];
+    LookupPageID=Page50030;
+    DrillDownPageID=Page50030;
+  }
+  FIELDS
+  {
+    { 1   ;   ;Code                ;Code20        ;CaptionML=[ENU=Code;
+                                                              FRA=Code];
+                                                   NotBlank=Yes }
+    { 2   ;   ;Name                ;Text30        ;CaptionML=[ENU=Name;
+                                                              FRA=Nom] }
+    { 3   ;   ;Last Run            ;DateTime      ;CaptionML=[ENU=Last Run;
+                                                              FRA=DerniŠre ex‚cution];
+                                                   Editable=No }
+    { 13  ;   ;Interaction Template Code;Code10   ;TableRelation="Interaction Template";
+                                                   CaptionML=[ENU=Interaction Template Code;
+                                                              FRA=Code modŠle interaction] }
+    { 145 ;   ;Force Send To Email ;Text80        ;ExtendedDatatype=E-Mail;
+                                                   CaptionML=[ENU=Force Send To Email;
+                                                              FRA=Forcer envoyer …] }
+    { 472 ;   ;Job Queue Entry ID  ;GUID          ;CaptionML=[ENU=ID;
+                                                              FRA=ID] }
+    { 50014;  ;Order Posting Date Delay;Duration  ;CaptionML=[ENU=Order Posting Date Delay;
+                                                              FRA=D‚lai carrence date compta. cde] }
+  }
+  KEYS
+  {
+    {    ;Code                                    ;Clustered=Yes }
+  }
+  FIELDGROUPS
+  {
+  }
+  CODE
+  {
+    VAR
+      errNotEmptySteps@1000000000 : TextConst 'ENU=You cannot delete this flow until data flow steps existing.;FRA=Vous ne pouvez pas supprimer ce flux tant que des ‚tapes de flux sont param‚tr‚es.';
+
+    BEGIN
+    END.
+  }
+}
+

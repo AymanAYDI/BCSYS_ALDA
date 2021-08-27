@@ -4,6 +4,7 @@ OBJECT Codeunit 411 Dimension Buffer Management
   {
     Date=09/09/14;
     Time=12:00:00;
+    Modified=Yes;
     Version List=NAVW18.00;
   }
   PROPERTIES
@@ -24,16 +25,16 @@ OBJECT Codeunit 411 Dimension Buffer Management
     VAR
       NewEntryNo@1001 : Integer;
     BEGIN
-      IF DimBuf.FIND('-') THEN BEGIN
+      IF DimBuf.FINDSET(FALSE,FALSE) THEN BEGIN   //PERF.NIW  DimBuf.FIND('-')
         TempDimBuf.RESET;
-        IF TempDimBuf.FIND('+') THEN
+        IF TempDimBuf.FINDLAST THEN        //PERF.NIW   TempDimBuf.FIND('+')
           NewEntryNo := TempDimBuf."Entry No." + 1
         ELSE
           NewEntryNo := 1;
         InsertDimensionsUsingEntryNo(DimBuf,NewEntryNo);
         EXIT(NewEntryNo);
       END;
-      EXIT(0);
+      //PERF.NIW   ELSE EXIT(0);
     END;
 
     PROCEDURE InsertDimensionsUsingEntryNo@6(VAR DimBuf@1000 : Record 360;EntryNo@1001 : Integer);
@@ -41,7 +42,7 @@ OBJECT Codeunit 411 Dimension Buffer Management
       DimCount@1002 : Integer;
     BEGIN
       DimCount := DimBuf.COUNT;
-      IF DimBuf.FIND('-') THEN
+      IF DimBuf.FINDSET(FALSE,FALSE) THEN      //PERF.NIW DimBuf.FIND('-')
         REPEAT
           TempDimBuf.INIT;
           TempDimBuf := DimBuf;
@@ -63,7 +64,7 @@ OBJECT Codeunit 411 Dimension Buffer Management
       EndOfTempDimBuf@1005 : Boolean;
       PrevEntryNo@1001 : Integer;
     BEGIN
-      IF NOT DimBuf.FIND('-') THEN
+      IF NOT DimBuf.FINDSET(FALSE,FALSE) THEN       //PERF.NIW  DimBuf.FIND(-')
         EXIT(0);
 
       TempDimBuf.RESET;
@@ -72,7 +73,7 @@ OBJECT Codeunit 411 Dimension Buffer Management
       TempDimBuf.SETRANGE("Table ID",DimBuf."Table ID");
       TempDimBuf.SETRANGE("Dimension Code",DimBuf."Dimension Code");
       TempDimBuf.SETRANGE("Dimension Value Code",DimBuf."Dimension Value Code");
-      IF NOT TempDimBuf.FIND('-') THEN BEGIN
+      IF NOT TempDimBuf.FINDFIRST THEN BEGIN    //PERF.NIW   TempDimBuf.FIND('-') THEN BEGIN
         TempDimBuf.RESET;
         EXIT(0);
       END;
@@ -89,26 +90,25 @@ OBJECT Codeunit 411 Dimension Buffer Management
         REPEAT
           TempDimBuf.SETRANGE("Dimension Code",DimBuf."Dimension Code");
           TempDimBuf.SETRANGE("Dimension Value Code",DimBuf."Dimension Value Code");
-          EndOfTempDimBuf := NOT TempDimBuf.FIND('-');
+          EndOfTempDimBuf := TempDimBuf.FINDFIRST;   //PERF.NIW    NOT TempDimBuf.FIND('-');
           IF NOT EndOfTempDimBuf THEN
             EndOfDimBuf := DimBuf.NEXT = 0;
         UNTIL EndOfTempDimBuf OR EndOfDimBuf OR (PrevEntryNo <> TempDimBuf."Entry No.");
         IF EndOfDimBuf AND (PrevEntryNo = TempDimBuf."Entry No.") THEN
           Found := TRUE
         ELSE
-          DimBuf.FIND('-');
+          DimBuf.FINDSET;     //PERF.NIW     DimBuf.FIND('-');
       END;
       TempDimBuf.RESET;
       IF Found THEN
         EXIT(TempDimBuf."Entry No.");
-
-      EXIT(0);
+      //PERF.NIW EXIT(0);
     END;
 
     PROCEDURE GetDimensions@4(EntryNo@1000 : Integer;VAR DimBuf@1001 : Record 360) : Boolean;
     BEGIN
       TempDimBuf.SETRANGE("Entry No.",EntryNo);
-      IF NOT TempDimBuf.FIND('-') THEN
+      IF NOT TempDimBuf.FINDSET(FALSE,FALSE) THEN
         EXIT(FALSE);
 
       REPEAT

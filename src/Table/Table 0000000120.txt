@@ -4,7 +4,8 @@ OBJECT Table 120 Purch. Rcpt. Header
   {
     Date=15/09/15;
     Time=12:00:00;
-    Version List=NAVW19.00;
+    Modified=Yes;
+    Version List=NAVW19.00,AC1.00,GIM;
   }
   PROPERTIES
   {
@@ -323,6 +324,32 @@ OBJECT Table 120 Purch. Rcpt. Header
                                                    CaptionML=[ENU=Inbound Whse. Handling Time;
                                                               FRA=D‚lai enlogement];
                                                    Editable=No }
+    { 50002;  ;Order Reference Customer;Text35    ;CaptionML=[ENU=Order Reference Customer;
+                                                              FRA=R‚f‚rence commande client];
+                                                   Description=AC1.00 }
+    { 50007;  ;Gross Weight        ;Decimal       ;CaptionML=[ENU=Gross Weight;
+                                                              FRA=Poids brut];
+                                                   DecimalPlaces=0:5;
+                                                   Description=AC1.00 }
+    { 50008;  ;Net Weight          ;Decimal       ;CaptionML=[ENU=Net Weight;
+                                                              FRA=Poids net];
+                                                   DecimalPlaces=0:5;
+                                                   Description=AC1.00 }
+    { 50009;  ;Volume              ;Decimal       ;CaptionML=[ENU=Volume;
+                                                              FRA=Volume];
+                                                   Description=AC1.00 }
+    { 50010;  ;Nbr. of Pallet      ;Integer       ;CaptionML=[ENU=Nbr. of Pallet;
+                                                              FRA=Nb. de palette];
+                                                   Description=AC1.00 }
+    { 50011;  ;Nbr. of Package     ;Integer       ;CaptionML=[ENU=Nbr. of Package;
+                                                              FRA=Nb. de colis];
+                                                   Description=AC1.00 }
+    { 50012;  ;Nbr. of Package per Pallet;Integer ;CaptionML=[ENU=Nbr. of Package per Pallet;
+                                                              FRA=Nb. de colis par palette];
+                                                   Description=AC1.00 }
+    { 50033;  ;Micro Order No.     ;Code20        ;CaptionML=[ENU=Micro Order No.;
+                                                              FRA=Nø commande micro];
+                                                   Description=ALDA 061015D }
   }
   KEYS
   {
@@ -330,6 +357,7 @@ OBJECT Table 120 Purch. Rcpt. Header
     {    ;Order No.                                }
     {    ;Pay-to Vendor No.                        }
     {    ;Buy-from Vendor No.                      }
+    {    ;Vendor Shipment No.,Buy-from Vendor No.,Micro Order No. }
   }
   FIELDGROUPS
   {
@@ -384,6 +412,9 @@ OBJECT Table 120 Purch. Rcpt. Header
     END;
 
     BEGIN
+    {
+      AC1.00 Ajout Field "Order Reference Customer"
+    }
     END.
   }
 }

@@ -1,0 +1,126 @@
+OBJECT Codeunit 50015 BCSys tools
+{
+  OBJECT-PROPERTIES
+  {
+    Date=20/04/16;
+    Time=19:05:53;
+    Modified=Yes;
+    Version List=;
+  }
+  PROPERTIES
+  {
+    OnRun=BEGIN
+          END;
+
+  }
+  CODE
+  {
+
+    LOCAL PROCEDURE MergeRecRefs@1000000004(VAR FromRecRef@1000000000 : RecordRef;VAR ToRecRef@1000000001 : RecordRef;force@1000000002 : Boolean);
+    VAR
+      Field@1000000005 : Record 2000000041;
+      FromFieldRef@1000000004 : FieldRef;
+      ToFieldRef@1000000003 : FieldRef;
+    BEGIN
+      Field.SETRANGE(TableNo, FromRecRef.NUMBER);
+      Field.SETRANGE(Class, Field.Class::Normal);
+      IF Field.FIND('-') THEN
+      REPEAT
+        IF ToRecRef.FIELDEXIST(Field."No.") THEN BEGIN
+          ToFieldRef := ToRecRef.FIELD(Field."No.");
+          FromFieldRef := FromRecRef.FIELD(Field."No.");
+
+          IF (FromFieldRef.NAME = ToFieldRef.NAME) AND (ToFieldRef.VALUE <> FromFieldRef.VALUE) THEN BEGIN
+            IF force THEN BEGIN
+              ToFieldRef.VALUE := FromFieldRef.VALUE;
+            END ELSE
+              IF FORMAT(ToFieldRef.VALUE) = '' THEN
+                ToFieldRef.VALIDATE(FromFieldRef.VALUE);
+          END;
+        END;
+      UNTIL Field.NEXT = 0;
+    END;
+
+    PROCEDURE DuplicateCustomer@1000000001(_Cust@1000000000 : Record 18);
+    VAR
+      SelectNewCode@1000000001 : Page 50017;
+      FromRecRef@1000000002 : RecordRef;
+      ToRecRef@1000000003 : RecordRef;
+      FieldRef@1000000004 : FieldRef;
+      RecVar@1000000005 : Variant;
+    BEGIN
+      _Cust.TESTFIELD("No.");
+      SelectNewCode.LOOKUPMODE(TRUE);
+      IF ACTION::LookupOK = SelectNewCode.RUNMODAL THEN BEGIN
+        ToRecRef.OPEN(DATABASE::Customer);
+        FieldRef := ToRecRef.FIELD(1);
+        FieldRef.VALUE := SelectNewCode.GetNewCode;
+        FieldRef.TESTFIELD;
+        ToRecRef.INSERT(TRUE);
+
+        FromRecRef.GETTABLE(_Cust);
+        MergeRecRefs(FromRecRef,ToRecRef,FALSE);
+        ToRecRef.MODIFY(TRUE);
+
+        RecVar := ToRecRef;
+        PAGE.RUN(PAGE::"Customer Card", RecVar);
+      END;
+    END;
+
+    PROCEDURE DuplicateVendor@1000000003(_Vend@1000000000 : Record 23);
+    VAR
+      SelectNewCode@1000000001 : Page 50017;
+      FromRecRef@1000000002 : RecordRef;
+      ToRecRef@1000000003 : RecordRef;
+      FieldRef@1000000004 : FieldRef;
+      RecVar@1000000005 : Variant;
+    BEGIN
+      _Vend.TESTFIELD("No.");
+      SelectNewCode.LOOKUPMODE(TRUE);
+      IF ACTION::LookupOK = SelectNewCode.RUNMODAL THEN BEGIN
+        ToRecRef.OPEN(DATABASE::Vendor);
+        FieldRef := ToRecRef.FIELD(1);
+        FieldRef.VALUE := SelectNewCode.GetNewCode;
+        FieldRef.TESTFIELD;
+        ToRecRef.INSERT(TRUE);
+
+        FromRecRef.GETTABLE(_Vend);
+        MergeRecRefs(FromRecRef,ToRecRef,FALSE);
+        ToRecRef.MODIFY(TRUE);
+
+        RecVar := ToRecRef;
+        PAGE.RUN(PAGE::"Vendor Card", RecVar);
+      END;
+    END;
+
+    PROCEDURE DuplicateItem@1000000005(_Item@1000000000 : Record 27);
+    VAR
+      SelectNewCode@1000000001 : Page 50017;
+      FromRecRef@1000000002 : RecordRef;
+      ToRecRef@1000000003 : RecordRef;
+      FieldRef@1000000004 : FieldRef;
+      RecVar@1000000005 : Variant;
+    BEGIN
+      _Item.TESTFIELD("No.");
+      SelectNewCode.LOOKUPMODE(TRUE);
+      IF ACTION::LookupOK = SelectNewCode.RUNMODAL THEN BEGIN
+        ToRecRef.OPEN(DATABASE::Item);
+        FieldRef := ToRecRef.FIELD(1);
+        FieldRef.VALUE := SelectNewCode.GetNewCode;
+        FieldRef.TESTFIELD;
+        ToRecRef.INSERT(TRUE);
+
+        FromRecRef.GETTABLE(_Item);
+        MergeRecRefs(FromRecRef,ToRecRef,FALSE);
+        ToRecRef.MODIFY(TRUE);
+
+        RecVar := ToRecRef;
+        PAGE.RUN(PAGE::"Item Card", RecVar);
+      END;
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

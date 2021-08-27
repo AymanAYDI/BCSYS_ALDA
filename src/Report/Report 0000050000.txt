@@ -1,0 +1,911 @@
+OBJECT Report 50000 Batch Create EDI Sales Order
+{
+  OBJECT-PROPERTIES
+  {
+    Date=20/06/19;
+    Time=14:40:01;
+    Modified=Yes;
+    Version List=AC1.00,2016;
+  }
+  PROPERTIES
+  {
+    CaptionML=[ENU=Batch Create EDI Sales Order;
+               FRA=TPL cr�ation commande vente EDI];
+    ShowPrintStatus=No;
+    ProcessingOnly=Yes;
+    OnInitReport=BEGIN
+                   CompanyInfo.GET;
+                   CompanyInfo.TESTFIELD("Follower No. for MAJUSCULE");
+                   CompanyInfo.TESTFIELD("Bar Code for MAJUSCULE");
+                 END;
+
+    OnPreReport=BEGIN
+                  IF GUIALLOWED THEN
+                    Window.OPEN(Text000);
+                END;
+
+    OnPostReport=BEGIN
+                   IF GUIALLOWED THEN
+                     Window.CLOSE;
+                 END;
+
+    UseRequestPage=Yes;
+  }
+  DATASET
+  {
+    { 5264;    ;DataItem;                    ;
+               DataItemTable=Table50001;
+               DataItemTableView=SORTING(EDI Code,Direction,Filename,Treatment Date);
+               MaxIteration=1;
+               OnAfterGetRecord=BEGIN
+                                  EDISetup.GET("EDI Code");
+
+                                  EDISetup.TESTFIELD("Target Type",EDISetup."Target Type"::Vendor);
+
+                                  EDISetup.TESTFIELD("EDI Msg. Nos.");
+                                  CLEAR(EDIMsgNos);
+                                  EDIMsgNo := '';
+                                  xEDIMsgNos := EDISetup."EDI Msg. Nos.";
+                                  CLEAR(NoSeriesMgt);
+                                  NoSeriesMgt.InitSeries(EDISetup."EDI Msg. Nos.",xEDIMsgNos,TODAY,EDIMsgNo,EDIMsgNos);
+                                  xEDIMsgNos := EDISetup."EDI Msg. Nos.";
+                                  IF EDIMsgNo = '' THEN
+                                    ERROR(Text002);
+
+                                  Vendor.GET(EDISetup."Target No.");
+                                  Vendor.TESTFIELD("Bar Code");
+
+                                  DayOfFile := DATE2DMY(DT2DATE("Treatment Date"),1);
+                                  MonthOfFile := DATE2DMY(DT2DATE("Treatment Date"),2);
+                                  YearOfFile := DATE2DMY(DT2DATE("Treatment Date"),3);
+                                END;
+                                 }
+
+    { 5265;    ;DataItem;Sales Header for Init;
+               DataItemTable=Table36;
+               DataItemTableView=WHERE(Document Type=CONST(Order),
+                                       Status=CONST(Released));
+               OnPreDataItem=BEGIN
+                               Found := FALSE;
+                               SalesHeader.RESET;
+                               SalesHeader.SETRANGE("Document Type",SalesHeader."Document Type"::Order);
+                               SalesHeader.SETRANGE(Status,SalesHeader.Status::Released);
+                               IF SalesHeader.FINDSET(FALSE,FALSE) THEN
+                                 REPEAT
+                                   SalesLine.RESET;
+                                   SalesLine.SETRANGE("Document Type",SalesHeader."Document Type");
+                                   SalesLine.SETRANGE("Document No.",SalesHeader."No.");
+                                   SalesLine.SETRANGE(Type,SalesLine.Type::Item);
+                                   SalesLine.SETRANGE("Quantity Shipped",0);
+                                   SalesLine.SETFILTER(Quantity,'>%1',0);
+                                   SalesLine.SETRANGE("Exported Line",FALSE);
+                                   SalesLine.SETRANGE("Vendor No. for EDI Sending",EDISetup."Target No.");
+                                   IF SalesLine.FINDSET(FALSE,FALSE) THEN BEGIN
+                                     TempSalesHeader := SalesHeader;
+                                     TempSalesHeader.INSERT;
+                                   END;
+                                 UNTIL SalesHeader.NEXT = 0;
+
+                               IF TempSalesHeader.COUNT <> 0 THEN BEGIN
+                                 EDIEntry.RESET;
+                                 IF EDIEntry.FINDLAST THEN
+                                   EntryNo := EDIEntry."Entry No."
+                                 ELSE
+                                   EntryNo := 1;
+
+                                 EDILotNo4FieldAndFilename := GetNewEDILotNo4FileName("E.D.I. Log");
+
+                                 EntryNo += 1;
+                                 EDIEntry.INIT;
+                                 EDIEntry."Entry No." := EntryNo;
+                                 EDIEntry."User ID" := USERID;
+                                 EDIEntry."Imp./Exp. Date" := "E.D.I. Log"."Treatment Date";
+                                 EDIEntry."EDI Code" := EDISetup.Code;
+                                 EDIEntry.Error := TRUE;
+                                 EDIEntry.Handled := FALSE;
+                                 EDIEntry."Field 1" := 'FILENAME';
+                                 EDIEntry."Field 2" := EDILotNo4FieldAndFilename;
+                                 EDIEntry.INSERT;
+
+                                 NbrOfCNUT_Lot := 0;
+                                 CreateEDIEntry('03503','','');
+                                 CreateEDIEntry('03503','','190');
+                                 CreateEDIEntry('03503','','199');
+                               END ELSE
+                                 CurrReport.BREAK;
+                             END;
+
+               OnAfterGetRecord=BEGIN
+                                  Found := TempSalesHeader.GET("Document Type","No.");
+                                  IF NOT Found THEN
+                                    CurrReport.SKIP;
+
+                                  CALCFIELDS("Dim. Shipping Method Code");
+                                  Msg := "Dim. Shipping Method Code";
+                                  IF NOT ("Dim. Shipping Method Code" IN ['DG','DCL']) THEN BEGIN
+                                    CreateEDILogEntry("E.D.I. Log"."EDI Code","E.D.I. Log"."Treatment Date",STRSUBSTNO(Text005,FIELDCAPTION(
+                                      "Dim. Shipping Method Code"),TABLECAPTION,FIELDCAPTION("No."),"No."),2,0);
+                                    CurrReport.SKIP;
+                                  END;
+
+                                  Cust.GET("Sell-to Customer No.");
+                                  Cust.CALCFIELDS("Dim. Shipping Method Code","Dim. Cust. Category Code","Dim. Selling Point Code");
+                                  IF Cust."Dim. Selling Point Code" = '' THEN BEGIN
+                                    CreateEDILogEntry("E.D.I. Log"."EDI Code","E.D.I. Log"."Treatment Date",STRSUBSTNO(Text005,
+                                      Cust.FIELDCAPTION("Dim. Selling Point Code"),Cust.TABLECAPTION,FIELDCAPTION("No."),"No."),2,0);
+                                    CurrReport.SKIP;
+                                  END;
+                                  IF Cust."No." = '' THEN BEGIN
+                                    CreateEDILogEntry("E.D.I. Log"."EDI Code","E.D.I. Log"."Treatment Date",STRSUBSTNO(Text005,
+                                      Cust.FIELDCAPTION("No."),Cust.TABLECAPTION,FIELDCAPTION("No."),"No."),2,0);
+                                    CurrReport.SKIP;
+                                  END;
+                                  IF Cust.Name = '' THEN BEGIN
+                                    CreateEDILogEntry("E.D.I. Log"."EDI Code","E.D.I. Log"."Treatment Date",STRSUBSTNO(Text005,
+                                      Cust.FIELDCAPTION(Name),Cust.TABLECAPTION,FIELDCAPTION("No."),"No."),2,0);
+                                    CurrReport.SKIP;
+                                  END;
+                                  IF Cust.Address = '' THEN BEGIN
+                                    CreateEDILogEntry("E.D.I. Log"."EDI Code","E.D.I. Log"."Treatment Date",STRSUBSTNO(Text005,
+                                      Cust.FIELDCAPTION(Address),Cust.TABLECAPTION,FIELDCAPTION("No."),"No."),2,0);
+                                    CurrReport.SKIP;
+                                  END;
+                                  IF Cust."Post Code" = '' THEN BEGIN
+                                    CreateEDILogEntry("E.D.I. Log"."EDI Code","E.D.I. Log"."Treatment Date",STRSUBSTNO(Text005,
+                                      Cust.FIELDCAPTION("Post Code"),Cust.TABLECAPTION,FIELDCAPTION("No."),"No."),2,0);
+                                    CurrReport.SKIP;
+                                  END;
+                                  IF Cust.City = '' THEN BEGIN
+                                    CreateEDILogEntry("E.D.I. Log"."EDI Code","E.D.I. Log"."Treatment Date",STRSUBSTNO(Text005,
+                                      Cust.FIELDCAPTION(City),Cust.TABLECAPTION,FIELDCAPTION("No."),"No."),2,0);
+                                    CurrReport.SKIP;
+                                  END;
+                                END;
+
+               OnPostDataItem=BEGIN
+                                IF NbrOfCNUT_Lot <> 0 THEN BEGIN
+                                  CreateEDIEntry('03503','','');
+                                  CreateEDIEntry('03503','','191');
+                                  CreateEDIEntry('03503','','199');
+                                END;
+                              END;
+                               }
+
+    { 5266;1   ;DataItem;                    ;
+               DataItemTable=Table18;
+               DataItemTableView=SORTING(No.);
+               OnAfterGetRecord=BEGIN
+                                  CALCFIELDS("Dim. Shipping Method Code","Dim. Cust. Category Code","Dim. Selling Point Code");
+
+                                  IF ("Last Date Modified" = 0D) OR //C'est un nouveau client
+                                     ("Last Date Sending to MAJUSCULE" = 0D) OR //C'est un client qui n'a jamais ‚t‚ envoy‚ … MJ
+                                     ("Last Date Modified" >= "Last Date Sending to MAJUSCULE") THEN //C'est une mise … jour du client … envoy‚ … MJ
+                                    IF ("Last Time Sending to MAJUSCULE" = 0T) OR
+                                       ("Last Time Modified" <> "Last Time Sending to MAJUSCULE") THEN BEGIN
+
+                                      CreateEDIEntry('','07003','');
+                                      CreateEDIEntry('','07003','100');
+                                      CreateEDIEntry('','07003','221');
+                                      CreateEDIEntry('','07003','176');
+                                      CreateEDIEntry('','07003','230');
+                                      CreateEDIEntry('03503','07003','231');
+                                      CreateEDIEntry('03503','07003','232');
+                                      NbrOfCNUT_Msg := 7;
+                                      CreateEDIEntry('','07003','199');
+                                      "Last Date Sending to MAJUSCULE" := TODAY;
+                                      "Last Time Sending to MAJUSCULE" := TIME;
+                                      MODIFY;
+                                    END;
+                                END;
+
+               DataItemLink=No.=FIELD(Sell-to Customer No.) }
+
+    { 5267;1   ;DataItem;                    ;
+               DataItemTable=Table36;
+               DataItemTableView=SORTING(Document Type,No.);
+               OnAfterGetRecord=VAR
+                                  GetfieldCaption@1000000000 : Codeunit 50036;
+                                BEGIN
+                                  CALCFIELDS("Dim. Shipping Method Code");
+
+                                  IF "Requested Delivery Date" <> 0D THEN
+                                    ReqDeliveryDate := "Requested Delivery Date"
+                                  ELSE
+                                    ReqDeliveryDate := TODAY;
+
+                                  EDIMicroOrderNo := GetNewEDIOrderNoMicro("E.D.I. Log");
+                                  CreateEDIEntry('','02303','');
+                                  CreateEDIEntry('','02303','100');
+                                  CreateEDIEntry('','02303','221');
+                                  CreateEDIEntry('','02303','223');//4
+                                  //BCSYS 150917
+                                  IF "Sales Header"."Use Shipment Address" THEN BEGIN
+                                    //BCSYS 070617
+                                    CreateEDIEntry('','02303','224');
+                                    CreateEDIEntry('','02303','112');
+                                    CreateEDIEntry('','02303','176');
+                                    CreateEDIEntry('','02303','177');
+                                    CreateEDIEntry('','02303','202');
+                                    NbrOfCNUT_Msg := 8;
+                                    //BCSYS 210417
+                                    IF ("EDI Add. Info. 1" <> '') AND //MINDEF NUM_SUBSEQUENT
+                                      (GetfieldCaption.GetCode(DATABASE::"Sales Header",FIELDNO("EDI Add. Info. 1"),"Bill-to Customer No.") IN['','NUM_SUBSEQUENT'])
+                                      THEN BEGIN
+                                      CreateEDIEntry('','02303','203');
+                                      NbrOfCNUT_Msg := 9;
+                                    END;
+
+                                  END ELSE BEGIN
+                                    CreateEDIEntry('','02303','112');
+                                    CreateEDIEntry('','02303','176');
+                                    CreateEDIEntry('','02303','177');
+                                    CreateEDIEntry('','02303','202');
+                                    NbrOfCNUT_Msg := 7;
+                                    IF ("Sales Header"."EDI Add. Info. 1" <> '') AND //MINDEF NUM_SUBSEQUENT
+                                      (GetfieldCaption.GetCode(DATABASE::"Sales Header",FIELDNO("EDI Add. Info. 1"),"Bill-to Customer No.") IN['','NUM_SUBSEQUENT'])
+                                      THEN BEGIN
+                                      CreateEDIEntry('','02303','203');
+                                      NbrOfCNUT_Msg := 8;
+                                    END;
+                                    //fin BCSYS 210417
+                                  END;
+                                  //fin BCSYS 181017 incr�mentation compteur
+
+                                  CLEAR(TmpSalesLine);
+                                  TmpSalesLine.RESET;
+                                  TmpSalesLine.DELETEALL;
+
+                                  CLEAR(TmpSalesLine2Del);
+                                  TmpSalesLine2Del.RESET;
+                                  TmpSalesLine2Del.DELETEALL;
+
+                                  //Cde achat
+                                  IF EDISetup."Create Sales/Purch. Doc." THEN BEGIN
+                                    EDISetup.TESTFIELD("Target No.");
+
+                                    IF RECORDLEVELLOCKING THEN
+                                      PurchHeader.LOCKTABLE;
+                                    PurchLine.LOCKTABLE;
+
+                                    CLEAR(PurchHeader);
+                                    PurchHeader.INIT;
+                                    PurchHeader."Document Type" := PurchHeader."Document Type"::Order;
+                                    PurchHeader."No." := '';
+                                    PurchHeader.INSERT(TRUE);
+                                    PurchHeader.VALIDATE("Buy-from Vendor No.",EDISetup."Target No.");
+                                    PurchHeader."Order Reference Customer" := "Sales Header"."Order Reference Customer";
+                                    PurchHeader."Sell-to Customer No." := "Sales Header"."Sell-to Customer No.";
+                                    PurchHeader."Last EDI Code for Batch" := "E.D.I. Log"."EDI Code";
+                                    PurchHeader."Last EDI DT for Batch" := "E.D.I. Log"."Treatment Date";
+                                    // ALDA 061015D
+                                    PurchHeader."Micro Order No." := EDIMicroOrderNo;
+                                    PurchHeader.MODIFY;
+
+                                    {
+                                    DocDim.RESET;
+                                    DocDim.SETRANGE("Table ID",36);
+                                    DocDim.SETRANGE("Document Type","Sales Header"."Document Type");
+                                    DocDim.SETRANGE("Document No.","Sales Header"."No.");
+                                    IF DocDim.FINDSET(FALSE,FALSE) THEN
+                                      REPEAT
+                                        DocDim2.INIT;
+                                        DocDim2."Table ID" := 38;
+                                        DocDim2."Document Type" := PurchHeader."Document Type";
+                                        DocDim2."Document No." := PurchHeader."No.";
+                                        DocDim2."Dimension Code" := DocDim."Dimension Code";
+                                        DocDim2."Dimension Value Code" := DocDim."Dimension Value Code";
+                                        DocDim2.INSERT;
+                                      UNTIL DocDim.NEXT = 0;
+                                    }
+                                    PurchHeader."Dimension Set ID" := "Sales Header"."Dimension Set ID";
+                                  END;
+
+                                  SalesHeader := "Sales Header";
+                                  SalesHeader."Last EDI Code for Batch" := "E.D.I. Log"."EDI Code";
+                                  SalesHeader."Last EDI DT for Batch" := "E.D.I. Log"."Treatment Date";
+                                  SalesHeader."Promised Delivery Date" := TODAY;
+                                  // ALDA 061015D
+                                  SalesHeader."Micro Order No." := EDIMicroOrderNo;
+                                  SalesHeader.MODIFY;
+                                END;
+
+               CalcFields=Dim. Shipping Method Code;
+               DataItemLink=Document Type=FIELD(Document Type),
+                            No.=FIELD(No.) }
+
+    { 5268;2   ;DataItem;                    ;
+               DataItemTable=Table37;
+               DataItemTableView=SORTING(Document Type,Type,No.,Variant Code,Drop Shipment,Location Code,Shipment Date)
+                                 WHERE(Type=CONST(Item),
+                                       Exported Line=CONST(No),
+                                       Vendor No. for EDI Sending=FILTER(<>''),
+                                       Quantity=FILTER(>0),
+                                       Quantity Shipped=CONST(0));
+               OnPreDataItem=BEGIN
+                               SETRANGE("Vendor No. for EDI Sending",Vendor."No.");
+                             END;
+
+               OnAfterGetRecord=VAR
+                                  NewQty@1180250001 : Decimal;
+                                BEGIN
+                                  NewQty := Quantity;
+
+                                  //Cumul des qty
+                                  SalesLine.RESET;
+                                  SalesLine.RESET;
+                                  SalesLine.SETRANGE("Document Type","Document Type");
+                                  SalesLine.SETRANGE("Document No.","Document No.");
+                                  SalesLine.SETRANGE(Type,Type);
+                                  SalesLine.SETRANGE("Vendor No. for EDI Sending",Vendor."No.");
+                                  SalesLine.SETRANGE("Exported Line",FALSE);
+                                  SalesLine.SETRANGE("No.","No.");
+                                  SalesLine.SETRANGE("Quantity Shipped",0);
+                                  SalesLine.SETFILTER(Quantity,'>%1',0);
+                                  SalesLine.SETFILTER("Line No.",'<>%1',"Line No.");
+                                  IF SalesLine.FINDSET(TRUE,FALSE) THEN
+                                    REPEAT
+                                      NewQty += SalesLine.Quantity;
+                                      TmpSalesLine2Del := SalesLine;
+                                      IF TmpSalesLine2Del.INSERT THEN;
+                                    UNTIL SalesLine.NEXT = 0;
+
+                                  TmpSalesLine := "Sales Line";
+                                  TmpSalesLine.Quantity := NewQty;
+                                  TmpSalesLine.INSERT;
+
+                                  SalesLine := "Sales Line";
+                                  SalesLine."Exported Line" := TRUE;
+                                  SalesLine."Date Exported" := "E.D.I. Log"."Treatment Date";
+                                  SalesLine."EDI Code" := "E.D.I. Log"."EDI Code";
+                                  SalesLine."EDI No." := EDIMsgNo;
+                                  SalesLine."Micro Order No." := EDIMicroOrderNo;
+                                  SalesLine.MODIFY;
+                                END;
+
+               DataItemLink=Document Type=FIELD(Document Type),
+                            Document No.=FIELD(No.) }
+
+    { 5269;2   ;DataItem;RoundLoop2          ;
+               DataItemTable=Table2000000026;
+               DataItemTableView=SORTING(Number);
+               OnPreDataItem=VAR
+                               TmpSalesLineCount@1180250001 : Integer;
+                             BEGIN
+                               TmpSalesLine2Del.RESET;
+                               IF TmpSalesLine2Del.FINDSET(TRUE,FALSE) THEN
+                                 REPEAT
+                                   IF TmpSalesLine.GET(TmpSalesLine2Del."Document Type",TmpSalesLine2Del."Document No.",TmpSalesLine2Del."Line No.") THEN
+                                     TmpSalesLine.DELETE;
+                                 UNTIL TmpSalesLine2Del.NEXT = 0;
+
+                               TmpSalesLineCount := TmpSalesLine.COUNT;
+                               IF TmpSalesLineCount = 0 THEN
+                                 CurrReport.BREAK;
+
+                               SETRANGE(Number,1,TmpSalesLineCount);
+
+                               NextLineNo := 10000;
+                             END;
+
+               OnAfterGetRecord=BEGIN
+                                  IF Number = 1 THEN
+                                    TmpSalesLine.FINDFIRST
+                                  ELSE
+                                    TmpSalesLine.NEXT;
+
+                                  IF "Sales Header"."Sell-to Customer No." = CompanyInfo."Customer No. for MAJUSCULE" THEN
+                                    QtyToReceive := TmpSalesLine.Quantity
+                                  ELSE BEGIN
+                                    CASE "Sales Header"."Order Type" OF
+                                      "Sales Header"."Order Type"::AA:QtyToReceive := 0;
+                                      "Sales Header"."Order Type"::DD,"Sales Header"."Order Type"::"DG sans Stock":QtyToReceive := TmpSalesLine.Quantity;
+                                      "Sales Header"."Order Type"::DG:BEGIN
+                                        QtyAvailability := CalcAvailability(TmpSalesLine);
+                                        IF QtyAvailability = 0 THEN
+                                           QtyToReceive := TmpSalesLine.Quantity
+                                        ELSE
+                                          IF ABS(QtyAvailability) >= TmpSalesLine.Quantity THEN
+                                            QtyToReceive := TmpSalesLine.Quantity
+                                          ELSE
+                                            QtyToReceive := ABS(QtyAvailability);
+                                      END;
+                                    END;//CASE
+                                  END;
+
+                                  IF QtyToReceive <> 0 THEN BEGIN
+                                    CreateEDIEntry('','02303','290');
+                                    NbrOfCNUT_Msg += 1;
+                                    //Ligne achat
+                                    IF EDISetup."Create Sales/Purch. Doc." THEN BEGIN
+                                      IF (TmpSalesLine.Type = TmpSalesLine.Type::Item) AND
+                                         ItemUnitOfMeasure.GET(TmpSalesLine."No.",TmpSalesLine."Unit of Measure") THEN
+                                        IF TmpSalesLine."Qty. per Unit of Measure" <> ItemUnitOfMeasure."Qty. per Unit of Measure" THEN
+                                          ERROR(Text001,
+                                            TmpSalesLine.FIELDCAPTION("Qty. per Unit of Measure"),
+                                            TmpSalesLine.FIELDCAPTION("Unit of Measure"),
+                                            TmpSalesLine."Unit of Measure",
+                                            TmpSalesLine."Qty. per Unit of Measure",
+                                            ItemUnitOfMeasure."Qty. per Unit of Measure",
+                                            TmpSalesLine.FIELDCAPTION(Quantity));
+
+                                      PurchLine.INIT;
+                                      PurchLine."Document Type" := PurchLine."Document Type"::Order;
+                                      PurchLine."Document No." := PurchHeader."No.";
+                                      PurchLine."Line No." := NextLineNo;
+                                      PurchLine.INSERT;
+                                      CopyDocMgt.TransfldsFromSalesToPurchLine(TmpSalesLine,PurchLine);
+                                      PurchLine.VALIDATE(Quantity,QtyToReceive);
+                                      PurchLine.VALIDATE("Qty. to Receive",0);
+                                      PurchLine.MODIFY;
+                                      //Axe analytique
+                                      {
+                                      DocDim.RESET;
+                                      DocDim.SETRANGE("Table ID",37);
+                                      DocDim.SETRANGE("Document Type",TmpSalesLine."Document Type");
+                                      DocDim.SETRANGE("Document No.",TmpSalesLine."Document No.");
+                                      DocDim.SETRANGE("Line No.",TmpSalesLine."Line No.");
+                                      IF DocDim.FINDSET(FALSE,FALSE) THEN
+                                        REPEAT
+                                          DocDim2.INIT;
+                                          DocDim2."Table ID" := 39;
+                                          DocDim2."Document Type" := PurchLine."Document Type";
+                                          DocDim2."Document No." := PurchLine."Document No.";
+                                          DocDim2."Line No." := PurchLine."Line No.";
+                                          DocDim2."Dimension Code" := DocDim."Dimension Code";
+                                          DocDim2."Dimension Value Code" := DocDim."Dimension Value Code";
+                                          IF DocDim2.INSERT THEN;
+                                        UNTIL DocDim.NEXT = 0;
+                                      }
+                                      PurchLine."Dimension Set ID" := TmpSalesLine."Dimension Set ID";
+                                      NextLineNo := NextLineNo + 10000;
+                                      IF TransferExtendedText.PurchCheckIfAnyExtText(PurchLine,TRUE) THEN BEGIN
+                                        TransferExtendedText.InsertPurchExtText(PurchLine);
+                                        PurchLine2.RESET;
+                                        PurchLine2.SETRANGE("Document Type",PurchHeader."Document Type");
+                                        PurchLine2.SETRANGE("Document No.",PurchHeader."No.");
+                                        IF PurchLine2.FINDLAST THEN
+                                           NextLineNo := PurchLine2."Line No.";
+                                        NextLineNo := NextLineNo + 10000;
+                                      END;
+                                    END;
+                                  END;
+                                END;
+
+               OnPostDataItem=BEGIN
+                                CreateEDIEntry('','02303','192');
+                                CreateEDIEntry('','02303','199');
+                              END;
+                               }
+
+  }
+  REQUESTPAGE
+  {
+    PROPERTIES
+    {
+    }
+    CONTROLS
+    {
+    }
+  }
+  LABELS
+  {
+  }
+  CODE
+  {
+    VAR
+      Text000@1180250001 : TextConst 'ENU=Batch in process...;FRA=Traitement en cours...';
+      CompanyInfo@1180250007 : Record 79;
+      Cust@1180250046 : Record 18;
+      Vendor@1180250009 : Record 23;
+      SalesHeader@1180250044 : Record 36;
+      SalesLine@1180250030 : Record 37;
+      TempSalesHeader@1180250047 : TEMPORARY Record 36;
+      TmpSalesLine@1180250042 : TEMPORARY Record 37;
+      TmpSalesLine2Del@1180250043 : TEMPORARY Record 37;
+      PurchHeader@1180250025 : Record 38;
+      PurchLine@1180250020 : Record 39;
+      PurchLine2@1180250027 : Record 39;
+      EDISetup@1180250003 : Record 50000;
+      EDIEntry@1180250005 : Record 50002;
+      ItemUnitOfMeasure@1180250022 : Record 5404;
+      ReleaseSalesDoc@1180250036 : Codeunit 414;
+      NoSeriesMgt@1180250012 : Codeunit 396;
+      TransferExtendedText@1180250037 : Codeunit 378;
+      CopyDocMgt@1180250028 : Codeunit 6620;
+      CDE@1180250026 : Codeunit 50003;
+      Window@1180250002 : Dialog;
+      EntryNo@1180250006 : Integer;
+      NextLineNo@1180250021 : Integer;
+      DayOfFile@1180250019 : Integer;
+      MonthOfFile@1180250018 : Integer;
+      YearOfFile@1180250017 : Integer;
+      ReqDeliveryDate@1180250029 : Date;
+      NbrOfCNUT_Lot@1180250016 : Integer;
+      NbrOfCNUT_Msg@1180250008 : Integer;
+      NbrOfCNUT_@1180250032 : Integer;
+      EDIMsgNo@1180250014 : Code[20];
+      EDIMicroOrderNo@1180250035 : Code[10];
+      EDIMsgNos@1180250010 : Code[20];
+      Text001@1180250011 : TextConst 'FRA=Ce report ne peut pas ˆtre ex‚cuter directement!';
+      xEDIMsgNos@1180250013 : Code[20];
+      Text002@1180250004 : TextConst 'FRA=ProblŠme de nø de message EDI.';
+      Text003@1180250024 : TextConst 'ENU=is not valid;FRA=n''est pas valide';
+      Msg@1180250015 : Text[30];
+      TmpYear4@1180250023 : Text[4];
+      EDILotNo4FieldAndFilename@1180250031 : Text[6];
+      QtyToReceive@1180250033 : Decimal;
+      QtyAvailability@1180250034 : Decimal;
+      Text004@1180250038 : TextConst 'FRA=Il n''y a pas d''enreg. dans le filtre : %1';
+      Found@1180250041 : Boolean;
+      Text005@1180250045 : TextConst 'FRA="Vous devez sp‚cifiez %1 dans %2 %3=''%4''."';
+      test@1000000000 : Text[50];
+
+    PROCEDURE InitReport@1180250001(EDICodeFrom@1180250002 : Code[10];EDILogDTfrom@1180250001 : DateTime);
+    BEGIN
+    END;
+
+    PROCEDURE StrFiller4Int@1180250003(Int@1180250001 : Integer;CompletBy@1180250002 : Text[1];Len@1180250003 : Integer) ReturnTxt : Text[30];
+    VAR
+      IntInTxt@1180250004 : Text[30];
+      Loop@1180250005 : Integer;
+      i@1180250006 : Integer;
+    BEGIN
+      IntInTxt := FORMAT(Int);
+      Loop := Len - STRLEN(IntInTxt);
+      FOR i := 1 TO Loop DO
+        ReturnTxt := ReturnTxt + CompletBy;
+      ReturnTxt := ReturnTxt + IntInTxt;
+    END;
+
+    PROCEDURE StrFiller4Dec@1180250002(Dec@1180250001 : Decimal;CompletBy@1180250002 : Text[1];Len@1180250003 : Integer) ReturnTxt : Text[30];
+    VAR
+      DecInTxt@1180250004 : Text[30];
+      Loop@1180250005 : Integer;
+      i@1180250006 : Integer;
+    BEGIN
+      DecInTxt := FORMAT(Dec,0,'<Integer>');
+      Loop := Len - STRLEN(DecInTxt);
+      FOR i := 1 TO Loop DO
+        ReturnTxt := ReturnTxt + CompletBy;
+      ReturnTxt := ReturnTxt + DecInTxt;
+    END;
+
+    PROCEDURE StrFiller4Txt@1180250004(Txt@1180250001 : Text[50];CompletBy@1180250002 : Text[1];Len@1180250003 : Integer) ReturnTxt : Text[50];
+    VAR
+      Loop@1180250005 : Integer;
+      i@1180250006 : Integer;
+    BEGIN
+      IF Len < STRLEN(Txt) THEN
+        ReturnTxt := COPYSTR(Txt,1,Len)
+      ELSE BEGIN
+        Loop := Len - STRLEN(Txt);
+        FOR i := 1 TO Loop DO
+          ReturnTxt := ReturnTxt + CompletBy;
+        ReturnTxt := Txt + ReturnTxt;
+      END;
+    END;
+
+    PROCEDURE CreateEDIEntry@1180250008(CNUT_Lot@1180250002 : Text[5];CNUT_Msg@1180250001 : Text[5];CNUR@1180250003 : Text[3]);
+    BEGIN
+      EntryNo += 1;
+      EDIEntry.INIT;
+      EDIEntry."Entry No." := EntryNo;
+      EDIEntry."User ID" := USERID;
+      EDIEntry."Imp./Exp. Date" := "E.D.I. Log"."Treatment Date";
+      EDIEntry."EDI Code" := EDISetup.Code;
+      EDIEntry.Error := TRUE;
+      EDIEntry.Handled := FALSE;
+
+      IF CNUR = '' THEN BEGIN
+        IF (CNUT_Lot <> '') AND (CNUT_Msg <> '') THEN
+          ERROR(Text002);
+        CASE TRUE OF
+          CNUT_Lot <> '':EDIEntry."Field 1" := CNUT_Lot;//D‚but du lot EDI
+          CNUT_Msg <> '':BEGIN
+            EDIEntry."Field 1" := CNUT_Msg;//D‚but d'un message de type cde ou cli
+            NbrOfCNUT_ += 1;
+          END;
+        END;//CASE
+      END ELSE BEGIN
+        EDIEntry."Field 1" := CNUR;//D‚but d'une ligne de lot ou message
+        CASE CNUR OF
+          '100':EDIEntry."Field 2" := COPYSTR(FORMAT(Vendor."Bar Code"),1,13);
+          '112':EDIEntry."Field 2" := COPYSTR(FORMAT(CompanyInfo."Bar Code for MAJUSCULE"),1,13);
+          '176':BEGIN
+            CASE CNUT_Msg OF
+              '07003':EDIEntry."Field 2" := FORMAT("E.D.I. Log"."Treatment Date",0,'<Day,2><Month,2><year,2>');
+              '02303':EDIEntry."Field 2" := FORMAT("Sales Header"."Order Date",0,'<Day,2><Month,2><year,2>');
+            END;
+          END;
+          '177':EDIEntry."Field 2" := COPYSTR("Sales Header"."Order Reference Customer",1,35);
+          '190':EDIEntry."Field 2" := EDILotNo4FieldAndFilename;
+          '191':EDIEntry."Field 2" := StrFiller4Int(NbrOfCNUT_ + 2,'0',6);
+          '192':EDIEntry."Field 2" := FORMAT(ReqDeliveryDate,0,'<Day,2><Month,2><year,2>');
+          '198':BEGIN
+            EDIEntry."Field 2" := 'HS';
+            EDIEntry."Field 3" := '0000000000' + COPYSTR(Vendor."No.",1,4);
+            EDIEntry."Field 4" := StrFiller4Txt(FORMAT(EDIMicroOrderNo),'0',8);
+          END;
+          '199':BEGIN
+            CASE TRUE OF
+              (CNUT_Lot <> '') AND  (CNUT_Msg = ''):EDIEntry."Field 2" := '000002';//Fin lot EDI
+              (CNUT_Lot = '') AND  (CNUT_Msg <> ''):BEGIN
+                CASE CNUT_Msg OF
+                  '07003':EDIEntry."Field 2" := StrFiller4Int(NbrOfCNUT_Msg,'0',6);
+                  '02303':EDIEntry."Field 2" := StrFiller4Int(NbrOfCNUT_Msg + 2,'0',6);
+                END;//CASE
+                NbrOfCNUT_Msg := 0;
+              END;
+            END;//CASE
+          END;
+          '202':BEGIN
+            EDIEntry."Field 2" := '0';
+            CASE "Sales Header"."Order Type" OF
+              "Sales Header"."Order Type"::AA:EDIEntry."Field 3" := ' ';
+              "Sales Header"."Order Type"::DD:EDIEntry."Field 3" := 'D';
+              "Sales Header"."Order Type"::DG:EDIEntry."Field 3" := 'G';
+              "Sales Header"."Order Type"::"DG sans Stock":EDIEntry."Field 3" := 'G';
+            END;//CASE
+            EDIEntry."Field 4" := '00000000';
+            EDIEntry."Field 5" := COPYSTR(FORMAT(Customer."Dim. Cust. Category Code"),1,1);
+            EDIEntry."Field 6" := StrFiller4Txt(FORMAT("Sales Header"."No.") +'/'+ FORMAT(Customer."Dim. Selling Point Code"),' ',12);
+            EDIEntry."Field 7" := '0';
+            EDIEntry."Field 8" := '000';
+            EDIEntry."Field 9" := '0';
+            EDIEntry."Field 10" := StrFiller4Txt(FORMAT(EDIMicroOrderNo),'0',8);
+            //BCSYS 200619
+            EDIEntry."Field 11" := PADSTR("Sales Header"."Your Reference",20); //compteur cde, ref tier
+            //fin BCSYS 200619
+          END;
+          //BCSYS 180417
+          '203':BEGIN
+            //030517
+            //EDIEntry."Field 2" := COPYSTR(FORMAT(test),1,50);
+            EDIEntry."Field 2" := PADSTR(FORMAT("Sales Header"."EDI Add. Info. 6"),50); //MINDEF NUM_MARKET
+            EDIEntry."Field 3" := PADSTR(FORMAT("Sales Header"."EDI Add. Info. 3"),50); //MINDEF NUM_EJ
+            EDIEntry."Field 4" := PADSTR(FORMAT("Sales Header"."EDI Add. Info. 1"),50); //MINDEF NUM_SUBSEQUENT
+            EDIEntry."Field 5" := PADSTR(FORMAT("Sales Header"."EDI Add. Info. 2"),50); //MINDEF REF_ENGAGEMENT
+            EDIEntry."Field 6" := PADSTR(FORMAT("Sales Header"."EDI Add. Info. 4"),50); //MINDEF TRS_ID
+          END;
+          //fin BCSYS 180417
+          '221':BEGIN
+            EDIEntry."Field 2" := COPYSTR(FORMAT(CompanyInfo."Bar Code for MAJUSCULE"),1,13);
+            EDIEntry."Field 3" := StrFiller4Txt(FORMAT(EDIMsgNo),' ',8);
+          END;
+          '223':BEGIN
+           EDIEntry."Field 2" := '0';
+           EDIEntry."Field 3" := StrFiller4Txt(FORMAT(CompanyInfo."Follower No. for MAJUSCULE"),' ',3);
+           EDIEntry."Field 4" := StrFiller4Txt(FORMAT(Customer."Dim. Selling Point Code"),' ',3);
+           EDIEntry."Field 5" := StrFiller4Txt(FORMAT("Sales Header"."Sell-to Customer No."),' ',6);
+          END;
+          //BCSYS 070617
+          '224':BEGIN
+            EDIEntry."Field 2" := PADSTR(FORMAT("Sales Header"."Ship-to Name"),10);
+            EDIEntry."Field 3" := PADSTR(FORMAT("Sales Header"."Ship-to Name"),35); //raison sociale
+            EDIEntry."Field 4" := PADSTR(FORMAT("Sales Header"."Ship-to Address 2"),35);
+            EDIEntry."Field 5" := PADSTR(FORMAT("Sales Header"."Ship-to County"),35);
+            EDIEntry."Field 6" := PADSTR(FORMAT("Sales Header"."Ship-to Address"),35); //rue/voie
+            EDIEntry."Field 7" := PADSTR(FORMAT("Sales Header"."Ship-to Post Code"),10);
+            EDIEntry."Field 8" := PADSTR(FORMAT("Sales Header"."Ship-to City"),26);
+            EDIEntry."Field 9" := PADSTR(FORMAT("Sales Header"."Ship-to Country/Region Code"),3);
+            EDIEntry."Field 10" := PADSTR(FORMAT("Sales Header"."Sell-to Phone No."),20);
+            EDIEntry."Field 11" := PADSTR(FORMAT("Sales Header"."Ship. Agent Instruction Line"),35);
+            EDIEntry."Field 12" := PADSTR(FORMAT("Sales Header"."Ship. Agent Instruction Line 2"),35);
+            EDIEntry."Field 13" := PADSTR(FORMAT("Sales Header"."Sell-to E-Mail"),50);
+          END;
+          //fin BCSYS 070617
+          '230':BEGIN
+            EDIEntry."Field 2" := StrFiller4Txt(FORMAT(CompanyInfo."Follower No. for MAJUSCULE"),' ',3);
+            EDIEntry."Field 3" := StrFiller4Txt(FORMAT(Customer."Dim. Selling Point Code"),' ',3);
+            EDIEntry."Field 4" := StrFiller4Txt(FORMAT(Customer."No."),' ',6);
+            EDIEntry."Field 5" := StrFiller4Txt(FORMAT(Customer.Name),' ',10);
+            IF Customer."Name 2" <> '' THEN
+              EDIEntry."Field 6" := StrFiller4Txt(FORMAT(Customer."Name 2"),' ',35)
+            ELSE
+              EDIEntry."Field 6" := StrFiller4Txt(FORMAT(Customer.Name),' ',35);
+            EDIEntry."Field 7" := StrFiller4Txt(FORMAT(Customer."Address 2"),' ',35);
+            EDIEntry."Field 8" := StrFiller4Txt(FORMAT(Customer.County),' ',35);
+            EDIEntry."Field 9" := StrFiller4Txt(FORMAT(Customer.Address),' ',35);
+            EDIEntry."Field 10" := StrFiller4Txt('',' ',32);
+            EDIEntry."Field 11" := StrFiller4Txt(FORMAT(Customer."Post Code"),' ',10);
+            EDIEntry."Field 12" := StrFiller4Txt(FORMAT(Customer.City),' ',26);
+            EDIEntry."Field 13" := StrFiller4Txt(FORMAT(Customer."Country/Region Code"),' ',3);
+            EDIEntry."Field 14" := StrFiller4Txt(FORMAT(Customer."Dim. Cust. Category Code"),' ',1);
+            CASE "Sales Header"."Order Type" OF
+              "Sales Header"."Order Type"::AA:EDIEntry."Field 15" := ' ';
+              "Sales Header"."Order Type"::DD:EDIEntry."Field 15" := 'D';
+              "Sales Header"."Order Type"::DG:EDIEntry."Field 15" := 'G';
+              "Sales Header"."Order Type"::"DG sans Stock":EDIEntry."Field 15" := 'G';
+            END;//CASE
+            EDIEntry."Field 16" := 'O';
+            IF (Customer."Last Date Modified" = 0D) THEN
+              EDIEntry."Field 17" := 'C'
+            ELSE
+              EDIEntry."Field 17" := 'M';
+            //EDIEntry."Field 18" := StrFiller4Txt('',' ',1);
+            //EDIEntry."Field 18" := StrFiller4Txt('',' ',2);
+
+          END;
+          '231':BEGIN
+            EDIEntry."Field 2" := StrFiller4Txt(FORMAT(CompanyInfo."Follower No. for MAJUSCULE"),' ',3);
+            EDIEntry."Field 3" := StrFiller4Txt(FORMAT(Customer."Dim. Selling Point Code"),' ',3);
+            EDIEntry."Field 4" := StrFiller4Txt(FORMAT(Customer."No."),' ',6);
+            EDIEntry."Field 5" := StrFiller4Txt(FormatPhoneNo(Customer."Phone No."),' ',20);
+            EDIEntry."Field 6" := StrFiller4Txt(FormatPhoneNo(Customer."Fax No."),' ',20);
+            EDIEntry."Field 7" := StrFiller4Txt(Customer.Name,' ',35);
+            EDIEntry."Field 8" := StrFiller4Txt('',' ',2);
+            IF Customer."Prices Including VAT" THEN
+              EDIEntry."Field 9" := '1'
+            ELSE
+              EDIEntry."Field 9" := '0';
+            EDIEntry."Field 10" := StrFiller4Txt(Customer."Bar Code",' ',13);
+            EDIEntry."Field 11" := '0';
+            //EDIEntry."Field 12" := StrFiller4Txt("Sales Header for Init"."Sell-to E-Mail",' ',50);
+          END;
+          '232':BEGIN
+            EDIEntry."Field 2" := StrFiller4Txt(FORMAT(CompanyInfo."Follower No. for MAJUSCULE"),' ',3);
+            EDIEntry."Field 3" := StrFiller4Txt(FORMAT(Customer."Dim. Selling Point Code"),' ',3);
+            EDIEntry."Field 4" := StrFiller4Txt(FORMAT(Customer."No."),' ',6);
+            EDIEntry."Field 5" := StrFiller4Txt('',' ',8);
+            EDIEntry."Field 6" := StrFiller4Txt('',' ',6);
+            EDIEntry."Field 7" := StrFiller4Txt("Sales Header for Init"."Ship. Agent Instruction Line",' ',35);
+            EDIEntry."Field 8" := StrFiller4Txt("Sales Header for Init"."Ship. Agent Instruction Line 2",' ',35);
+            //BCSYS 180716
+            IF Customer."Grouping Code" <> '' THEN BEGIN
+              EDIEntry."Field 9" := StrFiller4Txt(FORMAT(CompanyInfo."Follower No. for MAJUSCULE"),' ',3);
+              EDIEntry."Field 10" := StrFiller4Txt(FORMAT(Customer."Dim. Selling Point Code"),' ',3);
+              EDIEntry."Field 11" := StrFiller4Txt(FORMAT(Customer."Grouping Code"),' ',6);
+            END;
+            //fin BCSYS 180716 (test)
+          END;
+          '290':BEGIN
+            EDIEntry."Field 2" := '000';
+            EDIEntry."Field 3" := '0001';
+            EDIEntry."Field 4" := StrFiller4Txt(COPYSTR(FORMAT(TmpSalesLine."Cross-Reference No. of Vendor"),1,5),' ',14);
+            EDIEntry."Field 5" := '0';
+            EDIEntry."Field 6" := '00';
+            EDIEntry."Field 7" := StrFiller4Dec(QtyToReceive,'0',5) + '000';
+            EDIEntry."Field 8" := StrFiller4Txt('',' ',14)
+          END;
+        END;//CASE
+        NbrOfCNUT_Lot += 1;
+      END;
+      EDIEntry.INSERT;
+    END;
+
+    PROCEDURE GetNewEDILotNo4FileName@1180250010(EDILog@1180250001 : Record 50001) : Code[10];
+    VAR
+      EDISetup@1180250006 : Record 50000;
+      NoSeriesMgt@1180250007 : Codeunit 396;
+      EDILotNos@1180250005 : Code[10];
+      xEDILotNos@1180250004 : Code[10];
+      EDILotNo@1180250003 : Code[10];
+      xEDILotNo@1180250002 : Code[10];
+    BEGIN
+      EDISetup.GET(EDILog."EDI Code");
+      EDISetup.TESTFIELD("EDI Lot Nos.");
+
+      CLEAR(EDILotNos);
+      EDILotNo := '';
+      xEDILotNos := EDISetup."EDI Lot Nos.";
+      CLEAR(NoSeriesMgt);
+      NoSeriesMgt.InitSeries(EDISetup."EDI Lot Nos.",xEDILotNos,TODAY,EDILotNo,EDILotNos);
+      xEDILotNos := EDISetup."EDI Lot Nos.";
+      EXIT(EDILotNo);
+    END;
+
+    PROCEDURE FormatPhoneNo@1180250006(PhoneNo@1180250001 : Text[30]) NewPhoneNo : Text[30];
+    VAR
+      LenPhoneNo@1180250002 : Integer;
+      CurrPos@1180250003 : Integer;
+      NoInTxt@1180250004 : Text[1];
+    BEGIN
+      LenPhoneNo := STRLEN(PhoneNo);
+      FOR CurrPos := 1 TO LenPhoneNo DO BEGIN
+        NoInTxt := COPYSTR(PhoneNo,CurrPos,1);
+        IF NoInTxt IN ['0','1','2','3','4','5','6','7','8','9'] THEN
+          NewPhoneNo := NewPhoneNo + NoInTxt;
+      END;
+    END;
+
+    PROCEDURE CalcAvailability@18(VAR ForTmpSalesLine@1000 : Record 37) : Decimal;
+    VAR
+      Item@1180250002 : Record 27;
+      AvailableToPromise@1001 : Codeunit 5790;
+      GrossRequirement@1002 : Decimal;
+      ScheduledReceipt@1003 : Decimal;
+      PeriodType@1006 : 'Day,Week,Month,Quarter,Year';
+      AvailabilityDate@1004 : Date;
+      LookaheadDateformula@1005 : DateFormula;
+      Found@1180250001 : Boolean;
+    BEGIN
+      WITH Item DO BEGIN
+        IF (ForTmpSalesLine.Type <> ForTmpSalesLine.Type::Item) OR (ForTmpSalesLine."No." = '') THEN
+          Found := FALSE;
+        IF ForTmpSalesLine."No." <> "No." THEN
+        // ACBDU 061213D.Begin
+        //  GET(ForTmpSalesLine."No.");
+        //Found := TRUE;
+          Found := GET(ForTmpSalesLine."No.")
+        ELSE
+          Found := FALSE;
+        // ACBDU 061213D.End
+      END;
+
+      IF Found THEN BEGIN
+        IF ForTmpSalesLine."Shipment Date" <> 0D THEN
+          AvailabilityDate := ForTmpSalesLine."Shipment Date"
+        ELSE
+          AvailabilityDate := WORKDATE;
+
+        Item.RESET;
+        Item.SETRANGE("Date Filter",0D,AvailabilityDate);
+        Item.SETRANGE("Variant Filter",ForTmpSalesLine."Variant Code");
+        Item.SETRANGE("Location Filter",ForTmpSalesLine."Location Code");
+        Item.SETRANGE("Drop Shipment Filter",FALSE);
+
+        EXIT(
+          AvailableToPromise.QtyAvailabletoPromise(
+            Item,
+            GrossRequirement,
+            ScheduledReceipt,
+            AvailabilityDate,
+            PeriodType,
+            LookaheadDateformula));
+      END;
+    END;
+
+    PROCEDURE GetNewEDIOrderNoMicro@1180250046(EDILog@1180250001 : Record 50001) : Code[10];
+    VAR
+      EDISetup@1180250006 : Record 50000;
+      NoSeriesMgt@1180250007 : Codeunit 396;
+      EDIMicroOrderNos@1180250005 : Code[10];
+      xEDIMicroOrderNos@1180250004 : Code[10];
+      EDIMicroOrderNo@1180250003 : Code[10];
+      xEDIMicroOrderNo@1180250002 : Code[10];
+    BEGIN
+      EDISetup.GET(EDILog."EDI Code");
+      EDISetup.TESTFIELD("EDI Micro Order Nos.");
+
+      CLEAR(EDIMicroOrderNos);
+      EDIMicroOrderNo := '';
+      xEDIMicroOrderNos := EDISetup."EDI Micro Order Nos.";
+      CLEAR(NoSeriesMgt);
+      NoSeriesMgt.InitSeries(EDISetup."EDI Micro Order Nos.",xEDIMicroOrderNos,TODAY,EDIMicroOrderNo,EDIMicroOrderNos);
+      xEDIMicroOrderNos := EDISetup."EDI Micro Order Nos.";
+      EXIT(EDIMicroOrderNo);
+    END;
+
+    PROCEDURE CreateEDILogEntry@1180250011(EDICode@1180250003 : Code[10];EDILogDT@1180250002 : DateTime;String@1180250001 : Text[250];Status@1180250006 : ' ,OK,Error';EntryNo2@1180250007 : Integer);
+    VAR
+      EDILogEntry@1180250004 : Record 50004;
+      LineNo@1180250005 : Integer;
+    BEGIN
+      EDILogEntry.RESET;
+      EDILogEntry.SETRANGE("EDI Code",EDICode);
+      EDILogEntry.SETRANGE("Treatment Date",EDILogDT);
+      IF EDILogEntry.FINDLAST THEN
+        LineNo := EDILogEntry."Ligne No."
+      ELSE
+        LineNo := 0;
+
+      LineNo += 10000;
+
+      EDILogEntry.INIT;
+      EDILogEntry."EDI Code" := EDICode;
+      EDILogEntry."Treatment Date" := EDILogDT;
+      EDILogEntry."Ligne No." := LineNo;
+      EDILogEntry."Error Text" := String;
+      EDILogEntry.Status := Status;
+      EDILogEntry."Applied E.D.I. Entry No." := EntryNo2;
+      EDILogEntry.INSERT;
+    END;
+
+    BEGIN
+    END.
+  }
+  RDLDATA
+  {
+  }
+}
+

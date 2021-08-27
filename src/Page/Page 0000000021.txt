@@ -2,9 +2,10 @@ OBJECT Page 21 Customer Card
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
-    Version List=NAVW19.00,NAVFR9.00;
+    Date=26/12/18;
+    Time=10:04:40;
+    Modified=Yes;
+    Version List=NAVW19.00,NAVFR9.00,AC2.00;
   }
   PROPERTIES
   {
@@ -69,6 +70,7 @@ OBJECT Page 21 Customer Card
                                  FRA=Comptes bancaires];
                       RunObject=Page 424;
                       RunPageLink=Customer No.=FIELD(No.);
+                      Visible=FALSE;
                       Image=BankAccount }
       { 19      ;2   ;Action    ;
                       CaptionML=[ENU=Direct Debit Mandates;
@@ -81,6 +83,7 @@ OBJECT Page 21 Customer Card
                                  FRA=&Adresses destinataire];
                       RunObject=Page 301;
                       RunPageLink=Customer No.=FIELD(No.);
+                      Visible=FALSE;
                       Image=ShipAddress }
       { 14      ;2   ;Action    ;
                       AccessByPermission=TableData 5050=R;
@@ -97,6 +100,7 @@ OBJECT Page 21 Customer Card
                       RunObject=Page 10875;
                       RunPageLink=Account Type=CONST(Customer),
                                   Account No.=FIELD(No.);
+                      Visible=FALSE;
                       Image=Addresses }
       { 94      ;2   ;Action    ;
                       CaptionML=[ENU=Cross Re&ferences;
@@ -143,6 +147,14 @@ OBJECT Page 21 Customer Card
                                  PAGE.RUNMODAL(PAGE::"Customer Report Selections",CustomReportSelection);
                                END;
                                 }
+      { 1000000005;2 ;Action    ;
+                      Name=EDI Add. Info Setup;
+                      CaptionML=[ENU=EDI Add. Info Setup;
+                                 FRA=ParamÇtrage champs add. EDI];
+                      RunObject=Page 50019;
+                      RunPageView=WHERE(Table No.=CONST(36));
+                      RunPageLink=Code=FIELD(No.);
+                      Image=Setup }
       { 31      ;1   ;ActionGroup;
                       Name=ActionGroupCRM;
                       CaptionML=[ENU=Dynamics CRM;
@@ -259,6 +271,7 @@ OBJECT Page 21 Customer Card
                       RunPageLink=No.=FIELD(No.),
                                   Global Dimension 1 Filter=FIELD(Global Dimension 1 Filter),
                                   Global Dimension 2 Filter=FIELD(Global Dimension 2 Filter);
+                      Visible=FALSE;
                       Image=Sales }
       { 77      ;2   ;Action    ;
                       CaptionML=[ENU=Entry Statistics;
@@ -268,6 +281,7 @@ OBJECT Page 21 Customer Card
                                   Date Filter=FIELD(Date Filter),
                                   Global Dimension 1 Filter=FIELD(Global Dimension 1 Filter),
                                   Global Dimension 2 Filter=FIELD(Global Dimension 2 Filter);
+                      Visible=FALSE;
                       Image=EntryStatistics }
       { 112     ;2   ;Action    ;
                       CaptionML=[ENU=Statistics by C&urrencies;
@@ -281,6 +295,7 @@ OBJECT Page 21 Customer Card
       { 6500    ;2   ;Action    ;
                       CaptionML=[ENU=Item &Tracking Entries;
                                  FRA=&Ecritures traáabilitÇ];
+                      Visible=FALSE;
                       Image=ItemTrackingLedger;
                       OnAction=VAR
                                  ItemTrackingDocMgt@1000 : Codeunit 6503;
@@ -439,6 +454,7 @@ OBJECT Page 21 Customer Card
                       RunObject=Page 507;
                       RunPageLink=Sell-to Customer No.=FIELD(No.);
                       Promoted=No;
+                      Visible=FALSE;
                       Image=BlanketOrder;
                       PromotedCategory=New;
                       RunPageMode=Create }
@@ -493,6 +509,7 @@ OBJECT Page 21 Customer Card
                       RunObject=Page 5964;
                       RunPageLink=Customer No.=FIELD(No.);
                       Promoted=No;
+                      Visible=FALSE;
                       Image=Quote;
                       PromotedCategory=New;
                       RunPageMode=Create }
@@ -502,6 +519,7 @@ OBJECT Page 21 Customer Card
                       RunObject=Page 5933;
                       RunPageLink=Customer No.=FIELD(No.);
                       Promoted=No;
+                      Visible=FALSE;
                       Image=Invoice;
                       PromotedCategory=New;
                       RunPageMode=Create }
@@ -511,6 +529,7 @@ OBJECT Page 21 Customer Card
                       RunObject=Page 5900;
                       RunPageLink=Customer No.=FIELD(No.);
                       Promoted=No;
+                      Visible=FALSE;
                       Image=Document;
                       PromotedCategory=New;
                       RunPageMode=Create }
@@ -520,6 +539,7 @@ OBJECT Page 21 Customer Card
                       RunObject=Page 5935;
                       RunPageLink=Customer No.=FIELD(No.);
                       Promoted=No;
+                      Visible=FALSE;
                       Image=CreditMemo;
                       PromotedCategory=New;
                       RunPageMode=Create }
@@ -538,6 +558,7 @@ OBJECT Page 21 Customer Card
                       RunObject=Page 446;
                       RunPageLink=Customer No.=FIELD(No.);
                       Promoted=No;
+                      Visible=FALSE;
                       Image=FinChargeMemo;
                       PromotedCategory=New;
                       RunPageMode=Create }
@@ -647,6 +668,7 @@ OBJECT Page 21 Customer Card
                                  FRA=Feuille räglement];
                       RunObject=Page 255;
                       Promoted=Yes;
+                      Visible=FALSE;
                       Image=CashReceiptJournal;
                       PromotedCategory=Process }
       { 1905171704;1 ;Action    ;
@@ -654,8 +676,24 @@ OBJECT Page 21 Customer Card
                                  FRA=Feuille vente];
                       RunObject=Page 253;
                       Promoted=Yes;
+                      Visible=FALSE;
                       Image=Journals;
                       PromotedCategory=Process }
+      { 1000000001;1 ;Action    ;
+                      Name=Duplicate;
+                      CaptionML=[ENU=Duplicate...;
+                                 FRA=Dupliquer...];
+                      Promoted=Yes;
+                      PromotedIsBig=Yes;
+                      Image=Copy;
+                      PromotedCategory=Process;
+                      OnAction=VAR
+                                 BCSystools@1000000000 : Codeunit 50015;
+                               BEGIN
+                                 //BC6>>
+                                 BCSystools.DuplicateCustomer(Rec);
+                               END;
+                                }
       { 1900000006;0 ;ActionContainer;
                       ActionContainerType=Reports }
       { 1906813206;1 ;Action    ;
@@ -663,6 +701,7 @@ OBJECT Page 21 Customer Card
                                  FRA=êcritures clients Çchues];
                       RunObject=Report 106;
                       Promoted=No;
+                      Visible=FALSE;
                       Image=Report;
                       PromotedCategory=Report }
       { 1907586706;1 ;Action    ;
@@ -677,6 +716,7 @@ OBJECT Page 21 Customer Card
                                  FRA=Clients : êcritures ouvertes];
                       RunObject=Report 121;
                       Promoted=Yes;
+                      Visible=FALSE;
                       Image=Report;
                       PromotedCategory=Report }
     }
@@ -704,6 +744,9 @@ OBJECT Page 21 Customer Card
                 SourceExpr=Name;
                 Importance=Promoted;
                 ShowMandatory=TRUE }
+
+    { 1000000003;2;Field  ;
+                SourceExpr="Name 2" }
 
     { 6   ;2   ;Field     ;
                 SourceExpr=Address }
@@ -768,16 +811,48 @@ OBJECT Page 21 Customer Card
                 SourceExpr="Salesperson Code" }
 
     { 64  ;2   ;Field     ;
-                SourceExpr="Responsibility Center" }
+                SourceExpr="Responsibility Center";
+                Visible=FALSE }
 
     { 93  ;2   ;Field     ;
-                SourceExpr="Service Zone Code" }
+                SourceExpr="Service Zone Code";
+                Visible=FALSE }
 
     { 26  ;2   ;Field     ;
                 SourceExpr=Blocked }
 
     { 28  ;2   ;Field     ;
                 SourceExpr="Last Date Modified" }
+
+    { 1180250009;2;Field  ;
+                SourceExpr="Last Date Sending to MAJUSCULE" }
+
+    { 1180250004;2;Field  ;
+                SourceExpr="Bar Code" }
+
+    { 1180250002;2;Field  ;
+                SourceExpr="Dim. Cust. Category Code" }
+
+    { 1000000004;2;Field  ;
+                SourceExpr="Dim. Cust. Grp. Filter" }
+
+    { 1180250014;2;Field  ;
+                SourceExpr="Dim. Cust. Grp. Code" }
+
+    { 1000000000;2;Field  ;
+                SourceExpr="Cost Center Code" }
+
+    { 1180250015;2;Field  ;
+                SourceExpr="Area Code" }
+
+    { 1180250018;2;Field  ;
+                SourceExpr="Grouping Code" }
+
+    { 1180250007;2;Field  ;
+                SourceExpr="Registration No.o" }
+
+    { 1000000007;2;Field  ;
+                SourceExpr="Executing Service Code" }
 
     { 1902768601;1;Group  ;
                 CaptionML=[ENU=Communication;
@@ -799,7 +874,8 @@ OBJECT Page 21 Customer Card
                 SourceExpr="Home Page" }
 
     { 154 ;2   ;Field     ;
-                SourceExpr="IC Partner Code" }
+                SourceExpr="IC Partner Code";
+                Visible=FALSE }
 
     { 23  ;2   ;Field     ;
                 SourceExpr="Document Sending Profile" }
@@ -831,7 +907,8 @@ OBJECT Page 21 Customer Card
                 SourceExpr="Invoice Disc. Code" }
 
     { 156 ;2   ;Field     ;
-                SourceExpr="Copy Sell-to Addr. to Qte From" }
+                SourceExpr="Copy Sell-to Addr. to Qte From";
+                Visible=FALSE }
 
     { 70  ;2   ;Field     ;
                 SourceExpr="Gen. Bus. Posting Group";
@@ -862,7 +939,26 @@ OBJECT Page 21 Customer Card
                 SourceExpr="Prices Including VAT" }
 
     { 160 ;2   ;Field     ;
-                SourceExpr="Prepayment %" }
+                SourceExpr="Prepayment %";
+                Visible=FALSE }
+
+    { 1180250005;2;Field  ;
+                SourceExpr="Direct Inv. Posted" }
+
+    { 1180250011;2;Field  ;
+                SourceExpr="Auto. Post Invoice" }
+
+    { 1180250012;2;Field  ;
+                SourceExpr="Inv./Cr Memo Type" }
+
+    { 1180250013;2;Field  ;
+                SourceExpr="Automatic Sending" }
+
+    { 1180250016;2;Field  ;
+                SourceExpr="Validated by" }
+
+    { 1000000002;2;Field  ;
+                SourceExpr="Data Flow Code" }
 
     { 1901677601;1;Group  ;
                 CaptionML=[ENU=Payments;
@@ -889,7 +985,8 @@ OBJECT Page 21 Customer Card
 
     { 52  ;2   ;Field     ;
                 SourceExpr="Fin. Charge Terms Code";
-                Importance=Promoted }
+                Importance=Promoted;
+                Visible=FALSE }
 
     { 3   ;2   ;Field     ;
                 SourceExpr="Cash Flow Payment Terms Code" }
@@ -906,6 +1003,7 @@ OBJECT Page 21 Customer Card
     { 1120004;2;Field     ;
                 Name=Payment Balance (LCY);
                 SourceExpr="Balance (LCY)";
+                Visible=FALSE;
                 OnDrillDown=VAR
                               CustLedgEntry@1120000 : Record 21;
                               DtldCustLedgEntry@1120001 : Record 379;
@@ -919,13 +1017,18 @@ OBJECT Page 21 Customer Card
                              }
 
     { 1120006;2;Field     ;
-                SourceExpr="Payment in progress (LCY)" }
+                SourceExpr="Payment in progress (LCY)";
+                Visible=FALSE }
 
     { 1120008;2;Field     ;
                 CaptionML=[ENU=Net amount (LCY);
                            FRA=Montant net DS];
                 SourceExpr="Balance (LCY)" - "Payment in progress (LCY)";
+                Visible=FALSE;
                 Editable=FALSE }
+
+    { 1180250010;2;Field  ;
+                SourceExpr="Bank Acc. No. for Cash Receipt" }
 
     { 25  ;2   ;Field     ;
                 SourceExpr="Preferred Bank Account" }
@@ -942,11 +1045,13 @@ OBJECT Page 21 Customer Card
                 SourceExpr="Combine Shipments" }
 
     { 158 ;2   ;Field     ;
-                SourceExpr=Reserve }
+                SourceExpr=Reserve;
+                Visible=FALSE }
 
     { 123 ;2   ;Field     ;
                 SourceExpr="Shipping Advice";
-                Importance=Promoted }
+                Importance=Promoted;
+                Visible=FALSE }
 
     { 30  ;2   ;Field     ;
                 SourceExpr="Shipment Method Code";
@@ -960,17 +1065,20 @@ OBJECT Page 21 Customer Card
                 SourceExpr="Shipping Agent Service Code" }
 
     { 119 ;2   ;Field     ;
-                SourceExpr="Shipping Time" }
+                SourceExpr="Shipping Time";
+                Visible=FALSE }
 
     { 141 ;2   ;Field     ;
                 DrillDown=No;
-                SourceExpr="Base Calendar Code" }
+                SourceExpr="Base Calendar Code";
+                Visible=FALSE }
 
     { 146 ;2   ;Field     ;
                 Name=Customized Calendar;
                 CaptionML=[ENU=Customized Calendar;
                            FRA=Calendrier personnalisÇ];
                 SourceExpr=CalendarMgmt.CustomizedCalendarExistText(CustomizedCalendar."Source Type"::Customer,"No.",'',"Base Calendar Code");
+                Visible=FALSE;
                 Editable=FALSE;
                 OnDrillDown=BEGIN
                               CurrPage.SAVERECORD;
@@ -979,16 +1087,33 @@ OBJECT Page 21 Customer Card
                             END;
                              }
 
+    { 1180250003;2;Field  ;
+                SourceExpr="Dim. Shipping Method Code" }
+
+    { 1180250001;2;Field  ;
+                SourceExpr="Dim. Selling Point Code" }
+
+    { 1180250008;2;Field  ;
+                SourceExpr="Ship. Agent Instruction Line" }
+
+    { 1180250006;2;Field  ;
+                SourceExpr="Ship. Agent Instruction Line 2" }
+
+    { 1000000006;2;Field  ;
+                SourceExpr="Use Shipment Address" }
+
     { 1907468901;1;Group  ;
                 CaptionML=[ENU=Foreign Trade;
                            FRA=International] }
 
     { 67  ;2   ;Field     ;
                 SourceExpr="Currency Code";
-                Importance=Promoted }
+                Importance=Promoted;
+                Visible=FALSE }
 
     { 66  ;2   ;Field     ;
-                SourceExpr="Language Code" }
+                SourceExpr="Language Code";
+                Visible=FALSE }
 
     { 1900000007;0;Container;
                 ContainerType=FactBoxArea }
@@ -1128,6 +1253,11 @@ OBJECT Page 21 Customer Card
     END;
 
     BEGIN
+    {
+      AC1.00 Ajout Field "Bar Code" "Dim. Shipping Method Filter" "Dim. Cust. Category Filter" "Dim. Shipping Method Code"
+                         "Direct Inv. Posted"
+                         "Dim. Cust. Category Code" "Dim. Selling Point Code"
+    }
     END.
   }
 }

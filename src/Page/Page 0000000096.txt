@@ -2,9 +2,10 @@ OBJECT Page 96 Sales Cr. Memo Subform
 {
   OBJECT-PROPERTIES
   {
-    Date=22/12/15;
-    Time=12:00:00;
-    Version List=NAVW19.00.00.44365;
+    Date=03/04/18;
+    Time=13:27:52;
+    Modified=Yes;
+    Version List=NAVW19.00.00.44365,AB6.TAH.001,AB6.JME.001,ALDA;
   }
   PROPERTIES
   {
@@ -109,6 +110,7 @@ OBJECT Page 96 Sales Cr. Memo Subform
       { 1903193004;3 ;Action    ;
                       CaptionML=[ENU=Variant;
                                  FRA=Variante];
+                      Visible=FALSE;
                       Image=ItemVariant;
                       OnAction=BEGIN
                                  ItemAvailFormsMgt.ShowItemAvailFromSalesLine(Rec,ItemAvailFormsMgt.ByVariant)
@@ -163,6 +165,7 @@ OBJECT Page 96 Sales Cr. Memo Subform
                       ShortCutKey=Shift+Ctrl+I;
                       CaptionML=[ENU=Item &Tracking Lines;
                                  FRA=Lignes &tra‡abilit‚];
+                      Visible=FALSE;
                       Image=ItemTrackingLines;
                       OnAction=BEGIN
                                  OpenItemTrackingLines;
@@ -214,7 +217,6 @@ OBJECT Page 96 Sales Cr. Memo Subform
 
     { 34  ;2   ;Field     ;
                 SourceExpr="Cross-Reference No.";
-                Visible=FALSE;
                 OnValidate=BEGIN
                              CrossReferenceNoOnAfterValidat;
                              NoOnAfterValidate;
@@ -226,6 +228,12 @@ OBJECT Page 96 Sales Cr. Memo Subform
                            NoOnAfterValidate;
                          END;
                           }
+
+    { 1000000001;2;Field  ;
+                SourceExpr="Cross-Reference No. of Vendor" }
+
+    { 1180250004;2;Field  ;
+                SourceExpr="HS Code" }
 
     { 46  ;2   ;Field     ;
                 SourceExpr="IC Partner Code";
@@ -332,6 +340,12 @@ OBJECT Page 96 Sales Cr. Memo Subform
                            END;
                             }
 
+    { 1180250001;2;Field  ;
+                SourceExpr="Ecotaxe Unitaire" }
+
+    { 1180250002;2;Field  ;
+                SourceExpr="Montant Ecotaxe" }
+
     { 16  ;2   ;Field     ;
                 BlankZero=Yes;
                 SourceExpr="Line Discount %";
@@ -363,6 +377,7 @@ OBJECT Page 96 Sales Cr. Memo Subform
     { 52  ;2   ;Field     ;
                 BlankZero=Yes;
                 SourceExpr="Qty. to Assign";
+                Visible=FALSE;
                 OnDrillDown=BEGIN
                               CurrPage.SAVERECORD;
                               ShowItemChargeAssgnt;
@@ -373,6 +388,7 @@ OBJECT Page 96 Sales Cr. Memo Subform
     { 60  ;2   ;Field     ;
                 BlankZero=Yes;
                 SourceExpr="Qty. Assigned";
+                Visible=FALSE;
                 OnDrillDown=BEGIN
                               CurrPage.SAVERECORD;
                               ShowItemChargeAssgnt;
@@ -415,6 +431,12 @@ OBJECT Page 96 Sales Cr. Memo Subform
     { 48  ;2   ;Field     ;
                 SourceExpr="Appl.-to Item Entry";
                 Visible=FALSE }
+
+    { 1000000000;2;Field  ;
+                SourceExpr="Vendor No. for EDI Sending" }
+
+    { 1180250003;2;Field  ;
+                SourceExpr="External Line No." }
 
     { 23  ;2   ;Field     ;
                 SourceExpr="Deferral Code";
@@ -500,6 +522,9 @@ OBJECT Page 96 Sales Cr. Memo Subform
                              ValidateShortcutDimCode(8,ShortcutDimCode[8]);
                            END;
                             }
+
+    { 1000000002;2;Field  ;
+                SourceExpr="Line No." }
 
     { 39  ;1   ;Group     ;
                 GroupType=Group }

@@ -4,7 +4,8 @@ OBJECT Codeunit 5895 Inventory Adjustment
   {
     Date=23/10/15;
     Time=12:00:00;
-    Version List=NAVW19.00.00.43402;
+    Modified=Yes;
+    Version List=NAVW19.00.00.43402,AC.BLI.NAS;
   }
   PROPERTIES
   {
@@ -209,7 +210,6 @@ OBJECT Codeunit 5895 Inventory Adjustment
       AppliedQty@1001 : Decimal;
     BEGIN
       UpDateWindow(WindowAdjmtLevel,WindowItem,Text007,WindowFWLevel,WindowEntry,0);
-
       WITH ItemLedgEntry DO
         IF AppliedEntryToAdjustExists(Item."No.") THEN BEGIN
           CopyILEToILE(ItemLedgEntry,TempItemLedgEntry);
@@ -217,7 +217,6 @@ OBJECT Codeunit 5895 Inventory Adjustment
           REPEAT
             GET(TempItemLedgEntry."Entry No.");
             UpDateWindow(WindowAdjmtLevel,WindowItem,WindowAdjust,WindowFWLevel,"Entry No.",0);
-
             RndgResidualBuf.AddAdjustedCost("Entry No.",0,0,"Completely Invoiced");
 
             AppliedQty := ForwardAppliedCost(ItemLedgEntry,FALSE,TempAvgCostAdjmtEntryPoint);
@@ -1890,36 +1889,45 @@ OBJECT Codeunit 5895 Inventory Adjustment
 
     LOCAL PROCEDURE OpenWindow@59();
     BEGIN
-      Window.OPEN(
-        Text000 +
-        '#1########################\\' +
-        Text001 +
-        Text003 +
-        Text004 +
+      //AC.BLI.NAS-->
+      IF GUIALLOWED THEN BEGIN
+        Window.OPEN(
+          Text000 +
+          '#1########################\\' +
+          Text001 +
+          Text003 +
+          Text004 +
         Text005 +
         Text006);
-      WindowIsOpen := TRUE;
+        WindowIsOpen := TRUE;
+      END
+      //<--AC.BLI.NAS
     END;
 
     LOCAL PROCEDURE UpDateWindow@31(NewWindowAdjmtLevel@1004 : Integer;NewWindowItem@1003 : Code[20];NewWindowAdjust@1001 : Text[20];NewWindowFWLevel@1000 : Integer;NewWindowEntry@1002 : Integer;NewWindowOutbndEntry@1005 : Integer);
     BEGIN
-      WindowAdjmtLevel := NewWindowAdjmtLevel;
-      WindowItem := NewWindowItem;
-      WindowAdjust := NewWindowAdjust;
-      WindowFWLevel := NewWindowFWLevel;
-      WindowEntry := NewWindowEntry;
+      //<--AC.BLI.NAS
+      IF GUIALLOWED THEN BEGIN
+
+        WindowAdjmtLevel := NewWindowAdjmtLevel;
+        WindowItem := NewWindowItem;
+        WindowAdjust := NewWindowAdjust;
+        WindowFWLevel := NewWindowFWLevel;
+        WindowEntry := NewWindowEntry;
       WindowOutbndEntry := NewWindowOutbndEntry;
 
-      IF IsTimeForUpdate THEN BEGIN
-        IF NOT WindowIsOpen THEN
-          OpenWindow;
+        IF IsTimeForUpdate THEN BEGIN
+          IF NOT WindowIsOpen THEN
+            OpenWindow;
         Window.UPDATE(1,STRSUBSTNO(Text002,TempInvtAdjmtBuf.FIELDCAPTION("Item No."),WindowItem));
-        Window.UPDATE(2,WindowAdjmtLevel);
-        Window.UPDATE(3,WindowAdjust);
-        Window.UPDATE(4,WindowFWLevel);
-        Window.UPDATE(5,WindowEntry);
+          Window.UPDATE(2,WindowAdjmtLevel);
+          Window.UPDATE(3,WindowAdjust);
+          Window.UPDATE(4,WindowFWLevel);
+          Window.UPDATE(5,WindowEntry);
         Window.UPDATE(6,WindowOutbndEntry);
-      END;
+        END;
+      END
+      //<--AC.BLI.NAS
     END;
 
     LOCAL PROCEDURE IsTimeForUpdate@69() : Boolean;
@@ -2346,6 +2354,10 @@ OBJECT Codeunit 5895 Inventory Adjustment
     END;
 
     BEGIN
+    {
+      AC.BLI.NAS
+        -Ajustement pour execution via NAS.
+    }
     END.
   }
 }

@@ -1,0 +1,664 @@
+OBJECT Report 50056 Batch Create EDI SalesInv.test
+{
+  OBJECT-PROPERTIES
+  {
+    Date=28/03/19;
+    Time=09:50:43;
+    Modified=Yes;
+    Version List=AC1.00,ALDA,2016;
+  }
+  PROPERTIES
+  {
+    Permissions=TableData 112=rm;
+    CaptionML=[ENU=Batch Create EDI Sales Inv.;
+               FRA=TPL cr�er facture vente EDI];
+    ShowPrintStatus=No;
+    ProcessingOnly=Yes;
+    OnInitReport=BEGIN
+                   GLSetup.GET();
+                   CompanyInfo.GET();
+                 END;
+
+    OnPreReport=BEGIN
+                  IF GUIALLOWED THEN
+                    Window.OPEN(Text000);
+                END;
+
+    OnPostReport=BEGIN
+                   IF GUIALLOWED THEN
+                     Window.CLOSE;
+                 END;
+
+    UseRequestPage=Yes;
+  }
+  DATASET
+  {
+    { 5290;    ;DataItem;                    ;
+               DataItemTable=Table50001;
+               MaxIteration=1;
+               OnPreDataItem=BEGIN
+                               EDIEntry.RESET;
+                               IF EDIEntry.FINDLAST THEN
+                                 EntryNo := EDIEntry."Entry No."
+                               ELSE
+                                 EntryNo := 1;
+
+                               CompanyInfo.TESTFIELD("Follower No. for CEA");
+                             END;
+
+               OnAfterGetRecord=BEGIN
+                                  EDISetup.RESET;
+                                  EDISetup.GET(EDICode); //GET("EDI Code");
+                                  EDISetup.TESTFIELD("Bill-to Customer Filter");
+                                END;
+                                 }
+
+    { 5291;    ;DataItem;                    ;
+               DataItemTable=Table112;
+               DataItemTableView=SORTING(No.)
+                                 WHERE(Exported=CONST(No),
+                                       Amount=FILTER(<>0));
+               OnPreDataItem=BEGIN
+
+                               SETRANGE("No.",SalesInvoiceHeaderNo);
+
+                               IF EDISetup."Bill-to Customer Filter" <> '' THEN
+                                 SETFILTER("Bill-to Customer No.",EDISetup."Bill-to Customer Filter");
+                             END;
+
+               OnAfterGetRecord=BEGIN
+                                  CALCFIELDS(Amount,"Amount Including VAT");
+
+                                  ShipmentInvoiced.RESET;
+                                  ShipmentInvoiced.SETCURRENTKEY("Invoice No.","Invoice Line No.","Shipment No.","Shipment Line No.");
+                                  ShipmentInvoiced.SETRANGE("Invoice No.","No.");
+                                  IF NOT ShipmentInvoiced.FINDFIRST THEN
+                                    ShipmentInvoiced.INIT;
+
+                                  IF NOT ShipHeader.GET(ShipmentInvoiced."Shipment No.") THEN
+                                    ShipHeader.INIT;
+
+                                  IF "Order Date" = 0D THEN
+                                    "Order Date" := SalesHeader."Order Date";
+                                  IF "Order No." = '' THEN
+                                  "Order No." := SalesHeader."No.";
+                                  IF "External Document No." = '' THEN
+                                    "External Document No." := SalesHeader."External Document No.";
+
+                                  TempVATAmountLine.RESET;
+                                  TempVATAmountLine.DELETEALL;
+
+                                  SalesInvLine.RESET;
+                                  SalesInvLine.SETRANGE("Document No.","No.");
+                                  SalesInvLine.FINDSET;
+                                  SalesInvLine.CalcVATAmountLines("Sales Invoice Header",TempVATAmountLine);
+
+                                  TempVATAmountLine.SETFILTER("VAT %",'<>%1',0);
+                                  IF TempVATAmountLine.FINDSET(FALSE,FALSE) THEN
+                                    ExemptTax := FALSE
+                                  ELSE
+                                    ExemptTax := TRUE;
+
+                                  IF "Sales Invoice Header"."Currency Code" = '' THEN
+                                    CurrCode := GLSetup."LCY Code"
+                                  ELSE
+                                    CurrCode := "Sales Invoice Header"."Currency Code";
+
+                                  IF NOT PaymentMethod.GET("Payment Method Code") THEN
+                                    PaymentMethod.INIT;
+                                  PaymentMethod.TESTFIELD("Code for EDI (EDICOT)");
+
+                                  IF SalesHeader.GET(SalesHeader."Document Type"::Order,ShipHeader."Order No.") THEN
+                                    IF "Order Date" = 0D THEN
+                                      "Order Date" := SalesHeader."Order Date";
+                                    IF "Order No." = '' THEN
+                                    "Order No." := SalesHeader."No.";
+                                    IF "External Document No." = '' THEN
+                                      "External Document No." := SalesHeader."External Document No."
+                                  ELSE BEGIN
+                                    SalesHeader.RESET;
+                                    SalesHeader.SETRANGE("Order Reference Customer","Order Reference Customer");
+                                    IF SalesHeader.FINDFIRST THEN BEGIN
+                                      IF "Order Date" = 0D THEN
+                                        "Order Date" := SalesHeader."Order Date";
+                                      IF "Order No." = '' THEN
+                                      "Order No." := SalesHeader."No.";
+                                      IF "External Document No." = '' THEN
+                                        "External Document No." := SalesHeader."External Document No."
+                                    END;
+                                  END;
+
+                                  Sell2Cust.GET("Sell-to Customer No.");
+                                  Bill2Cust.GET("Bill-to Customer No.");
+
+                                  CreateEDIEntry('BOF');
+
+                                  CreateEDIEntry('ENTMS');
+                                  CreateEDIEntry('DTLV1');
+                                  CreateEDIEntry('TXLB1');
+                                  //CreateEDIEntry('TXLB2');
+                                  CreateEDIEntry('TXLB3');
+                                  //CreateEDIEntry('TXLB4');
+                                  CreateEDIEntry('TXLB5');
+                                  //CreateEDIEntry('TXLB6');
+                                  CreateEDIEntry('PARTNSE');
+                                  CreateEDIEntry('PARTNBY');
+                                  CreateEDIEntry('PARTNIV');
+                                  CreateEDIEntry('CDPAI');
+                                  //CreateEDIEntry('RDCH1');
+
+                                  SalesInvHdr := "Sales Invoice Header";
+                                END;
+
+               ReqFilterFields=No.;
+               CalcFields=Amount }
+
+    { 5297;1   ;DataItem;                    ;
+               DataItemTable=Table113;
+               DataItemTableView=SORTING(Document No.,Line No.)
+                                 ORDER(Ascending)
+                                 WHERE(Type=FILTER(Item),
+                                       Quantity=FILTER(<>0));
+               OnPreDataItem=BEGIN
+                               VATAmountLine.DELETEALL;
+                               CurrReport.CREATETOTALS("Line Amount",Amount,"Amount Including VAT","Inv. Discount Amount");
+
+                               IF ISSERVICETIER THEN BEGIN
+                                 GetTotalLineAmount := 0;
+                                 GetTotalInvDiscAmount := 0;
+                                 GetTotalAmount := 0;
+                                 GetTotalAmountIncVAT := 0;
+                               END;
+                             END;
+
+               OnAfterGetRecord=BEGIN
+                                  ItemNoOrCrossRefNo := '';
+                                  IF "Cross-Reference No. of Vendor" <> '' THEN BEGIN
+                                    ItemNoOrCrossRefNo := "Cross-Reference No. of Vendor";
+                                    IF ItemNoOrCrossRefNo = '' THEN BEGIN
+                                      ItemCrossRef.RESET;
+                                      ItemCrossRef.SETCURRENTKEY("Cross-Reference Type","Cross-Reference Type No.");
+                                      ItemCrossRef.SETRANGE("Cross-Reference Type",ItemCrossRef."Cross-Reference Type"::Vendor);
+                                      ItemCrossRef.SETRANGE("Cross-Reference Type No.","Cross-Reference No. of Vendor");
+                                      IF NOT ItemCrossRef.FINDFIRST THEN
+                                        ItemCrossRef.INIT;
+                                      ItemNoOrCrossRefNo := ItemCrossRef."Cross-Reference No.";
+                                      IF ItemNoOrCrossRefNo = '' THEN
+                                        ItemNoOrCrossRefNo := "Cross-Reference No.";
+                                    END;
+                                  END ELSE
+                                    ItemNoOrCrossRefNo := "No.";
+
+                                  VATAmountLine.INIT;
+                                  VATAmountLine."VAT Identifier" := "VAT Identifier";
+                                  VATAmountLine."VAT Calculation Type" := "VAT Calculation Type";
+                                  VATAmountLine."Tax Group Code" := "Tax Group Code";
+                                  VATAmountLine."VAT %" := "VAT %";
+                                  VATAmountLine."VAT Base" := Amount;
+                                  VATAmountLine."Amount Including VAT" := "Amount Including VAT";
+                                  VATAmountLine."Line Amount" := "Line Amount";
+                                  IF "Allow Invoice Disc." THEN
+                                    VATAmountLine."Inv. Disc. Base Amount" := "Line Amount";
+                                  VATAmountLine."Invoice Discount Amount" := "Inv. Discount Amount";
+                                  VATAmountLine.InsertLine;
+
+                                  IF ISSERVICETIER THEN BEGIN
+                                    TotalSubTotal += "Line Amount";
+                                    TotalInvoiceDiscountAmount -= "Inv. Discount Amount";
+                                    TotalAmount += Amount;
+                                    TotalAmountVAT += "Amount Including VAT" - Amount;
+                                    TotalAmountInclVAT += "Amount Including VAT";
+                                    TotalPaymentDiscountOnVAT += -("Line Amount" - "Inv. Discount Amount" - "Amount Including VAT");
+                                  END;
+
+                                  CreateEDIEntry('LINCD');
+                                  //CreateEDIEntry('DTLV2');
+                                  CreateEDIEntry('REF02');
+                                  CreateEDIEntry('MTPX1');
+                                  //CreateEDIEntry('RDCH2');
+                                END;
+
+               DataItemLink=Document No.=FIELD(No.) }
+
+    { 5293;1   ;DataItem;Total               ;
+               DataItemTable=Table2000000026;
+               DataItemTableView=SORTING(Number)
+                                 ORDER(Ascending)
+                                 WHERE(Number=CONST(1));
+               MaxIteration=1;
+               OnPreDataItem=BEGIN
+                               VATAmountLine.CALCSUMS("VAT Amount");
+                               TotalVatAmount := VATAmountLine."VAT Amount";
+                             END;
+
+               OnAfterGetRecord=BEGIN
+                                  CreateEDIEntry('ENDOS');
+                                  CreateEDIEntry('');
+                                  CreateEDIEntry('');
+                                  CreateEDIEntry('');
+                                  CreateEDIEntry('');
+                                  CreateEDIEntry('');
+                                END;
+                                 }
+
+    { 5294;1   ;DataItem;VATCounter          ;
+               DataItemTable=Table2000000026;
+               DataItemTableView=SORTING(Number);
+               OnPreDataItem=BEGIN
+                               IF VATAmountLine.GetTotalVATAmount = 0 THEN
+                                 CurrReport.BREAK;
+                               SETRANGE(Number,1,VATAmountLine.COUNT);
+                               CurrReport.CREATETOTALS(
+                                 VATAmountLine."Line Amount",VATAmountLine."Inv. Disc. Base Amount",
+                                 VATAmountLine."Invoice Discount Amount",VATAmountLine."VAT Base",VATAmountLine."VAT Amount");
+                             END;
+
+               OnAfterGetRecord=BEGIN
+                                  VATAmountLine.GetLine(Number);
+                                  CreateEDIEntry('VTLTX');
+                                END;
+                                 }
+
+    { 5298;1   ;DataItem;VatCounterLCY       ;
+               DataItemTable=Table2000000026;
+               DataItemTableView=SORTING(Number);
+               OnPreDataItem=BEGIN
+                               IF (NOT GLSetup."Print VAT specification in LCY") OR
+                                  ("Sales Invoice Header"."Currency Code"  = '') OR
+                                  (VATAmountLine.GetTotalVATAmount = 0) THEN
+                                 CurrReport.BREAK;
+
+                               SETRANGE(Number,1,VATAmountLine.COUNT);
+                               CurrReport.CREATETOTALS(VALVATBaseLCY,VALVATAmountLCY);
+
+                               CurrExchRate.FindCurrency("Sales Invoice Header"."Posting Date","Sales Invoice Header"."Currency Code",1);
+                             END;
+
+               OnAfterGetRecord=BEGIN
+                                  VATAmountLine.GetLine(Number);
+
+                                  VALVATBaseLCY := ROUND(VATAmountLine."VAT Base" / "Sales Invoice Header"."Currency Factor");
+                                  VALVATAmountLCY :=ROUND(VATAmountLine."VAT Amount" / "Sales Invoice Header"."Currency Factor");
+
+                                  CreateEDIEntry('VTLTX');
+                                END;
+                                 }
+
+    { 5296;1   ;DataItem;Total2              ;
+               DataItemTable=Table2000000026;
+               DataItemTableView=SORTING(Number)
+                                 WHERE(Number=CONST(1));
+               MaxIteration=1;
+               OnAfterGetRecord=BEGIN
+                                  //CreateEDIEntry('RDCH3');
+
+                                  CreateEDIEntry('EOF');
+                                END;
+                                 }
+
+  }
+  REQUESTPAGE
+  {
+    PROPERTIES
+    {
+    }
+    CONTROLS
+    {
+    }
+  }
+  LABELS
+  {
+  }
+  CODE
+  {
+    VAR
+      GLSetup@1180250012 : Record 98;
+      EDISetup@1180250034 : Record 50000;
+      CompanyInfo@1180250004 : Record 79;
+      PaymentMethod@1180250013 : Record 289;
+      VATAmountLine@1180250018 : TEMPORARY Record 290;
+      CurrExchRate@1180250031 : Record 330;
+      Sell2Cust@1180250014 : Record 18;
+      Bill2Cust@1180250015 : Record 18;
+      ItemCrossRef@1180250016 : Record 5717;
+      SalesHeader@1180250035 : Record 36;
+      ShipHeader@1180250007 : Record 110;
+      SalesInvLine@1180250008 : Record 113;
+      SalesInvHdr@1180250033 : Record 112;
+      ShipmentInvoiced@1180250006 : Record 10825;
+      TempVATAmountLine@1180250009 : TEMPORARY Record 290;
+      EDIEntry@1180250003 : Record 50002;
+      Window@1180250001 : Dialog;
+      Text000@1180250002 : TextConst 'ENU=Batch in process...;FRA=Traitement en cours...';
+      EntryNo@1180250005 : Integer;
+      ExemptTax@1180250010 : Boolean;
+      CurrCode@1180250011 : Code[10];
+      ItemNoOrCrossRefNo@1180250036 : Code[20];
+      GetTotalLineAmount@1180250022 : Decimal;
+      GetTotalInvDiscAmount@1180250021 : Decimal;
+      GetTotalAmount@1180250020 : Decimal;
+      GetTotalAmountIncVAT@1180250019 : Decimal;
+      TotalSubTotal@1180250028 : Decimal;
+      TotalAmount@1180250027 : Decimal;
+      TotalAmountInclVAT@1180250026 : Decimal;
+      TotalAmountVAT@1180250025 : Decimal;
+      TotalInvoiceDiscountAmount@1180250024 : Decimal;
+      TotalPaymentDiscountOnVAT@1180250023 : Decimal;
+      VALVATBaseLCY@1180250030 : Decimal;
+      VALVATAmountLCY@1180250029 : Decimal;
+      TotalVatAmount@1180250032 : Decimal;
+      BankAccount@1000000000 : Record 270;
+      SalesInvoiceHeaderNo@1000000001 : Code[20];
+      EDICode@1000000002 : Code[20];
+
+    PROCEDURE InitReport@1180250001(EDICodeFrom@1180250002 : Code[10];EDILogDTfrom@1180250001 : DateTime);
+    BEGIN
+    END;
+
+    PROCEDURE CreateEDIEntry@1180250008(LabelCode@1180250001 : Code[10]);
+    BEGIN
+      EntryNo += 1;
+      EDIEntry.INIT;
+      EDIEntry."Entry No." := EntryNo;
+      EDIEntry."User ID" := USERID;
+      EDIEntry."Imp./Exp. Date" := "E.D.I. Log"."Treatment Date";
+      EDIEntry."EDI Code" := "E.D.I. Log"."EDI Code";
+      EDIEntry.Error := TRUE;
+      EDIEntry.Handled := FALSE;
+      EDIEntry.INSERT;
+
+      EDIEntry."Field 1" := LabelCode;
+
+      CASE LabelCode OF
+        'BOF','EOF':BEGIN
+          EDIEntry."Field 2" := FORMAT("Sales Invoice Header"."No.");
+        END;
+        'ENTMS':BEGIN
+          EDIEntry."Field 2" := FORMAT(CompanyInfo."Follower No. for CEA");//Code Emetteur
+          EDIEntry."Field 3" := '';//Qualifiant
+          EDIEntry."Field 4" := FORMAT("Sales Invoice Header"."Bill-to Customer No.");//Code destinataire
+          EDIEntry."Field 5" := '';//Qualifiant
+          EDIEntry."Field 6" := 'INVOIC';//Type de message
+          EDIEntry."Field 7" := '380';//Nom du document en code
+          EDIEntry."Field 8" := 'V02P01';//Nom du document
+          EDIEntry."Field 9" := FORMAT("Sales Invoice Header"."No.");//Nø de la facture ou avoir
+          EDIEntry."Field 10" := '9';//Fonction du message en code
+          EDIEntry."Field 11" := FORMAT("Sales Invoice Header"."Posting Date",0,'<Year4><Month,2><Day,2>');//Date de la facture ou avoir
+          EDIEntry."Field 12" := FORMAT("Sales Invoice Header"."External Document No.");//Nø de la commande de r‚f‚rence
+          EDIEntry."Field 13" := FORMAT("Sales Invoice Header"."Order Date",0,'<Year4><Month,2><Day,2>');//Date de la commande de r‚f
+          EDIEntry."Field 14" := FORMAT("Sales Invoice Header"."No.");//Nø de la facture de r‚f‚rence
+          EDIEntry."Field 15" := FORMAT("Sales Invoice Header"."Posting Date",0,'<Year4><Month,2><Day,2>');//Date de la facture de r‚f
+          EDIEntry."Field 16" := '';//Nø de l'avis d'exp‚dition
+          EDIEntry."Field 17" := '';//Date de l'avis d'exp‚dition
+          EDIEntry."Field 18" := FORMAT(ShipHeader."No.");//Nø BL
+          EDIEntry."Field 19" := FORMAT(ShipHeader."Posting Date",0,'<Year4><Month,2><Day,2>');//Date du BL
+          EDIEntry."Field 20" := 'FB';//Condition particuliŠre
+          EDIEntry."Field 21" := 'VAT';//Type de taxe
+          EDIEntry."Field 22" := 'DEB';//Indication du compte des droits ou taxes ou redevances
+          IF ExemptTax THEN
+            EDIEntry."Field 23" :='E'
+          ELSE
+            EDIEntry."Field 23" := '';//Cat‚gorie des droits ou taxes ou redevance
+          EDIEntry."Field 24" := CurrCode;//Code monnaie de facturation
+          EDIEntry."Field 25" := FORMAT(PaymentMethod."Code for EDI (EDICOT)");//Moyen de paiement
+          //BC6 - MM 21/12/18 >>
+          EDIEntry."Field 26" := FORMAT("Sales Invoice Header".TRS_ID);//Num�ro d'engagement
+          EDIEntry."Field 27" := COPYSTR(FORMAT("Sales Invoice Header"."Executing Service Code"),1,50);//Code service ex�cutant
+          //BC6 - MM 21/12/18 <<
+        END;
+        'DTLV1':BEGIN
+          EDIEntry."Field 2" :=  FORMAT(ShipHeader."Posting Date",0,'<Year4><Month,2><Day,2>');//Date d'exp‚dition
+          EDIEntry."Field 3" := '';//Date r‚elle de livraison
+          EDIEntry."Field 4" := '';//Date d'enlŠvement
+        END;
+        'TXLB1':BEGIN
+          EDIEntry."Field 2" := CompanyInfo.Name;//D‚nomination social
+          EDIEntry."Field 3" := CompanyInfo."Legal Form";//Forme juridique
+          EDIEntry."Field 4" := CompanyInfo."Stock Capital" + FORMAT(GLSetup."LCY Code");//Capital social et devise
+        END;
+        'TXLB2':BEGIN
+          EDIEntry."Field 2" := '';
+        END;
+        'TXLB3':BEGIN
+          EDIEntry."Field 2" := '01';//Informations g‚n‚rales
+        END;
+        'TXLB4':BEGIN
+          EDIEntry."Field 2" := '';
+        END;
+        'TXLB5':BEGIN
+          EDIEntry."Field 2" := 'Penalites de retard 1% par mois';
+          EDIEntry."Field 3" := '';//'INDEMNITE FORFAITAIRE DE 40 EUROS';
+          EDIEntry."Field 4" := '';//'POUR FRAIS DE RECOUVREMENT';
+          EDIEntry."Field 5" := '';
+          EDIEntry."Field 6" := '';
+        END;
+        'TXLB6':BEGIN
+          EDIEntry."Field 2" :='';
+        END;
+        'PARTNSE':BEGIN
+          EDIEntry."Field 2" := COPYSTR(EDIEntry."Field 1",6);//Qualifiant de l'intervenant
+          EDIEntry."Field 1" := COPYSTR(EDIEntry."Field 1",1,5);
+          EDIEntry."Field 3" := 'ALDA';//Code EAN Lieu Fonction du partenaire
+          EDIEntry."Field 4" := CompanyInfo."Registration No.";//Code SIRET du partenaire
+          EDIEntry."Field 5" := UPPERCASE(CompanyInfo.Name);//Nom de l'intervenant (1) - D‚nomination sociale
+          EDIEntry."Field 6" := UPPERCASE(CompanyInfo."Name 2");//Nom de l'intervenant (2) - D‚nomination sociale
+          EDIEntry."Field 7" := '';//Nom de l'intervenant (3) - D‚nomination sociale
+          EDIEntry."Field 8" := '';//Nom de l'intervenant (4) - D‚nomination sociale
+          EDIEntry."Field 9" := '';//Nom de l'intervenant (5) - D‚nomination sociale
+          EDIEntry."Field 10" := UPPERCASE(CompanyInfo.Address);//Ligne adresse (1)
+          EDIEntry."Field 11" := UPPERCASE(CompanyInfo."Address 2");//Ligne adresse (2)
+          EDIEntry."Field 12" := UPPERCASE(CompanyInfo.County);//Ligne adresse (3)
+          EDIEntry."Field 13" := CompanyInfo.City;//Ville
+          EDIEntry."Field 14" := CompanyInfo."Post Code";//Code postal
+          EDIEntry."Field 15" := CompanyInfo."Country/Region Code";//Pays
+          EDIEntry."Field 16" := CompanyInfo."VAT Registration No.";//Num‚ro d'identification … la TVA
+          EDIEntry."Field 17" := 'RCS ' + CompanyInfo."Trade Register";//Num‚ro d'immatriculation au RCS
+          EDIEntry."Field 18" := 'RB';//Identification financiŠre - Qualifiant de l'intervenant
+          //BC6 - MM 26/12/18 >>
+          IF BankAccount.GET(Bill2Cust."Bank Acc. No. for Cash Receipt") THEN BEGIN
+            EDIEntry."Field 19" := BankAccount."Bank Account No.";
+            EDIEntry."Field 22" := UPPERCASE(BankAccount."Bank Branch No.");
+            EDIEntry."Field 23" := FORMAT(BankAccount."Agency Code");
+          END ELSE BEGIN
+            EDIEntry."Field 19" := CompanyInfo."Bank Account No.";//Identification financiŠre - Num‚ro du compte du titulaire
+            EDIEntry."Field 22" := UPPERCASE(CompanyInfo."Bank Name");//Identification financiŠre - Identification du nom de l'‚tablissement
+            EDIEntry."Field 23" := FORMAT(CompanyInfo."Bank Branch No.");//Identification financiŠre - Num‚ro d'agence de l'‚tablissement
+          END;
+          //BC6 - MM 26/12/18 <<
+          EDIEntry."Field 20" := UPPERCASE(CompanyInfo.Name);//Identification financiŠre - Nom du titulaire du compte (1)
+          EDIEntry."Field 21" := UPPERCASE(CompanyInfo."Name 2");//Identification financiŠre - Nom du titulaire du compte (2)
+          EDIEntry."Field 24" := FORMAT(CompanyInfo."Country/Region Code");//Identification financiŠre - Pays
+        END;
+        'PARTNBY':BEGIN
+          EDIEntry."Field 2" := COPYSTR(EDIEntry."Field 1",6);//Qualifiant de l'intervenant
+          EDIEntry."Field 1" := COPYSTR(EDIEntry."Field 1",1,5);
+          EDIEntry."Field 3" := 'CEA';//Code EAN Lieu Fonction du partenaire
+          EDIEntry."Field 4" := Bill2Cust."Registration No.o";//Code SIRET du partenaire
+          EDIEntry."Field 5" := UPPERCASE(Sell2Cust.Name);//Nom de l'intervenant (1) - D‚nomination sociale
+          EDIEntry."Field 6" := UPPERCASE(Sell2Cust."Name 2");//Nom de l'intervenant (2) - D‚nomination sociale
+          EDIEntry."Field 7" := UPPERCASE(Sell2Cust.County);//Nom de l'intervenant (3) - D‚nomination sociale
+          EDIEntry."Field 8" := '';//Nom de l'intervenant (4) - D‚nomination sociale
+          EDIEntry."Field 9" := '';//Nom de l'intervenant (5) - D‚nomination sociale
+          EDIEntry."Field 10" := UPPERCASE(CONVERTSTR(Sell2Cust.Address, '�Z�Z�Z�ZS�', 'aaaaaeeeeo'));//Ligne adresse (1)
+          EDIEntry."Field 11" := UPPERCASE(CONVERTSTR(Sell2Cust."Address 2", '�Z�Z�Z�ZS�', 'aaaaaeeeeo'));//Ligne adresse (2)
+          EDIEntry."Field 12" := UPPERCASE(Sell2Cust.County);//Ligne adresse (3)
+          EDIEntry."Field 13" := UPPERCASE(Sell2Cust.City);//Ville
+          EDIEntry."Field 14" := Sell2Cust."Post Code";//Code postal
+          EDIEntry."Field 15" := Sell2Cust."Country/Region Code";//Pays
+          EDIEntry."Field 16" := Bill2Cust."VAT Registration No.";//Num‚ro d'identification … la TVA
+          EDIEntry."Field 17" := '';//Num‚ro d'immatriculation au RCS
+          EDIEntry."Field 18" := '';//Identification financiŠre - Qualifiant de l'intervenant
+          EDIEntry."Field 19" := '';//Identification financiŠre - Num‚ro du compte du titulaire
+          EDIEntry."Field 20" := '';//Identification financiŠre - Nom du titulaire du compte (1)
+          EDIEntry."Field 21" := '';//Identification financiŠre - Nom du titulaire du compte (2)
+          EDIEntry."Field 22" := '';//Identification financiŠre - Identification du nom de l'‚tablissement
+          EDIEntry."Field 23" := '';//Identification financiŠre - Num‚ro d'agence de l'‚tablissement
+          EDIEntry."Field 24" := '';//Identification financiŠre - Pays
+        END;
+        'PARTNIV':BEGIN
+          EDIEntry."Field 2" := COPYSTR(EDIEntry."Field 1",6);//Qualifiant de l'intervenant
+          EDIEntry."Field 1" := COPYSTR(EDIEntry."Field 1",1,5);
+          EDIEntry."Field 3" := 'CEA';//Code EAN Lieu Fonction du partenaire
+          EDIEntry."Field 4" := Bill2Cust."Registration No.o";//Code SIRET du partenaire
+          EDIEntry."Field 5" := UPPERCASE(Bill2Cust.Name);//Nom de l'intervenant (1) - D‚nomination sociale
+          EDIEntry."Field 6" := UPPERCASE(Bill2Cust."Name 2");//Nom de l'intervenant (2) - D‚nomination sociale
+          EDIEntry."Field 7" := UPPERCASE(Bill2Cust.Contact);//Nom de l'intervenant (3) - D‚nomination sociale
+          EDIEntry."Field 8" := '';//Nom de l'intervenant (4) - D‚nomination sociale
+          EDIEntry."Field 9" := '';//Nom de l'intervenant (5) - D‚nomination sociale
+          EDIEntry."Field 10" := UPPERCASE(CONVERTSTR(Bill2Cust.Address, '�Z�Z�Z�ZS�', 'aaaaaeeeeo'));//Ligne adresse (1)
+          EDIEntry."Field 11" := UPPERCASE(CONVERTSTR(Bill2Cust."Address 2", '�Z�Z�Z�ZS�', 'aaaaaeeeeo'));//Ligne adresse (2)
+          EDIEntry."Field 12" := UPPERCASE(Bill2Cust.County);//Ligne adresse (3)
+          EDIEntry."Field 13" := UPPERCASE(Bill2Cust.City);//Ville
+          EDIEntry."Field 14" := Bill2Cust."Post Code";//Code postal
+          EDIEntry."Field 15" := Bill2Cust."Country/Region Code";//Pays
+          EDIEntry."Field 16" := Bill2Cust."VAT Registration No.";//Num‚ro d'identification … la TVA
+          EDIEntry."Field 17" := '';//Num‚ro d'immatriculation au RCS
+          EDIEntry."Field 18" := '';//Identification financiŠre - Qualifiant de l'intervenant
+          EDIEntry."Field 19" := '';//Identification financiŠre - Num‚ro du compte du titulaire
+          EDIEntry."Field 20" := '';//Identification financiŠre - Nom du titulaire du compte (1)
+          EDIEntry."Field 21" := '';//Identification financiŠre - Nom du titulaire du compte (2)
+          EDIEntry."Field 22" := '';//Identification financiŠre - Identification du nom de l'‚tablissement
+          EDIEntry."Field 23" := '';//Identification financiŠre - Num‚ro d'agence de l'‚tablissement
+          EDIEntry."Field 24" := '';//Identification financiŠre - Pays
+        END;
+        'CDPAI':BEGIN
+          EDIEntry."Field 2" := '03';//Qualifiant des conditions de paiement
+          EDIEntry."Field 3" := FORMAT("Sales Invoice Header"."Due Date",0,'<Year4><Month,2><Day,2>');//Date d'‚ch‚ance du r‚glement
+          EDIEntry."Field 4" := '';//Conditions d'escompte encodables
+          EDIEntry."Field 5" := '';//Nombre de jours (aprŠs la date de facture)
+          EDIEntry."Field 6" := '';//Pourcentage d'escompte
+          EDIEntry."Field 7" := '';//Montant - Valeur escompt‚e
+          EDIEntry."Field 8" := '';//Conditions d'escompte simple
+          EDIEntry."Field 9" := '';//Date limite
+          EDIEntry."Field 10" := '';//Pourcentage d'escompte
+          EDIEntry."Field 11" := '';//Montant - Valeur escompt‚e
+          EDIEntry."Field 12" := '22';//Conditions d'escompte simple
+          EDIEntry."Field 13" := '0';//Pourcentage d'escompte
+          EDIEntry."Field 14" := '';//Conditions d'escompte dites "complexes" (non encodables)
+          EDIEntry."Field 15" := '';//Conditions de p‚nalit‚s (non encodables)
+        END;
+        'RDCH1':BEGIN
+          EDIEntry."Field 2" := '';//Qualifiant de r‚duction ou charge
+          EDIEntry."Field 3" := '';//Num‚ro de r‚duction ou charge
+          EDIEntry."Field 4" := '';//RŠglement, en code
+          EDIEntry."Field 5" := '';//Indicateur de la s‚quence de calcul
+          EDIEntry."Field 6" := '';//Service, en code
+          EDIEntry."Field 7" := '';//Libell‚ de la remise ou charge
+          EDIEntry."Field 8" := '';//Pourcentage de la remise ou charge
+          EDIEntry."Field 9" := '';//Montant de la remise ou charge
+          EDIEntry."Field 10" := '';//Taux de taxe de la remise ou charge
+        END;
+        'LINCD':BEGIN
+          EDIEntry."Field 2" := FORMAT("Sales Invoice Line"."Line No.");//Num‚ro de la ligne de facture
+          EDIEntry."Field 3" := FORMAT(ItemNoOrCrossRefNo);//Code EAN13 Article factur‚
+          EDIEntry."Field 4" := '';//Code Article attribu‚ par l'acheteur
+          EDIEntry."Field 5" := FORMAT(ItemNoOrCrossRefNo);//Code Article du fournisseur
+          EDIEntry."Field 6" := '';//Variante promotionnelle
+          EDIEntry."Field 7" := '';//Num‚ro de s‚rie
+          EDIEntry."Field 8" := 'CU';//Description de l'article, en code (***)
+          EDIEntry."Field 9" := UPPERCASE("Sales Invoice Line".Description);//Description article en clair
+          EDIEntry."Field 10" := UPPERCASE("Sales Invoice Line"."Description 2");//Description article en clair
+          EDIEntry."Field 11" := FORMAT("Sales Invoice Line".Quantity);//Quantit‚ factur‚e
+          EDIEntry."Field 12" := FORMAT("Sales Invoice Line"."Unit of Measure Code");//Unit‚ de mesure de la quantit‚ factur‚e
+          EDIEntry."Field 13" := '';//Nombre d'unit‚s consommateurs dans l'unit‚ de distribution (PCB)
+          EDIEntry."Field 14" := '';//Unit‚ de mesure du PCB
+          EDIEntry."Field 15" := '';//Quantit‚ retourn‚e (Avoir)
+          EDIEntry."Field 16" := '';//Unit‚ de mesure de la quantit‚ retourn‚e
+          EDIEntry."Field 17" := '';//Quantit‚ de marchandises gratuites
+          EDIEntry."Field 18" := '';//Unit‚ de mesure de la quantit‚ gratuite
+        END;
+        'DTLV2':BEGIN
+          EDIEntry."Field 2" := '';//Date d'exp‚dition
+          EDIEntry."Field 3" := '';//Date r‚elle de livraison
+          EDIEntry."Field 4" := '';//Date d'enlŠvement
+        END;
+        'REF02':BEGIN
+          EDIEntry."Field 2" := '';//Nø de l'Aviexp
+          EDIEntry."Field 3" := '';//Date de l'Aviexp
+          EDIEntry."Field 4" := FORMAT(ShipHeader."No.");//Nø du BL
+          EDIEntry."Field 5" := FORMAT(ShipHeader."Posting Date",0,'<Year4><Month,2><Day,2>');//Date du BL
+          EDIEntry."Field 6" := FORMAT("Sales Invoice Header"."External Document No.");//Nø de la Commande
+          EDIEntry."Field 7" := FORMAT("Sales Invoice Header"."Order Date",0,'<Year4><Month,2><Day,2>');//Date de la commande
+          EDIEntry."Field 8" := FORMAT("Sales Invoice Line"."Document No.");//Nø de la facture
+          EDIEntry."Field 9" := FORMAT("Sales Invoice Header"."Posting Date",0,'<Year4><Month,2><Day,2>');//Date de la facture
+          EDIEntry."Field 10" := FORMAT("Sales Invoice Line"."External Line No.");//Nø de tarif des douanes
+        END;
+        'MTPX1':BEGIN
+          EDIEntry."Field 2" := FORMAT("Sales Invoice Line".Amount,0,1);//Montant net HT de la ligne
+          EDIEntry."Field 3" := FORMAT("Sales Invoice Line"."Unit Price",0,1);//Prix net HT pour calcul de l'article
+          EDIEntry."Field 4" := 'DPR';//Qualifiant du type de prix
+          EDIEntry."Field 5" := FORMAT("Sales Invoice Line"."Unit Price",0,1);//Base de prix unitaire
+          EDIEntry."Field 6" := FORMAT("Sales Invoice Line"."Unit of Measure Code");//Unit‚ de mesure de prix
+          EDIEntry."Field 7" := '';//Prix Brut pour calcul de l'article
+          EDIEntry."Field 8" := 'DPR';//Qualifiant du type de prix
+          EDIEntry."Field 9" := FORMAT("Sales Invoice Line"."Unit Price",0,1);//Base de prix unitaire
+          EDIEntry."Field 10" := FORMAT("Sales Invoice Line"."Unit of Measure Code");//Unit‚ de mesure de prix
+          EDIEntry."Field 11" := '';//Prix public TTC pour information
+          EDIEntry."Field 12" := '';//Qualifiant du type de prix
+          EDIEntry."Field 13" := '';//Base de prix unitaire
+          EDIEntry."Field 14" := FORMAT("Sales Invoice Line"."Unit of Measure Code");//Unit‚ de mesure de prix
+          EDIEntry."Field 15" := 'VAT';//Type de taxe
+          EDIEntry."Field 16" := FORMAT("Sales Invoice Line"."VAT %");//Taux de taxe
+        END;
+        'RDCH2':BEGIN
+          EDIEntry."Field 2" := '';//Qualifiant de r‚duction ou charge
+          EDIEntry."Field 3" := '';//Num‚ro de r‚duction ou charge
+          EDIEntry."Field 4" := '';//RŠglement, en code
+          EDIEntry."Field 5" := '';//Indicateur de la s‚quence de calcul
+          EDIEntry."Field 6" := '';//Service, en code (**)
+          EDIEntry."Field 7" := '';//Libell‚ de la remise ou charge
+          EDIEntry."Field 8" := '';//Pourcentage de la remise ou charge
+          EDIEntry."Field 9" := '';//Montant de la remise ou charge
+          EDIEntry."Field 10" := '';//Taux de taxe de la remise ou charge
+        END;
+        'ENDOS':BEGIN
+          EDIEntry."Field 2" := FORMAT("Sales Invoice Header".Amount,0,1);//Montant taxable (Montant HT)
+          EDIEntry."Field 3" := FORMAT("Sales Invoice Header"."Amount Including VAT",0,1);//Montant total (Montant TTC)
+          EDIEntry."Field 4" := FORMAT(TotalVatAmount,0,1);//Montant de la taxe (montant total de la TVA)
+          EDIEntry."Field 5" := '';//Montant d–/montant payable
+          EDIEntry."Field 6" := '';//Acompte
+          EDIEntry."Field 7" := '';//Num‚ro de paiement de l'acompte
+          EDIEntry."Field 8" := '';//Date de l'acompte
+          //BCSYS 231118
+          EDIEntry."Field 9" := FORMAT("Sales Invoice Header"."Amount Including VAT",0,1);//Montant total (Montant TTC) -> net � payer
+          //FIN BCSYS 231118
+        END;
+        'VTLTX':BEGIN
+          EDIEntry."Field 2" := 'VAT';//Type de taxe
+          EDIEntry."Field 3" := FORMAT(VATAmountLine."VAT %");//Taux de taxe
+          IF "Sales Invoice Header"."Currency Code" = '' THEN BEGIN
+            EDIEntry."Field 4" := FORMAT(VATAmountLine."VAT Base",0,1);
+            EDIEntry."Field 5" := FORMAT(VATAmountLine."VAT Amount",0,1);//Montant total des taxes
+          END ELSE BEGIN
+            EDIEntry."Field 4" := FORMAT(VALVATBaseLCY,0,1);//Montant taxable
+            EDIEntry."Field 5" := FORMAT(VALVATAmountLCY,0,1);//Montant total des taxes
+          END;
+        END;
+        'RDCH3':BEGIN
+          EDIEntry."Field 2" := '';//Qualifiant de r‚duction ou charge
+          EDIEntry."Field 3" := '';//Num‚ro de charge
+          EDIEntry."Field 4" := '';//Service, en code
+          EDIEntry."Field 5" := '';//Libell‚ de la taxe parafiscale et assimil‚e
+          EDIEntry."Field 6" := '';//Montant de la taxe
+        END;
+      END;//CASE
+      EDIEntry.MODIFY;
+    END;
+
+    PROCEDURE Initialize@1000000000(_No@1000000000 : Code[20];_EDICode@1000000001 : Code[20]);
+    BEGIN
+      SalesInvoiceHeaderNo := _No;
+      EDICode := _EDICode;
+    END;
+
+    BEGIN
+    {
+      Rudy VILAIN 11/01/13 : Ajout de la mention INDEMNITE FORFAITAIRE DE 40 EUROS POUR FRAIS DE RECOUVREMENT
+    }
+    END.
+  }
+  RDLDATA
+  {
+  }
+}
+

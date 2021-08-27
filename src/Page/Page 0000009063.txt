@@ -2,8 +2,9 @@ OBJECT Page 9063 Purchase Agent Activities
 {
   OBJECT-PROPERTIES
   {
-    Date=09/09/14;
-    Time=12:00:00;
+    Date=20/04/16;
+    Time=18:16:15;
+    Modified=Yes;
     Version List=NAVW18.00;
   }
   PROPERTIES
@@ -97,6 +98,10 @@ OBJECT Page 9063 Purchase Agent Activities
     { 14  ;2   ;Field     ;
                 SourceExpr="Purchase Return Orders - All";
                 DrillDownPageID=Purchase Return Order List }
+
+    { 1000000000;2;Field  ;
+                SourceExpr="Partially Received";
+                DrillDownPageID=Purchase Order List }
 
     { 18  ;1   ;Group     ;
                 CaptionML=[ENU=Purchase Orders - Authorize for Payment;

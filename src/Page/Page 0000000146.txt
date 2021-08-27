@@ -4,6 +4,7 @@ OBJECT Page 146 Posted Purchase Invoices
   {
     Date=15/09/15;
     Time=12:00:00;
+    Modified=Yes;
     Version List=NAVW19.00;
   }
   PROPERTIES
@@ -106,6 +107,9 @@ OBJECT Page 146 Posted Purchase Invoices
 
     { 4   ;2   ;Field     ;
                 SourceExpr="No." }
+
+    { 1180250001;2;Field  ;
+                SourceExpr="Vendor Invoice No." }
 
     { 2   ;2   ;Field     ;
                 SourceExpr="Buy-from Vendor No." }

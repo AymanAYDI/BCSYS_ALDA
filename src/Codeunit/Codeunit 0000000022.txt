@@ -4,7 +4,8 @@ OBJECT Codeunit 22 Item Jnl.-Post Line
   {
     Date=26/11/15;
     Time=12:00:00;
-    Version List=NAVW19.00.00.43897,NAVFR9.00.00.43897;
+    Modified=Yes;
+    Version List=NAVW19.00.00.43897,NAVFR9.00.00.43897,AC1.00,AB6.TAH.001,ALDA;
   }
   PROPERTIES
   {
@@ -125,6 +126,7 @@ OBJECT Codeunit 22 Item Jnl.-Post Line
       Text031@1093 : TextConst '@@@="%2 = Lot No. %3 = Serial No. Both are tracking numbers.";ENU=You cannot invoice the item %1 with item tracking number %2 %3 in this purchase order before the associated sales order %4 has been invoiced.;FRA=Vous ne pouvez pas facturer l''article %1 avec le num‚ro de tra‡abilit‚ %2 %3 dans cette commande achat avant que la commande vente associ‚e %4 ne soit factur‚e.';
       Text032@1094 : TextConst 'ENU=You cannot invoice item %1 in this purchase order before the associated sales order %2 has been invoiced.;FRA=Vous ne pouvez pas facturer l''article %1 dans cette commande achat avant que la commande vente associ‚e %2 ne soit factur‚e.';
       Text033@1040 : TextConst 'ENU=Quantity must be -1, 0 or 1 when Serial No. is stated.;FRA=La quantit‚ doit ˆtre -1, 0 ou 1 lorsqu''un nø de s‚rie est indiqu‚.';
+      Text50000@1180250001 : TextConst 'FRA=Inventaire du %1';
       SkipApplicationCheck@1089 : Boolean;
 
     PROCEDURE RunWithCheck@13(VAR ItemJnlLine2@1000 : Record 83);
@@ -1844,8 +1846,15 @@ OBJECT Codeunit 22 Item Jnl.-Post Line
         ItemLedgEntry."Lot No." := "Lot No.";
         ItemLedgEntry."Warranty Date" := "Warranty Date";
         ItemLedgEntry."Expiration Date" := "Item Expiration Date";
-
         ItemLedgEntry.Correction := Correction;
+        //AC1.00
+        ItemLedgEntry."Order Reference Customer" := "Order Reference Customer";
+        //AB6.TAH.001 <<
+        ItemLedgEntry."Montant Ecotaxe" := "Montant Ecotaxe";
+        //AB6.TAH.001 >>
+
+        // ALDA 171214D
+        ItemLedgEntry."Country Dimension Code" := "Country Dimension Code";
 
         IF "Entry Type" IN
            ["Entry Type"::Sale,
@@ -2049,6 +2058,11 @@ OBJECT Codeunit 22 Item Jnl.-Post Line
 
         PhysInvtLedgEntry.INSERT;
 
+      // ALDA 041114D.Begin
+        PhysInvtLedgEntry.Description := STRSUBSTNO(Text50000,"Posting Date");
+        PhysInvtLedgEntry.MODIFY;
+      // ALDA 041114D.End
+
         InsertItemReg(0,PhysInvtLedgEntry."Entry No.",0,0);
       END;
     END;
@@ -2206,6 +2220,9 @@ OBJECT Codeunit 22 Item Jnl.-Post Line
         ValueEntry."Item Ledger Entry Type" := "Entry Type";
         ValueEntry.Type := Type;
         ValueEntry."Posting Date" := "Posting Date";
+        //AB6.TAH.001 <<
+        ValueEntry."Montant Ecotaxe" := "Montant Ecotaxe";
+        //AB6.TAH.001 >>
         IF "Partial Revaluation" THEN
           ValueEntry."Partial Revaluation" := TRUE;
 
@@ -4985,6 +5002,11 @@ OBJECT Codeunit 22 Item Jnl.-Post Line
     END;
 
     BEGIN
+    {
+      AC1.00 Ajout C/AL InitItemLedgEntry()
+      AB6.TAH.001 05/09/2012
+       - MAJ 50011
+    }
     END.
   }
 }

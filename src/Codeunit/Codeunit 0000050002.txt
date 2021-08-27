@@ -1,0 +1,449 @@
+OBJECT Codeunit 50002 TAR2
+{
+  OBJECT-PROPERTIES
+  {
+    Date=06/12/13;
+    Time=19:13:27;
+    Modified=Yes;
+    Version List=AC1.00;
+  }
+  PROPERTIES
+  {
+    TableNo=50001;
+    OnRun=VAR
+            EDIEntry@1180250005 : Record 50002;
+            Fields2Import@1180250001 : ARRAY [100] OF Text[250];
+            CurrFile@1180250004 : File;
+            FileInStream@1180250003 : InStream;
+            Line@1180250002 : BigText;
+          BEGIN
+            IF GUIALLOWED THEN
+              Window.OPEN(Text000);
+
+            EDISetup.GET("EDI Code");
+            EDISetup.TESTFIELD("Default Base Unit of Measure");
+            EDISetup.TESTFIELD("Source Type");
+            EDISetup.TESTFIELD("Source No.");
+            EDISetup.TESTFIELD("Starting Date");
+            EDISetup.TESTFIELD("Ending Date");
+
+            CheckDataError();
+            IF "Data Error" = FALSE THEN BEGIN
+              CLEAR(FileInStream);
+              CLEAR(Line);
+              CLEAR(Fields2Import);
+              CLEAR(CurrFile);
+
+              TESTFIELD(Mode,Mode::Normal);
+
+              CurrFile.WRITEMODE := FALSE;
+              CurrFile.TEXTMODE := TRUE;
+              CurrFile.OPEN(EDISetup."File Imp. Path (Err.)" +'\' + Filename);
+              CurrFile.CREATEINSTREAM(FileInStream);
+              Line.READ(FileInStream);
+              SplitFileLineInRec(EDIEntry,Line,"EDI Code","Treatment Date");
+              RegisterRec(EDIEntry,EDISetup."Source No.","EDI Code","Treatment Date");
+              CurrFile.CLOSE;
+            END ELSE BEGIN
+              TESTFIELD(Mode,Mode::Recovery);
+              RegisterRec(EDIEntry,EDISetup."Source No.","EDI Code","Treatment Date");
+              Mode := Mode::Normal;
+              MODIFY;
+            END;
+
+            IF GUIALLOWED THEN
+              Window.CLOSE;
+          END;
+
+  }
+  CODE
+  {
+    VAR
+      Text000@1180250005 : TextConst 'ENU=Batch in process...;FRA=Traitement en cours...';
+      Text001@1180250002 : TextConst 'FRA=Nø s‚quence %1 : %2';
+      Text002@1180250003 : TextConst 'FRA=R‚f‚rence MJ %1 non trouv‚, mise … jour non r‚alis‚e.';
+      EDISetup@1180250001 : Record 50000;
+      Window@1180250006 : Dialog;
+      Text004@1180250004 : TextConst 'FRA=%1/%2 r‚f‚rence(s) trait‚(s).';
+
+    PROCEDURE SplitFileLineInRec@1180250003(VAR EDIEntry@1180250006 : Record 50002;ReadLine@1180250008 : BigText;EDICode@1180250007 : Code[10];EDILogDT@1180250016 : DateTime);
+    VAR
+      LineToRead@1000000001 : BigText;
+      LineToReadBuff@1180250002 : BigText;
+      ReadField@1000000003 : Text[30];
+      i@1180250015 : Integer;
+      EndOfLinePos@1000000007 : Integer;
+      EntryNo@1180250001 : Integer;
+      NextStartingPos@1180250012 : Integer;
+      CurrStrLen@1180250013 : Integer;
+      CarriageReturn@1180250004 : Char;
+      LineFeed@1180250003 : Char;
+      EOF@1180250005 : Boolean;
+      SubStr@1180250009 : Text[128];
+      CNUR@1180250010 : Text[3];
+      CNUT_Lot@1180250011 : Text[5];
+      CNUT_Msg@1180250014 : Text[5];
+    BEGIN
+      CarriageReturn := 13;
+      LineFeed := 10;
+      EOF := FALSE;
+      LineToRead := ReadLine;
+
+      EDIEntry.RESET;
+      IF EDIEntry.FINDLAST THEN
+        EntryNo := EDIEntry."Entry No."
+      ELSE
+        EntryNo := 0;
+
+      i := 0;
+
+      REPEAT
+        EndOfLinePos := LineToRead.TEXTPOS(FORMAT(CarriageReturn)+FORMAT(LineFeed));
+        EOF := EndOfLinePos = 0;
+        EntryNo += 1;
+
+        EDIEntry.INIT;
+        EDIEntry."Entry No." := EntryNo;
+        EDIEntry."User ID" := USERID;
+        EDIEntry."Imp./Exp. Date" := EDILogDT;
+        EDIEntry."EDI Code" := EDICode;
+        EDIEntry.Error := TRUE;
+        EDIEntry.INSERT;
+
+        LineToRead.GETSUBTEXT(SubStr,1,5);
+        CASE SubStr OF
+          '03503':CNUT_Lot := SubStr;
+          '05003':CNUT_Msg := SubStr;
+        END;//CASE
+
+        LineToRead.GETSUBTEXT(SubStr,1,3);
+        IF SubStr IN ['100','176','177','190','191','198','199','221'] THEN
+          CNUR := SubStr
+        ELSE
+          CNUR := '';
+
+        EDIEntry."Field 1" := CNUT_Lot;
+        EDIEntry."Field 2" := CNUT_Msg;
+        EDIEntry."Field 3" := CNUR;
+
+        NextStartingPos := 4;
+
+        CASE CNUR OF
+          '100':LineToRead.GETSUBTEXT(EDIEntry."Field 4",NextStartingPos,13);
+          '176':LineToRead.GETSUBTEXT(EDIEntry."Field 4",NextStartingPos,6);
+          '177':BEGIN
+            //R‚f MJ
+            CurrStrLen := 5;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 4",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //Code tarif
+            CurrStrLen := 2;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 5",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //Code du mode de mise … jour ; H ou HT
+            CurrStrLen := 1;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 6",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //Prix de vente HT au format 6"."5
+            CurrStrLen := 12;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 7",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //Code prix net/promotion : " ";"P";"N";
+            CurrStrLen := 1;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 8",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //Date d'envoi de la mise … jour AAMMJJ
+            CurrStrLen := 6;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 9",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //Code op‚ration C/M/R)
+            CurrStrLen := 1;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 10",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //Date d'application du prix
+            CurrStrLen := 6;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 11",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //Date de fin d'application du prix
+            CurrStrLen := 6;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 12",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //Code monnaie (E/F)
+            CurrStrLen := 1;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 13",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+          END;
+          '190':LineToRead.GETSUBTEXT(EDIEntry."Field 4",NextStartingPos,6);
+          '191':LineToRead.GETSUBTEXT(EDIEntry."Field 4",NextStartingPos,6);
+          '198':LineToRead.GETSUBTEXT(EDIEntry."Field 4",NextStartingPos,7);
+          '199':LineToRead.GETSUBTEXT(EDIEntry."Field 4",NextStartingPos,6);
+          '221':LineToRead.GETSUBTEXT(EDIEntry."Field 4",NextStartingPos,13);
+        END;//CASE
+        EDIEntry.MODIFY;
+        COMMIT;
+
+        IF ((EDIEntry."Field 2" = '05003') AND (EDIEntry."Field 3" = '199')) OR
+           ((EDIEntry."Field 2" = '05003') AND (EDIEntry."Field 3" = '')) THEN
+          i += 1;
+        IF i MOD 2 = 0 THEN
+          CNUT_Msg := '';
+
+        CLEAR(LineToReadBuff);
+        LineToReadBuff.ADDTEXT(LineToRead);
+        CLEAR(LineToRead);
+        LineToReadBuff.GETSUBTEXT(LineToRead,EndOfLinePos + 2);
+      UNTIL EOF;
+    END;
+
+    LOCAL PROCEDURE RegisterRec@1180210000(VAR EDIEntry@1180210000 : Record 50002;VendorNo@1180250004 : Code[20];EDICode@1180250008 : Code[10];EDILogDT@1180250006 : DateTime);
+    VAR
+      Item@1180250003 : Record 27;
+      ItemCrossRef@1180250002 : Record 5717;
+      SalesPrice@1180250009 : Record 7002;
+      PurchPrice@1180250001 : Record 7012;
+      TempEDIEntry@1180250007 : TEMPORARY Record 50002;
+      LastMsgError@1180250005 : Text[128];
+      Found@1180250010 : Boolean;
+      StartingDate@1180250011 : Date;
+      EndingDate@1180250012 : Date;
+      CrossRefNo2Search@1180250013 : Code[20];
+      NbrOfItem@1180250015 : Integer;
+      NbrOfHandledItem@1180250014 : Integer;
+    BEGIN
+      EDISetup.GET(EDICode);
+
+      CLEAR(TempEDIEntry);
+      TempEDIEntry.RESET;
+      TempEDIEntry.DELETEALL;
+
+      NbrOfHandledItem := 0;
+      NbrOfItem := 0;
+
+      EDIEntry.RESET;
+      EDIEntry.SETCURRENTKEY("EDI Code","Imp./Exp. Date",Error,Handled);
+      EDIEntry.SETRANGE("EDI Code",EDICode);
+      EDIEntry.SETRANGE("Imp./Exp. Date",EDILogDT);
+      IF EDIEntry.FIND('-') THEN BEGIN
+        NbrOfItem := EDIEntry.COUNT;
+        NbrOfItem := NbrOfItem - 12;
+        REPEAT
+          IF EDIEntry."Field 3" = '177' THEN BEGIN
+            //recherche du nø article avec la R‚f MJ (EDIEntry."Field 4")
+            CrossRefNo2Search := EDIEntry."Field 4";
+            ItemCrossRef.RESET;
+            ItemCrossRef.SETCURRENTKEY("Cross-Reference No.","Cross-Reference Type","Cross-Reference Type No.","Discontinue Bar Code");
+            ItemCrossRef.SETRANGE("Cross-Reference Type",ItemCrossRef."Cross-Reference Type"::Vendor);
+            ItemCrossRef.SETRANGE("Cross-Reference Type No.",VendorNo);
+            ItemCrossRef.SETRANGE("Cross-Reference No.",CrossRefNo2Search);
+            IF ItemCrossRef.FINDFIRST THEN
+              IF Item.GET(ItemCrossRef."Item No.") THEN
+                Found := TRUE
+              ELSE
+                Found := FALSE
+            ELSE
+              Found := FALSE;
+
+            IF Found THEN BEGIN
+              NbrOfHandledItem += 1;
+              CASE COPYSTR(EDIEntry."Field 5",1,1) OF
+                //Code tarif th‚orique A
+                'A','a':BEGIN
+                  SalesPrice.INIT;
+                  SalesPrice."Item No." := Item."No.";
+                  SalesPrice."Sales Type" := SalesPrice."Sales Type"::"Customer Price Group";
+                  //Code tarif
+                  SalesPrice."Sales Code" := COPYSTR(EDIEntry."Field 5",1,1);
+                  //Date d'application du prix
+                  EVALUATE(StartingDate,ConvYMD2DMY(EDIEntry."Field 11"));
+                  SalesPrice."Starting Date" := StartingDate;
+                  SalesPrice."Currency Code" := '';
+                  SalesPrice."Variant Code" := '';
+                  SalesPrice."Unit of Measure Code" := EDISetup."Default Base Unit of Measure";
+                  SalesPrice."Minimum Quantity" := 1;
+                  //Prix de vente HT au format 6"."5
+                  SalesPrice."Unit Price" := ConvTxt2Dec(EDIEntry."Field 7");
+                  SalesPrice."Price Includes VAT" := FALSE;
+                  //Code prix net/promotion : " ";"P";"N";
+                  CASE COPYSTR(EDIEntry."Field 8",1,1) OF
+                    '',' ':BEGIN
+                      SalesPrice."Allow Invoice Disc." := TRUE;
+                      SalesPrice."Allow Line Disc." := TRUE;
+                    END;
+                    'P','N':BEGIN
+                      SalesPrice."Allow Invoice Disc." := FALSE;
+                      SalesPrice."Allow Line Disc." := FALSE;
+                    END;
+                  END;//CASE
+                  //Date de fin d'application du prix
+                  EVALUATE(EndingDate,ConvYMD2DMY(EDIEntry."Field 12"));
+                  SalesPrice."Ending Date" := EndingDate;
+                  //Code op‚ration C/M/R)
+                  CASE UPPERCASE(EDIEntry."Field 10") OF
+                    'C':SalesPrice.INSERT;
+                    'M','R':IF NOT SalesPrice.MODIFY THEN
+                      SalesPrice.INSERT;
+                  END;//CASE
+                END;
+                //Code tarif : prix de cession
+                'X','x':BEGIN
+                  PurchPrice.INIT;
+                  PurchPrice."Item No." := Item."No.";
+                  PurchPrice."Vendor No." := VendorNo;
+                  //Date d'application du prix
+                  EVALUATE(StartingDate,ConvYMD2DMY(EDIEntry."Field 11"));
+                  PurchPrice."Starting Date" := StartingDate;
+                  //Code monnaie (E/F)
+                  CASE EDIEntry."Field 13" OF
+                    'E':PurchPrice."Currency Code" := '';
+                    'F':PurchPrice."Currency Code" := 'FRA';
+                  END;//CASE
+                  PurchPrice."Variant Code" := '';
+                  IF Item."Purch. Unit of Measure" = '' THEN
+                    PurchPrice."Unit of Measure Code" := EDISetup."Default Base Unit of Measure"
+                  ELSE
+                    PurchPrice."Unit of Measure Code" := Item."Purch. Unit of Measure";
+                  PurchPrice."Minimum Quantity" := 1;
+                  //Prix de vente HT au format 6"."5
+                  PurchPrice."Direct Unit Cost" := ConvTxt2Dec(EDIEntry."Field 7");
+                  //Date de fin d'application du prix
+                  EVALUATE(EndingDate,ConvYMD2DMY(EDIEntry."Field 12"));
+                  PurchPrice."Ending Date" := EndingDate;
+                  //Code prix net/promotion : " ";"P";"N";
+                  CASE COPYSTR(EDIEntry."Field 8",1,2) OF
+                   '',' ':PurchPrice."Allow Discount" := TRUE;
+                   'P':PurchPrice."Allow Discount" := FALSE;
+                   'N':PurchPrice."Allow Discount" := FALSE;
+                  END;//CASE
+                  //Code op‚ration C/M/R)
+                  CASE UPPERCASE(EDIEntry."Field 10") OF
+                    'C':IF NOT PurchPrice.INSERT THEN
+                      PurchPrice.MODIFY;
+                    'M','R':IF NOT PurchPrice.MODIFY THEN
+                      PurchPrice.INSERT;
+                  END;//CASE
+                END;
+                //Autre tarif
+                ELSE BEGIN
+                  //Forc‚ par ALDA
+                  StartingDate := EDISetup."Starting Date";
+                  EndingDate := EDISetup."Ending Date";
+                  SalesPrice.INIT;
+                  SalesPrice."Item No." := Item."No.";
+                  SalesPrice."Sales Type" := SalesPrice."Sales Type"::"Customer Price Group";
+                  //Code tarif
+                  SalesPrice."Sales Code" := COPYSTR(EDIEntry."Field 5",1,1);
+                  //Date d'application du prix
+                  SalesPrice."Starting Date" := StartingDate;
+                  SalesPrice."Currency Code" := '';
+                  SalesPrice."Variant Code" := '';
+                  SalesPrice."Unit of Measure Code" := EDISetup."Default Base Unit of Measure";
+                  SalesPrice."Minimum Quantity" := 1;
+                  //Prix de vente HT au format 6"."5
+                  SalesPrice."Unit Price" := ConvTxt2Dec(EDIEntry."Field 7");
+                  SalesPrice."Price Includes VAT" := FALSE;
+                  //Code prix net/promotion : " ";"P";"N";
+                  CASE COPYSTR(EDIEntry."Field 8",1,1) OF
+                    '',' ':BEGIN
+                      SalesPrice."Allow Invoice Disc." := TRUE;
+                      SalesPrice."Allow Line Disc." := TRUE;
+                    END;
+                    'P','N':BEGIN
+                      SalesPrice."Allow Invoice Disc." := FALSE;
+                      SalesPrice."Allow Line Disc." := FALSE;
+                    END;
+                  END;//CASE
+                  //Date de fin d'application du prix
+                  SalesPrice."Ending Date" := EndingDate;
+                  //Code op‚ration C/M/R)
+                  CASE UPPERCASE(EDIEntry."Field 10") OF
+                    'C':IF NOT SalesPrice.INSERT THEN
+                      SalesPrice.MODIFY;
+                    'M','R':IF NOT SalesPrice.MODIFY THEN
+                      SalesPrice.INSERT;
+                  END;//CASE
+                END;
+              END;//CASE
+            END ELSE
+              CreateEDILogEntry(EDICode,EDILogDT,STRSUBSTNO(Text002,CrossRefNo2Search),2,EDIEntry."Entry No.");
+          END;
+
+          TempEDIEntry := EDIEntry;
+          TempEDIEntry.Error := FALSE;
+          TempEDIEntry.INSERT;
+        UNTIL EDIEntry.NEXT = 0;
+      END;
+
+      CreateEDILogEntry(EDICode,EDILogDT,STRSUBSTNO(Text004,NbrOfHandledItem,NbrOfItem),0,0);
+
+      TempEDIEntry.RESET;
+      TempEDIEntry.SETRANGE(Error,FALSE);
+      IF TempEDIEntry.FIND('-') THEN
+        REPEAT
+          EDIEntry := TempEDIEntry;
+          EDIEntry.Error := FALSE;
+          EDIEntry.Handled := TRUE;
+          EDIEntry.MODIFY;
+        UNTIL TempEDIEntry.NEXT = 0;
+    END;
+
+    LOCAL PROCEDURE ConvTxt2Dec@1180250002(Txt2Conv@1180250001 : Text[50]) DecConv : Decimal;
+    BEGIN
+      IF Txt2Conv <> '' THEN
+        EVALUATE(DecConv,CONVERTSTR(Txt2Conv,'.',','))
+      ELSE
+        DecConv := 0.0;
+    END;
+
+    LOCAL PROCEDURE ConvTxt2Int@1180250001(Txt2Conv@1180250001 : Text[50]) IntConv : Integer;
+    BEGIN
+      IF Txt2Conv <> '' THEN
+        EVALUATE(IntConv,Txt2Conv)
+      ELSE
+        IntConv := 0;
+    END;
+
+    PROCEDURE ConvYMD2DMY@1180250004(String@1180250001 : Text[50]) NewString : Text[50];
+    VAR
+      Y@1180250002 : Text[2];
+      M@1180250003 : Text[2];
+      D@1180250004 : Text[2];
+    BEGIN
+      IF String <> '' THEN BEGIN
+        Y := COPYSTR(String,1,2);
+        M := COPYSTR(String,3,2);
+        D := COPYSTR(String,5,2);
+        NewString := D + M + Y
+      END ELSE
+        NewString := '';
+    END;
+
+    PROCEDURE CreateEDILogEntry@1180250011(EDICode@1180250003 : Code[10];EDILogDT@1180250002 : DateTime;String@1180250001 : Text[250];Status@1180250006 : ' ,OK,Error';EntryNo@1180250007 : Integer);
+    VAR
+      EDILogEntry@1180250004 : Record 50004;
+      LineNo@1180250005 : Integer;
+    BEGIN
+      EDILogEntry.RESET;
+      EDILogEntry.SETRANGE("EDI Code",EDICode);
+      EDILogEntry.SETRANGE("Treatment Date",EDILogDT);
+      IF EDILogEntry.FINDLAST THEN
+        LineNo := EDILogEntry."Ligne No."
+      ELSE
+        LineNo := 0;
+
+      LineNo += 10000;
+
+      EDILogEntry.INIT;
+      EDILogEntry."EDI Code" := EDICode;
+      EDILogEntry."Treatment Date" := EDILogDT;
+      EDILogEntry."Ligne No." := LineNo;
+      EDILogEntry."Error Text" := String;
+      EDILogEntry.Status := Status;
+      EDILogEntry."Applied E.D.I. Entry No." := EntryNo;
+      EDILogEntry.INSERT;
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

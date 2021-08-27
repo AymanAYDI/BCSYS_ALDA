@@ -74,6 +74,9 @@ OBJECT Table 7012 Purchase Price
     { 5700;   ;Variant Code        ;Code10        ;TableRelation="Item Variant".Code WHERE (Item No.=FIELD(Item No.));
                                                    CaptionML=[ENU=Variant Code;
                                                               FRA=Code variante] }
+    { 50000;  ;Allow Discount      ;Boolean       ;CaptionML=[ENU=Allow Discount;
+                                                              FRA=Remise autoris‚e];
+                                                   Description=AC1.00 }
   }
   KEYS
   {
@@ -91,6 +94,9 @@ OBJECT Table 7012 Purchase Price
       Text000@1004 : TextConst 'ENU=%1 cannot be after %2;FRA=%1 ne peut pas ˆtre post‚rieur(e) … %2';
 
     BEGIN
+    {
+      AC1.00 Ajout champ "Allow Discount"
+    }
     END.
   }
 }

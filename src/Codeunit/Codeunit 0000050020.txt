@@ -1,0 +1,369 @@
+OBJECT Codeunit 50020 XmlDocumentMgt
+{
+  OBJECT-PROPERTIES
+  {
+    Date=16/11/15;
+    Time=18:04:11;
+    Modified=Yes;
+    Version List=GIM;
+  }
+  PROPERTIES
+  {
+    OnRun=BEGIN
+          END;
+
+  }
+  CODE
+  {
+    VAR
+      filenotloaded@1180250003 : TextConst 'ENU=Xml File is not loaded;FRA=le fichier XML n''est pas charg‚.';
+      XmlDoc@1000000015 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlDocument";
+      XmlNode@1000000014 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlNode";
+      EntryNo@1000000007 : Integer;
+      CurrentElementName@1000000006 : Text[250];
+      NameSpaceManager@1000000005 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlNamespaceManager";
+      Alias@1000000004 : Text[30];
+      GIMXMLMapping@1000000003 : Record 50011;
+      XmlNodeList@1000000002 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlNodeList";
+      enum2@1000000001 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Collections.IEnumerator";
+      Window@1000000000 : Dialog;
+      att_name_tableid@1000000020 : TextConst 'ENU=navtableid';
+      att_name_fieldid@1000000019 : TextConst 'ENU=navfieldid';
+      att_name_from_attid@1000000018 : TextConst 'ENU=navfromattid';
+      att_Indent@1000000017 : TextConst 'ENU=navindent';
+      txtdialog@1000000016 : TextConst 'ENU=####1################################;FRA=####1################################';
+      att_hasMappedData@1000000008 : TextConst 'ENU=navdata';
+      TxtUpload@1180250001 : TextConst 'ENU=File Import;FRA=Import fichier';
+
+    PROCEDURE Load@1000000000(ServerFileName@1000000000 : Text[250]);
+    VAR
+      e@1000000002 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Collections.IEnumerator";
+      i@1000000001 : Integer;
+      L_ParentID@1000000003 : Integer;
+    BEGIN
+      XmlDoc := XmlDoc.XmlDocument;
+      XmlDoc.Load(ServerFileName);
+    END;
+
+    PROCEDURE AddNameSpace@1000000037(_Alias@1000000000 : Text[30];_NameSpace@1000000001 : Text[250]);
+    BEGIN
+      //urn:microsoft-dynamics-nav/xmlports/GIMPurchaseHeader
+      IF ISNULL(NameSpaceManager) THEN
+        NameSpaceManager := NameSpaceManager.XmlNamespaceManager(XmlDoc.NameTable);
+
+      NameSpaceManager.AddNamespace(_Alias,_NameSpace);
+    END;
+
+    PROCEDURE SelectNodes@1000000003(VAR XmlBuffer@1000000001 : TEMPORARY Record 50012;Xpath@1000000000 : Text[250]);
+    VAR
+      e@1000000003 : DotNet "'mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Collections.IEnumerator";
+    BEGIN
+      XmlBuffer.RESET;
+      XmlBuffer.DELETEALL;
+      IF ISNULL(XmlDoc) THEN
+        EXIT;
+
+      e := XmlDoc.SelectNodes(Xpath,NameSpaceManager).GetEnumerator();
+      WHILE (e.MoveNext()) DO
+       ReadChildNodes(e.Current,'',0,0,XmlBuffer,0,0,'','', FALSE);
+    END;
+
+    PROCEDURE MapNodes@1000000004(GIMXMLMapping@1000000000 : Record 50011);
+    VAR
+      e@1000000003 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Collections.IEnumerator";
+      L_Xmlelement@1000000001 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlElement";
+      L_XmlAttribute@1000000004 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlAttribute";
+      L_ParentXmlelement@1000000002 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlElement";
+    BEGIN
+      IF ISNULL(XmlDoc) THEN
+        EXIT;
+
+      e := XmlDoc.SelectNodes(GIMXMLMapping.Xpath,NameSpaceManager).GetEnumerator();
+
+      WHILE (e.MoveNext()) DO
+      BEGIN
+        L_Xmlelement :=  e.Current;
+
+        //L_Xmlelement.SetAttribute(att_name_tableid,FORMAT(GIMXMLMapping."Table No."));
+        SetAttributes(L_Xmlelement,att_name_tableid,FORMAT(GIMXMLMapping."Table No."));
+      //  L_Xmlelement.SetAttribute(att_name_fieldid,FORMAT(GIMXMLMapping."Field No."));
+      SetAttributes(L_Xmlelement,att_name_fieldid,FORMAT(GIMXMLMapping."Field No."));
+      //  L_Xmlelement.SetAttribute(att_name_from_attid,FORMAT(GIMXMLMapping.ValueFromNodeName));
+      SetAttributes(L_Xmlelement,att_name_from_attid,FORMAT(GIMXMLMapping.ValueFromNodeName));
+
+      //prepare fast iteration
+      SetAttributes(L_Xmlelement,att_hasMappedData,'true');
+        L_ParentXmlelement := L_Xmlelement.ParentNode;
+        WHILE(NOT ISNULL(L_ParentXmlelement)) DO BEGIN
+          IF FORMAT(L_ParentXmlelement.NodeType) = 'Element' THEN
+            SetAttributes(L_ParentXmlelement,att_hasMappedData,'true');
+          L_ParentXmlelement := L_ParentXmlelement.ParentNode;
+        END;
+
+        IF GIMXMLMapping.Indent > 0 THEN
+        SetAttributes(L_Xmlelement,att_Indent,FORMAT(GIMXMLMapping.Indent));
+         // L_Xmlelement.SetAttribute(att_Indent,FORMAT(GIMXMLMapping.Indent));
+
+      END;
+    END;
+
+    PROCEDURE LoadNodes@1000000019(Xpath@1000000000 : Text[250]);
+    BEGIN
+      IF ISNULL(XmlDoc) THEN
+        EXIT;
+
+      XmlNodeList := XmlDoc.SelectNodes(Xpath,NameSpaceManager);
+
+      enum2 := XmlNodeList.GetEnumerator();
+    END;
+
+    PROCEDURE ReadNextNode@1000000020(VAR XmlBuffer@1000000001 : TEMPORARY Record 50012) : Boolean;
+    VAR
+      e@1000000003 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Collections.IEnumerator";
+    BEGIN
+      XmlBuffer.RESET;
+      XmlBuffer.DELETEALL;
+      IF ISNULL(XmlDoc) THEN
+        EXIT;
+
+      IF (enum2.MoveNext()) THEN
+       ReadChildNodes(enum2.Current,'',0,0,XmlBuffer,0,0,'','',FALSE)
+      ELSE
+        EXIT(FALSE);
+      EXIT(TRUE);
+    END;
+
+    LOCAL PROCEDURE ReadChildNodes@1000000001(CurrentXmlNode@1000000011 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlNode";CurrentPath@1000000000 : Text[250];_Indent@1000000001 : Integer;ParentID@1000000002 : Integer;VAR XmlBuffer@1000000004 : TEMPORARY Record 50012;_tableID@1000000006 : Integer;_fieldID@1000000005 : Integer;_sourcevaluename@1000000008 : Text[80];_CurrentItem@1000000015 : Code[20];_FastIteration@1000000017 : Boolean) : Boolean;
+    VAR
+      text@1000000003 : Text[80];
+      TempXMLAttributeList@1000000012 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlNamedNodeMap";
+      TempXMLNodeList@1000000013 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlNodeList";
+      e@1000000014 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Collections.IEnumerator";
+      XmlAttribute@1000000007 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlAttribute";
+      MsObject@1000000016 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Object";
+      xmltext@1000000010 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlText";
+      SourceValueName@1000000009 : Text[80];
+      hasData@1000000018 : Text[30];
+    BEGIN
+      IF _CurrentItem = '' THEN
+        _CurrentItem := '0000';
+      IF NOT ISNULL(CurrentXmlNode) THEN
+      CASE FORMAT(CurrentXmlNode.NodeType) OF
+      'Element': // Element
+        BEGIN
+          // Global variable CurrentElementName to keep track of what node
+          // we are currently processing
+          CurrentElementName := CurrentXmlNode.Name;
+
+
+            CurrentPath := STRSUBSTNO('%1/%2',CurrentPath,_CurrentItem);
+          MsObject :=CurrentXmlNode.Attributes;
+          IF NOT ISNULL(MsObject) THEN BEGIN
+
+            e := CurrentXmlNode.Attributes.GetEnumerator();
+            WHILE (e.MoveNext()) DO BEGIN
+               XmlAttribute := e.Current;
+              IF XmlAttribute.Name = att_name_tableid THEN
+                IF EVALUATE(_tableID, XmlAttribute.Value) THEN;
+              IF XmlAttribute.Name = att_name_fieldid THEN
+                IF EVALUATE(_fieldID, XmlAttribute.Value) THEN;
+              IF XmlAttribute.Name = att_name_from_attid THEN
+                IF EVALUATE(SourceValueName, XmlAttribute.Value) THEN;
+              IF XmlAttribute.Name = att_Indent THEN
+                IF EVALUATE(_Indent, XmlAttribute.Value) THEN;
+              IF XmlAttribute.Name = att_hasMappedData THEN
+                IF EVALUATE(hasData, XmlAttribute.Value) THEN;
+            END;
+          END;
+
+          // Process Attributes
+          // If the element has attributes, then browse through those.
+          IF (NOT _FastIteration) OR (_FastIteration AND (hasData = 'true')) THEN BEGIN
+            e := CurrentXmlNode.Attributes.GetEnumerator();
+            WHILE (e.MoveNext()) DO
+              ReadChildNodes(e.Current,CurrentPath,_Indent,ParentID,XmlBuffer,_tableID,_fieldID,SourceValueName,_CurrentItem
+              , _FastIteration);
+
+            // Process Child nodes
+            e := CurrentXmlNode.ChildNodes.GetEnumerator();
+            WHILE (e.MoveNext()) DO BEGIN
+              ReadChildNodes(e.Current,CurrentPath,_Indent+1,ParentID,XmlBuffer,_tableID,_fieldID,SourceValueName,_CurrentItem
+              , _FastIteration);
+              _CurrentItem := INCSTR(_CurrentItem);
+            END;
+          END;
+        END;
+
+      'Attribute': // Attribute
+        BEGIN
+          IF _sourcevaluename <> CurrentXmlNode.Name THEN
+          BEGIN
+            _tableID := 0;
+            _fieldID := 0;
+          END;
+          XmlAttribute := CurrentXmlNode;
+          IF _tableID <> 0 THEN
+            IF NOT (XmlAttribute.Name IN [att_name_tableid, att_name_fieldid,att_name_from_attid,att_Indent, att_hasMappedData]) THEN
+              SaveInBuffer(XmlBuffer.NodeType::Attribute,XmlAttribute.Name,XmlAttribute.Value,ParentID,_Indent,CurrentPath,
+                          XmlBuffer,_tableID,_fieldID);
+        END;
+
+      'Text': // Text
+        BEGIN
+          IF _sourcevaluename <> '' THEN
+          BEGIN
+            _tableID := 0;
+            _fieldID := 0;
+          END;
+          xmltext := CurrentXmlNode;
+
+
+          IF _tableID <> 0 THEN
+            SaveInBuffer(XmlBuffer.NodeType::Text,xmltext.Name,xmltext.Value,ParentID,_Indent-1,CurrentPath,XmlBuffer,_tableID,_fieldID);
+        END;
+      END;
+    END;
+
+    LOCAL PROCEDURE SaveInBuffer@1000000002(_NodeType@1000000001 : Option;_NodeName@1000000002 : Text[80];_ValueAsText@1000000003 : Text[80];VAR _ParentID@1000000004 : Integer;_Indent@1000000005 : Integer;_Path@1000000000 : Text[250];VAR XmlBuffer@1000000006 : TEMPORARY Record 50012;_TableID@1000000007 : Integer;_FieldID@1000000008 : Integer);
+    VAR
+      DotString@1000000009 : DotNet "'mscorlib'.System.String";
+      ArrChar@1000000010 : DotNet "'mscorlib'.System.String";
+      a@1000000011 : DotNet "'mscorlib'.System.Array";
+      Str@1000000012 : Text[80];
+      StrArr@1000000013 : ARRAY [10] OF Text[10];
+      Pos@1000000014 : Integer;
+      i@1000000015 : Integer;
+    BEGIN
+      EntryNo += 10;
+      XmlBuffer."Entry No." := EntryNo;
+      XmlBuffer.ValueAsText := COPYSTR(_ValueAsText,1,250);
+      XmlBuffer."Parent Entry No." := _ParentID;
+      XmlBuffer.Indent := _Indent;
+      XmlBuffer.NodeType := _NodeType;
+      XmlBuffer.NodeName := _NodeName;
+      XmlBuffer.Path := _Path;
+      XmlBuffer."Table No." := _TableID;
+      XmlBuffer."Field No." := _FieldID;
+
+      //DotString := XmlBuffer.Path;
+      //ArrChar := '/';
+
+      //XmlBuffer."Xml ID" := FORMAT(DotString.Split(ArrChar.ToCharArray()).GetValue(_Indent));
+      Str := _Path ;
+
+      Pos := STRPOS(Str,'/');
+      i := 1;
+      REPEAT
+        IF Pos = 1 THEN BEGIN
+          Str := DELSTR(Str,1,Pos);
+          Pos := STRPOS(Str,'/');
+        END;
+
+        IF Pos = 0 THEN
+          StrArr[i] := Str ;
+
+        IF Pos > 0 THEN
+          StrArr[i] := COPYSTR(Str,1,Pos-1);
+
+        Str := DELSTR(Str,1,Pos);
+        Pos := STRPOS(Str,'/');
+        i := i +1 ;
+      UNTIL  (Pos = 0) OR (i > _Indent) ;
+
+      FOR i := 1 TO _Indent DO BEGIN
+        IF i = 1 THEN
+          XmlBuffer."Xml ID" := StrArr[i]
+        ELSE
+          XmlBuffer."Xml ID" := STRSUBSTNO('%1/%2', XmlBuffer."Xml ID", StrArr[i]);
+
+      END;
+
+      XmlBuffer.INSERT;
+
+      IF XmlBuffer.NodeType = XmlBuffer.NodeType::Element THEN
+        _ParentID := EntryNo;
+    END;
+
+    PROCEDURE GetBuffer@1000000005(VAR XmlBuffer@1000000000 : Record 50012;_FastIteration@1000000001 : Boolean);
+    VAR
+      e@1000000002 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Collections.IEnumerator";
+    BEGIN
+      XmlBuffer.RESET;
+      XmlBuffer.DELETEALL;
+      IF ISNULL(XmlDoc) THEN
+        EXIT;
+
+      //IF GUIALLOWED THEN
+      //  Window.OPEN(txtdialog);
+
+      e := XmlDoc.ChildNodes().GetEnumerator();
+      WHILE (e.MoveNext()) DO BEGIN
+        ReadChildNodes(e.Current,'',0,0,XmlBuffer,0,0,'','', _FastIteration);
+        IF GUIALLOWED THEN
+          Window.UPDATE(1,e.Current);
+
+      END;
+
+      IF GUIALLOWED THEN
+        Window.CLOSE;
+    END;
+
+    PROCEDURE Init@1000000006(VAR TempServerFile@1000000000 : Text[250];FlowSetupNo@1000000004 : Code[20]);
+    VAR
+      XmlBuffer@1000000003 : Record 50012;
+    BEGIN
+      IF GIMXMLMapping.ISEMPTY THEN
+        ERROR('');
+
+      //TempServerFile := FileMgt.DownloadTempFile(_ClientFileName);
+      //TempServerFile := FileMgt.ServerTempFileName('','ubl');
+      //IF NOT UPLOAD(TxtUpload, FileMgt.Magicpath,'',_ClientFileName,TempServerFile ) THEN
+      //BEGIN
+      //   ERASE(TempServerFile);
+      //   ERROR(GETLASTERRORTEXT);
+      //END;
+
+      Load(TempServerFile);
+
+      IF GUIALLOWED THEN
+        Window.OPEN(txtdialog);
+
+      GIMXMLMapping.SETFILTER("Flow Setup No.",'%1|%2',FlowSetupNo,'');
+      GIMXMLMapping.SETRANGE("Entry type",GIMXMLMapping."Entry type"::Namespace);
+      GIMXMLMapping.FIND('-');
+      REPEAT
+        AddNameSpace(GIMXMLMapping.Alias,GIMXMLMapping.URI);
+      UNTIL GIMXMLMapping.NEXT = 0 ;
+
+      GIMXMLMapping.SETRANGE("Entry type",GIMXMLMapping."Entry type"::Data);
+      IF GIMXMLMapping.FIND('-') THEN
+      REPEAT
+        IF GUIALLOWED THEN
+          Window.UPDATE(1,GIMXMLMapping.Xpath);
+        SelectNodes(XmlBuffer,GIMXMLMapping.Xpath);
+
+        MapNodes(GIMXMLMapping);
+      UNTIL GIMXMLMapping.NEXT = 0 ;
+
+
+      IF EXISTS(TempServerFile) THEN
+        ERASE(TempServerFile);
+
+      //IF GUIALLOWED THEN
+       // Window.CLOSE;
+    END;
+
+    PROCEDURE SetAttributes@1000000007(VAR _XmlElement@1000000003 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlElement";_AttName@1000000000 : Text[250];_AttValue@1000000001 : Text[250]);
+    VAR
+      L_XmlAttribute@1000000002 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlAttribute";
+    BEGIN
+        L_XmlAttribute := XmlDoc.CreateAttribute(_AttName);
+        L_XmlAttribute.Value := _AttValue;
+        _XmlElement.SetAttributeNode(L_XmlAttribute);
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

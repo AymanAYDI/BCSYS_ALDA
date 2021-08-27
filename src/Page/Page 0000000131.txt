@@ -2,9 +2,10 @@ OBJECT Page 131 Posted Sales Shpt. Subform
 {
   OBJECT-PROPERTIES
   {
-    Date=22/12/15;
-    Time=12:00:00;
-    Version List=NAVW19.00.00.44365,NAVFR9.00.00.44365;
+    Date=31/07/16;
+    Time=18:08:18;
+    Modified=Yes;
+    Version List=NAVW19.00.00.44365,NAVFR9.00.00.44365,AB6.JME.001,ALDA;
   }
   PROPERTIES
   {
@@ -27,6 +28,7 @@ OBJECT Page 131 Posted Sales Shpt. Subform
                       Name=ItemTrackingEntries;
                       CaptionML=[ENU=Item &Tracking Entries;
                                  FRA=êcritures &traáabilitÇ];
+                      Visible=FALSE;
                       Image=ItemTrackingLedger;
                       OnAction=BEGIN
                                  ShowItemTrackingLines;
@@ -36,6 +38,7 @@ OBJECT Page 131 Posted Sales Shpt. Subform
                       AccessByPermission=TableData 90=R;
                       CaptionML=[ENU=Assemble-to-Order;
                                  FRA=Assembler pour commande];
+                      Visible=FALSE;
                       OnAction=BEGIN
                                  ShowAsmToOrder;
                                END;
@@ -47,6 +50,7 @@ OBJECT Page 131 Posted Sales Shpt. Subform
       { 1903098504;2 ;Action    ;
                       CaptionML=[ENU=Order Tra&cking;
                                  FRA=&Chaånage];
+                      Visible=FALSE;
                       Image=OrderTracking;
                       OnAction=BEGIN
                                  ShowTracking;
@@ -98,6 +102,7 @@ OBJECT Page 131 Posted Sales Shpt. Subform
                       Name=ItemInvoiceLines;
                       CaptionML=[ENU=Item Invoice &Lines;
                                  FRA=&Lignes facture article];
+                      Visible=FALSE;
                       Image=ItemInvoice;
                       OnAction=BEGIN
                                  PageShowItemSalesInvLines;
@@ -113,8 +118,18 @@ OBJECT Page 131 Posted Sales Shpt. Subform
     { 1   ;1   ;Group     ;
                 GroupType=Repeater }
 
+    { 1180250001;2;Field  ;
+                SourceExpr="Anomaly Code";
+                Editable=FALSE }
+
     { 2   ;2   ;Field     ;
                 SourceExpr=Type }
+
+    { 1000000002;2;Field  ;
+                SourceExpr="Line No." }
+
+    { 1000000001;2;Field  ;
+                SourceExpr="Line No. Reference Customer" }
 
     { 4   ;2   ;Field     ;
                 SourceExpr="No." }
@@ -122,6 +137,12 @@ OBJECT Page 131 Posted Sales Shpt. Subform
     { 24  ;2   ;Field     ;
                 SourceExpr="Cross-Reference No.";
                 Visible=FALSE }
+
+    { 1000000000;2;Field  ;
+                SourceExpr="Cross-Reference No. of Vendor" }
+
+    { 1180250002;2;Field  ;
+                SourceExpr="HS Code" }
 
     { 14  ;2   ;Field     ;
                 SourceExpr="Variant Code";
@@ -170,14 +191,16 @@ OBJECT Page 131 Posted Sales Shpt. Subform
                 Visible=FALSE }
 
     { 36  ;2   ;Field     ;
-                SourceExpr="Planned Delivery Date" }
+                SourceExpr="Planned Delivery Date";
+                Visible=FALSE }
 
     { 40  ;2   ;Field     ;
-                SourceExpr="Planned Shipment Date" }
+                SourceExpr="Planned Shipment Date";
+                Visible=FALSE }
 
     { 16  ;2   ;Field     ;
                 SourceExpr="Shipment Date";
-                Visible=TRUE }
+                Visible=FALSE }
 
     { 32  ;2   ;Field     ;
                 SourceExpr="Shipping Time";
@@ -203,10 +226,16 @@ OBJECT Page 131 Posted Sales Shpt. Subform
                 SourceExpr="Shortcut Dimension 2 Code";
                 Visible=FALSE }
 
+    { 1180250003;2;Field  ;
+                SourceExpr="Country Dimension Code" }
+
     { 52  ;2   ;Field     ;
                 SourceExpr=Correction;
                 Visible=FALSE;
                 Editable=FALSE }
+
+    { 1000000003;2;Field  ;
+                SourceExpr="Bill-to Customer No." }
 
   }
   CODE

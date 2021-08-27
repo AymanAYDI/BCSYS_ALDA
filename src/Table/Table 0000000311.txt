@@ -2,9 +2,10 @@ OBJECT Table 311 Sales & Receivables Setup
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
-    Version List=NAVW19.00;
+    Date=29/03/17;
+    Time=16:53:15;
+    Modified=Yes;
+    Version List=NAVW19.00,ALDA;
   }
   PROPERTIES
   {
@@ -198,6 +199,24 @@ OBJECT Table 311 Sales & Receivables Setup
     { 7102;   ;Salesperson Dimension Code;Code20  ;TableRelation=Dimension;
                                                    CaptionML=[ENU=Salesperson Dimension Code;
                                                               FRA=Code axe vendeur] }
+    { 50000;  ;Item No. for Shipping Charge;Code20;TableRelation=Item;
+                                                   CaptionML=[ENU=Item No. for Shipping Charge;
+                                                              FRA=Nø article pour frais transport] }
+    { 50001;  ;Footer text Line 1  ;Text250       ;CaptionML=[ENU=Footer text Line 1;
+                                                              FRA=Texte pied ligne 1] }
+    { 50002;  ;Footer text Line 2  ;Text250       ;CaptionML=[ENU=Footer text Line 2;
+                                                              FRA=Texte pied ligne 2] }
+    { 50003;  ;Footer text Line 3  ;Text250       ;CaptionML=[ENU=Footer text Line 3;
+                                                              FRA=Texte pied ligne 3] }
+    { 50004;  ;Footer text Line 4  ;Text250       ;CaptionML=[ENU=Footer text Line 4;
+                                                              FRA=Texte pied ligne 4] }
+    { 50005;  ;Picture Defense Office;BLOB        ;CaptionML=[ENU=PictureDefenseOffice;
+                                                              FRA=Image D‚fense Bureau];
+                                                   SubType=Bitmap }
+    { 50006;  ;WebSite Defense Office;Text80      ;CaptionML=[ENU=WebSite DefenseOffice;
+                                                              FRA=Site Web D‚fense Bureau] }
+    { 50007;  ;MemberOf GMES Text  ;Text50        ;CaptionML=[ENU=MemberOfGMESText;
+                                                              FRA=Texte Membre du GMES] }
   }
   KEYS
   {
@@ -223,6 +242,9 @@ OBJECT Table 311 Sales & Receivables Setup
     END;
 
     BEGIN
+    {
+      Rudy VILAIN 11/01/13 : Ajout de 4 lignes de texte en pied de page des document vente
+    }
     END.
   }
 }

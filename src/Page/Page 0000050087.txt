@@ -1,0 +1,85 @@
+OBJECT Page 50087 Model Permission
+{
+  OBJECT-PROPERTIES
+  {
+    Date=23/03/16;
+    Time=18:51:31;
+    Modified=Yes;
+    Version List=;
+  }
+  PROPERTIES
+  {
+    SourceTable=Table50017;
+    PageType=List;
+  }
+  CONTROLS
+  {
+    { 1000000000;0;Container;
+                ContainerType=ContentArea }
+
+    { 1000000001;1;Group  ;
+                Name=Group;
+                GroupType=Repeater }
+
+    { 1000000002;2;Field  ;
+                SourceExpr="Role ID";
+                Visible=FALSE;
+                Editable=FALSE }
+
+    { 1000000003;2;Field  ;
+                SourceExpr="Role Name";
+                Visible=FALSE;
+                Editable=FALSE }
+
+    { 1000000004;2;Field  ;
+                SourceExpr="Object Type" }
+
+    { 1000000005;2;Field  ;
+                SourceExpr="Object ID" }
+
+    { 1000000006;2;Field  ;
+                SourceExpr="Object Name" }
+
+    { 1000000007;2;Field  ;
+                SourceExpr="Read Permission" }
+
+    { 1000000008;2;Field  ;
+                SourceExpr="Insert Permission" }
+
+    { 1000000009;2;Field  ;
+                SourceExpr="Modify Permission" }
+
+    { 1000000010;2;Field  ;
+                SourceExpr="Delete Permission" }
+
+    { 1000000011;2;Field  ;
+                SourceExpr="Execute Permission" }
+
+    { 1000000012;2;Field  ;
+                CaptionML=[ENU=Security Filter;
+                           FRB=Filtre s‚curit‚;
+                           NLB=Beveiligingsfilter];
+                SourceExpr="Security Filter";
+                OnAssistEdit=VAR
+                               TableFilter@1000 : Record 9805;
+                               TableFilterPage@1001 : Page 9805;
+                             BEGIN
+                               TableFilter.FILTERGROUP(2);
+                               TableFilter.SETRANGE("Table Number","Object ID");
+                               TableFilter.FILTERGROUP(0);
+                               TableFilterPage.SETTABLEVIEW(TableFilter);
+                               TableFilterPage.SetSourceTable(FORMAT("Security Filter"),"Object ID","Object Name");
+                               IF ACTION::OK = TableFilterPage.RUNMODAL THEN
+                                 EVALUATE("Security Filter",TableFilterPage.CreateTextTableFilter(FALSE));
+                             END;
+                              }
+
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

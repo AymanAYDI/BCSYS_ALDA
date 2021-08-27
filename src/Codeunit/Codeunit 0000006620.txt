@@ -2,8 +2,9 @@ OBJECT Codeunit 6620 Copy Document Mgt.
 {
   OBJECT-PROPERTIES
   {
-    Date=26/11/15;
-    Time=12:00:00;
+    Date=24/07/18;
+    Time=16:03:46;
+    Modified=Yes;
     Version List=NAVW19.00.00.43897;
   }
   PROPERTIES
@@ -81,6 +82,7 @@ OBJECT Codeunit 6620 Copy Document Mgt.
       LinesApplied@1062 : Boolean;
       DiffPostDateOrderQst@1065 : TextConst 'ENU=The Posting Date of the copied document is different from the Posting Date of the original document. The original document already has a Posting No. based on a number series with date order. When you post the copied document, you may have the wrong date order in the posted documents.\Do you want to continue?;FRA=La Date comptabilisation du document copi‚ est diff‚rente de celle du document original. Le document original a d‚j… un Nø validation bas‚ sur une souche de num‚ros avec ordre chronologique. Lorsque vous validez le document copi‚, il se peut que les documents valid‚s contiennent le mauvais ordre chronologique.\Souhaitez-vous continuerÿ?';
       CopyPostedDeferral@1064 : Boolean;
+      KeepPrice@1000000000 : Boolean;
 
     PROCEDURE SetProperties@2(NewIncludeHeader@1001 : Boolean;NewRecalculateLines@1000 : Boolean;NewMoveNegLines@1006 : Boolean;NewCreateToHeader@1002 : Boolean;NewHideDialog@1003 : Boolean;NewExactCostRevMandatory@1004 : Boolean;NewApplyFully@1005 : Boolean);
     BEGIN
@@ -958,6 +960,14 @@ OBJECT Codeunit 6620 Copy Document Mgt.
         VALIDATE("Direct Unit Cost");
         Description := FromSalesLine.Description;
         "Description 2" := FromSalesLine."Description 2";
+        //AC1.00 BEGIN
+        "Exported Line" := FromSalesLine."Exported Line";
+        "Date Exported" := FromSalesLine."Date Exported";
+        "EDI Code" := FromSalesLine."EDI Code";
+        "EDI No." := FromSalesLine."EDI No.";
+        "Order Reference Customer" := FromSalesLine."Order Reference Customer";
+        "Line No. Reference Customer" := FromSalesLine."Line No. Reference Customer";
+        //AC1.00 END
       END;
     END;
 
@@ -1072,6 +1082,7 @@ OBJECT Codeunit 6620 Copy Document Mgt.
             "Inv. Discount Amount",
             ROUND(FromSalesLine."Inv. Discount Amount",Currency."Amount Rounding Precision"));
         END;
+
         ToSalesLine.VALIDATE("Appl.-from Item Entry",FromSalesLine."Appl.-from Item Entry");
         IF NOT CreateToHeader THEN
           IF ToSalesLine."Shipment Date" = 0D THEN BEGIN
@@ -1081,6 +1092,20 @@ OBJECT Codeunit 6620 Copy Document Mgt.
               ToSalesLine."Shipment Date" := WORKDATE;
           END;
       END;
+
+      //BC6>> 240718
+      //IF KeepPrice THEN BEGIN
+      IF KeepPrice AND  (FromSalesLine.Type <> FromSalesLine.Type::" ") THEN BEGIN
+        ToSalesLine.VALIDATE("Unit Price",FromSalesLine."Unit Price");
+        ToSalesLine.VALIDATE("Line Discount %",FromSalesLine."Line Discount %");
+        ToSalesLine.VALIDATE(
+          "Line Discount Amount",
+          ROUND(FromSalesLine."Line Discount Amount",Currency."Amount Rounding Precision"));
+        ToSalesLine.VALIDATE(
+          "Inv. Discount Amount",
+          ROUND(FromSalesLine."Inv. Discount Amount",Currency."Amount Rounding Precision"));
+      END;
+      //BC6<<
 
       IF MoveNegLines AND (ToSalesLine.Type <> ToSalesLine.Type::" ") THEN BEGIN
         ToSalesLine.VALIDATE(Quantity,-FromSalesLine.Quantity);
@@ -5167,7 +5192,16 @@ OBJECT Codeunit 6620 Copy Document Mgt.
         (PurchaseHeader."Document Type" <> PurchaseHeader."Document Type"::"Blanket Order"));
     END;
 
+    PROCEDURE SetKeepSamePrice@1000000000(_KeepPrice@1000000000 : Boolean);
     BEGIN
+      //BC6>>
+      KeepPrice := _KeepPrice
+    END;
+
+    BEGIN
+    {
+      AC.100 Ajout C/AL TransfldsFromSalesToPurchLine()
+    }
     END.
   }
 }

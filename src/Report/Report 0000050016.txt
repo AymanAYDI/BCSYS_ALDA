@@ -1,0 +1,131 @@
+OBJECT Report 50016 Release Sales Order
+{
+  OBJECT-PROPERTIES
+  {
+    Date=28/09/12;
+    Time=17:01:03;
+    Modified=Yes;
+    Version List=AC1.00,2016;
+  }
+  PROPERTIES
+  {
+    CaptionML=[ENU=Release Sales Order;
+               FRA=Lance commande vente];
+    ShowPrintStatus=No;
+    ProcessingOnly=Yes;
+    OnInitReport=BEGIN
+                   i := 0;
+                   y := 0;
+                 END;
+
+    OnPreReport=BEGIN
+                  Window.OPEN(
+                    Text000 + '\' +
+                    '@1@@@@@@@@@@@@@@@@@@@@@');
+                  Window.UPDATE(1,0);
+                END;
+
+    OnPostReport=BEGIN
+                   Window.CLOSE;
+
+                   MESSAGE(STRSUBSTNO(Text001,i,y));
+                 END;
+
+  }
+  DATASET
+  {
+    { 5290;    ;DataItem;                    ;
+               DataItemTable=Table36;
+               DataItemTableView=SORTING(No.)
+                                 WHERE(Document Type=CONST(Order),
+                                       Status=CONST(Open),
+                                       Sell-to Customer No.=FILTER(<>''));
+               OnPreDataItem=BEGIN
+                               RecCount := COUNT;
+                             END;
+
+               OnAfterGetRecord=BEGIN
+                                  CurrRec += 1;
+
+                                  SalesLine.RESET;
+                                  SalesLine.SETRANGE("Document Type","Document Type");
+                                  SalesLine.SETRANGE("Document No.","No.");
+                                  SalesLine.SETFILTER(Quantity,'>%1',0);
+                                  IF SalesLine.FINDSET(FALSE,FALSE) THEN BEGIN
+                                    CLEAR(ReleaseSalesDoc);
+                                    SalesHeader := "Sales Header";
+                                    SalesHeader.CALCFIELDS(Comment);
+                                    IF WithoutCommentOnly THEN
+                                      IF SalesHeader.Comment = FALSE THEN BEGIN
+                                        SalesLine2.RESET;
+                                        SalesLine2.SETRANGE("Document Type","Document Type");
+                                        SalesLine2.SETRANGE("Document No.","No.");
+                                        SalesLine2.SETRANGE(Type,SalesLine2.Type::" ");
+                                        IF NOT SalesLine2.FINDSET(FALSE,FALSE) THEN BEGIN
+                                          ReleaseSalesDoc.PerformManualRelease(SalesHeader);
+                                          i += 1;
+                                        END ELSE
+                                         y += 1
+                                      END ELSE
+                                        y += 1
+                                    ELSE BEGIN
+                                      ReleaseSalesDoc.PerformManualRelease(SalesHeader);
+                                      i += 1;
+                                    END;
+                                  END ELSE
+                                    y += 1;
+
+                                  Window.UPDATE(1,ROUND(CurrRec / RecCount * 10000,1));
+                                END;
+
+               ReqFilterFields=No. }
+
+  }
+  REQUESTPAGE
+  {
+    PROPERTIES
+    {
+    }
+    CONTROLS
+    {
+      { 1180250002;0;Container;
+                  ContainerType=ContentArea }
+
+      { 1180250001;1;Group  ;
+                  CaptionML=[ENU=Options;
+                             FRA=Options] }
+
+      { 1180250003;2;Field  ;
+                  CaptionML=[ENU=Without  Comment Only;
+                             FRA=Seulement sans commentaire];
+                  SourceExpr=WithoutCommentOnly }
+
+    }
+  }
+  LABELS
+  {
+  }
+  CODE
+  {
+    VAR
+      SalesHeader@1180250002 : Record 36;
+      SalesLine@1180250011 : Record 37;
+      SalesLine2@1180250012 : Record 37;
+      ReleaseSalesDoc@1180250001 : Codeunit 414;
+      Window@1180250003 : Dialog;
+      Text000@1180250004 : TextConst 'ENU=Batch in process...;FRA=Traitement en cours...';
+      WithoutCommentOnly@1180250005 : Boolean;
+      Text001@1180250006 : TextConst 'FRA=Commande vente :\\- lanc‚e(s) : %1,\- non lanc‚e(s) : %2.';
+      i@1180250007 : Integer;
+      y@1180250008 : Integer;
+      RecCount@1180250009 : Integer;
+      CurrRec@1180250010 : Integer;
+
+    BEGIN
+    END.
+  }
+  RDLDATA
+  {
+  }
+}
+

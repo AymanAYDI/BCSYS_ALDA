@@ -4,6 +4,7 @@ OBJECT Table 6650 Return Shipment Header
   {
     Date=15/09/15;
     Time=12:00:00;
+    Modified=Yes;
     Version List=NAVW19.00;
   }
   PROPERTIES
@@ -340,6 +341,10 @@ OBJECT Table 6650 Return Shipment Header
     { 6602;   ;Return Order No. Series;Code10     ;TableRelation="No. Series";
                                                    CaptionML=[ENU=Return Order No. Series;
                                                               FRA=Souches de nø retour] }
+    { 50002;  ;Order Reference Customer;Text35    ;CaptionML=[ENU=Order Reference Customer;
+                                                              FRA=R‚f‚rence commande client];
+                                                   Description=AC1.00;
+                                                   Editable=Yes }
   }
   KEYS
   {

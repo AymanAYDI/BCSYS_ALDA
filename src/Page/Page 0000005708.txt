@@ -2,9 +2,10 @@ OBJECT Page 5708 Get Shipment Lines
 {
   OBJECT-PROPERTIES
   {
-    Date=09/09/14;
-    Time=12:00:00;
-    Version List=NAVW18.00;
+    Date=21/09/18;
+    Time=14:38:48;
+    Modified=Yes;
+    Version List=NAVW18.00,AC0,AC2.00;
   }
   PROPERTIES
   {
@@ -13,9 +14,22 @@ OBJECT Page 5708 Get Shipment Lines
                FRA=Extraire lignes exp‚dition];
     SourceTable=Table111;
     PageType=List;
+    OnOpenPage=BEGIN
+                 //ACBDU 170414D
+                 //IF FINDSET THEN;
+               END;
+
     OnAfterGetRecord=BEGIN
                        "Document No.HideValue" := FALSE;
                        DocumentNoOnFormat;
+
+                       //AC1.00 BEGIN
+                       OrderRefCustHideValue := FALSE;
+                       OrderRefCustOnFormat;
+                       //AC1.00 END
+
+                       // ALDA 031214D
+                       GetUnitPriceFromOrder;
                      END;
 
     OnQueryClosePage=BEGIN
@@ -69,6 +83,16 @@ OBJECT Page 5708 Get Shipment Lines
 
     { 1   ;1   ;Group     ;
                 GroupType=Repeater }
+
+    { 1180250001;2;Field  ;
+                SourceExpr="Order Reference Customer";
+                HideValue=OrderRefCustHideValue }
+
+    { 1180250003;2;Field  ;
+                SourceExpr="Order No." }
+
+    { 1180250002;2;Field  ;
+                SourceExpr="Vendor Shipment No." }
 
     { 2   ;2   ;Field     ;
                 SourceExpr="Document No.";
@@ -128,6 +152,30 @@ OBJECT Page 5708 Get Shipment Lines
                 SourceExpr="Appl.-to Item Entry";
                 Visible=FALSE }
 
+    { 1180250004;2;Field  ;
+                CaptionML=[ENU=Unit Price;
+                           FRA=Prix unitaire];
+                BlankZero=Yes;
+                Description=ALDA 031214D;
+                SourceExpr=UnitPrice;
+                Editable=FALSE }
+
+    { 1180250005;2;Field  ;
+                CaptionML=[ENU=Line Discount Amount;
+                           FRA=Montant remise ligne];
+                BlankZero=Yes;
+                Description=ALDA 031214D;
+                SourceExpr=LineDiscountAmt;
+                Editable=FALSE }
+
+    { 1180250006;2;Field  ;
+                CaptionML=[ENU=Amount;
+                           FRA=Montant];
+                BlankZero=Yes;
+                Description=ALDA 031214D;
+                SourceExpr=Amt;
+                Editable=FALSE }
+
     { 34  ;2   ;Field     ;
                 SourceExpr="Job No.";
                 Visible=FALSE }
@@ -141,6 +189,9 @@ OBJECT Page 5708 Get Shipment Lines
 
     { 52  ;2   ;Field     ;
                 SourceExpr="Qty. Shipped Not Invoiced" }
+
+    { 1000000001;2;Field  ;
+                SourceExpr="External Doc. No." }
 
     { 1900000007;0;Container;
                 ContainerType=FactBoxArea }
@@ -164,6 +215,11 @@ OBJECT Page 5708 Get Shipment Lines
       TempSalesShptLine@1002 : TEMPORARY Record 111;
       SalesGetShpt@1003 : Codeunit 64;
       "Document No.HideValue"@19020538 : Boolean INDATASET;
+      OrderRefCustHideValue@1180250001 : Boolean INDATASET;
+      OrderRefCustEmphasize@1180250002 : Boolean INDATASET;
+      UnitPrice@1180250005 : Decimal;
+      LineDiscountAmt@1180250004 : Decimal;
+      Amt@1180250003 : Decimal;
 
     PROCEDURE SetSalesHeader@1(VAR SalesHeader2@1000 : Record 36);
     BEGIN
@@ -182,7 +238,10 @@ OBJECT Page 5708 Get Shipment Lines
         SalesShptLine.COPYFILTERS(Rec);
         SalesShptLine.SETRANGE("Document No.","Document No.");
         SalesShptLine.SETFILTER("Qty. Shipped Not Invoiced",'<>0');
+        //AB6.JME.001 --<<
         IF SalesShptLine.FINDFIRST THEN BEGIN
+        //IF SalesShptLine.FINDFIRST THEN;
+        //AB6.JME.001 --<<
           TempSalesShptLine := SalesShptLine;
           TempSalesShptLine.INSERT;
         END;
@@ -204,7 +263,42 @@ OBJECT Page 5708 Get Shipment Lines
         "Document No.HideValue" := TRUE;
     END;
 
+    PROCEDURE OrderRefCustOnFormat@1180250001();
     BEGIN
+      //AC1.00
+
+      IF IsFirstDocLine THEN
+        OrderRefCustEmphasize := TRUE
+      ELSE
+        OrderRefCustHideValue := TRUE;
+    END;
+
+    PROCEDURE GetUnitPriceFromOrder@1180250002();
+    VAR
+      SalesLine@1180250001 : Record 37;
+    BEGIN
+      // ALDA 031214D.Begin
+      IF SalesLine.GET(SalesLine."Document Type"::Order,"Order No.","Order Line No.") THEN BEGIN
+        UnitPrice := SalesLine."Unit Price";
+        LineDiscountAmt := SalesLine."Line Discount Amount";
+        Amt := (UnitPrice * Quantity) - LineDiscountAmt;
+      END ELSE BEGIN
+        UnitPrice := 0;
+        LineDiscountAmt := 0;
+        Amt := 0;
+      END;
+      // ALDA 031214D.End
+    END;
+
+    BEGIN
+    {
+      AC1.00 Ajout Field <Order Reference Customer>
+                   Variable OrderRefCustHideValue OrderRefCustEmphasize
+                   Function OrderRefCustOnFormat();
+                   C/AL OnAfterGetRecord()
+
+      AB6.JME.001   17/10/12  Correction d'un bug std
+    }
     END.
   }
 }

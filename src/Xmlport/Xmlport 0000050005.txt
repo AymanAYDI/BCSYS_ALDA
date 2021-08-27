@@ -1,0 +1,696 @@
+OBJECT XMLport 50005 Import MAJUSCULE Invoice UBL
+{
+  OBJECT-PROPERTIES
+  {
+    Date=03/08/15;
+    Time=11:35:21;
+    Modified=Yes;
+    Version List=;
+  }
+  PROPERTIES
+  {
+    CaptionML=[ENU=Import MAJUSCULE Invoice UBL;
+               FRA=Import MAJUSCULE Invoice UBL];
+    Encoding=UTF-8;
+    OnInitXMLport=BEGIN
+                    GLSetup.GET;
+                    CompanyInfo.GET;
+
+                    VendorNo := '0174'
+                  END;
+
+  }
+  ELEMENTS
+  {
+    { [{DF78E1E0-67BE-4F1C-8F93-F74A5C6E8F85}];  ;Invoice             ;Element ;Table   ;
+                                                  SourceTable=Table38 }
+
+    { [{FC402633-5D6D-4A99-8342-5F2EBF4A93C9}];1 ;xmlns_1             ;Attribute;Text    }
+
+    { [{E90DF64D-A341-4A00-8708-2B72F252990F}];1 ;xmlns:cac_2         ;Attribute;Text    }
+
+    { [{2A6D58BD-6781-47F1-BDD8-FF8F2B39371B}];1 ;xmlns:cbc_3         ;Attribute;Text    }
+
+    { [{5AA21AB5-CFF8-45CB-8FCE-54689EE0668D}];1 ;xmlns:ext_4         ;Attribute;Text    }
+
+    { [{F6F9C74B-CF6B-4141-BAE4-44FDAAD947C8}];1 ;xmlns:xsi_5         ;Attribute;Text    }
+
+    { [{F3035A7A-C5A0-4D05-9FF7-EAD0347A273B}];1 ;xsi:schemaLocation_6;Attribute;Text    }
+
+    { [{81C5A563-15BC-4E57-B955-2A0667B646B2}];1 ;cbc:UBLVersionID_7  ;Attribute;Text    }
+
+    { [{16A9DE6C-1BB8-41EF-8B91-931129CEB739}];1 ;cbc:CustomizationID_8;Attribute;Text   }
+
+    { [{4753C42D-CEC1-4867-BFED-8721DE1A6BBB}];1 ;cbc:ProfileID_9     ;Attribute;Text    }
+
+    { [{138B98DC-A522-4580-920B-7DCE89FDFCB1}];1 ;cbc:ID_10           ;Element ;Field   ;
+                                                  DataType=Code;
+                                                  SourceField=Purchase Header::Vendor Invoice No. }
+
+    { [{F4D067C3-DDE3-42CC-8F26-350141BC4900}];1 ;cbc:CopyIndicator_11;Element ;Text    ;
+                                                  VariableName=CopyIndicator;
+                                                  Import::OnAfterAssignVariable=BEGIN
+                                                                                  PurchInvHeader.RESET;
+                                                                                  PurchInvHeader.SETRANGE("Vendor Invoice No.","Purchase Header"."Vendor Invoice No.");
+                                                                                  IF PurchInvHeader.FINDSET THEN
+                                                                                    ERROR(Text001);
+                                                                                END;
+
+                                                  Export::OnBeforePassVariable=BEGIN
+                                                                                 CopyIndicator := 'FALSE';
+                                                                               END;
+                                                                                }
+
+    { [{ACE5DAF7-FD7A-4D59-9ACB-7311BB86A3AB}];1 ;cbc:UUID_12         ;Element ;Text     }
+
+    { [{241C1988-BC4F-401B-BB2F-B3CDF8D33A6B}];1 ;cbc:IssueDate_13    ;Element ;Text    ;
+                                                  VariableName=IssueDate;
+                                                  DataType=Date;
+                                                  Import::OnAfterAssignVariable=VAR
+                                                                                  Day@1180250004 : Integer;
+                                                                                  Month@1180250003 : Integer;
+                                                                                  Year@1180250002 : Integer;
+                                                                                  OutputDate@1180250001 : Date;
+                                                                                BEGIN
+                                                                                  EVALUATE(Day,COPYSTR(IssueDate,9,2));
+                                                                                  EVALUATE(Month,COPYSTR(IssueDate,6,2));
+                                                                                  EVALUATE(Year,COPYSTR(IssueDate,1,4));
+                                                                                  OutputDate := DMY2DATE(Day,Month,Year);
+                                                                                  "Purchase Header".VALIDATE("Document Date",OutputDate);
+                                                                                END;
+
+                                                  Export::OnBeforePassVariable=BEGIN
+                                                                                 IssueDate := FORMAT("Purchase Header"."Document Date",0,'<Year4>-<Month,2>-<Day,2>');
+                                                                               END;
+                                                                                }
+
+    { [{C7B2C714-7EC1-44FF-8766-D7A29FBBCE26}];1 ;cbc:InvoiceTypeCode_14;Element;Text   ;
+                                                  VariableName=InvoiceTypeCode;
+                                                  Export::OnBeforePassVariable=BEGIN
+                                                                                 CASE "Purchase Header"."Document Type" OF
+                                                                                   "Purchase Header"."Document Type"::Invoice:InvoiceTypeCode := '380';
+                                                                                   "Purchase Header"."Document Type"::"Credit Memo":InvoiceTypeCode := '381';
+                                                                                 END;//CASE
+                                                                               END;
+                                                                                }
+
+    { [{FD02F951-9593-4F7C-9862-A0A05682C230}];1 ;cbc:DocumentCurrencyCode_15;Element;Text;
+                                                  VariableName=DocumentCurrencyCode;
+                                                  DataType=Code;
+                                                  Import::OnAfterAssignVariable=BEGIN
+                                                                                  IF DocumentCurrencyCode = 'EUR' THEN
+                                                                                    "Purchase Header".VALIDATE("Currency Code",'')
+                                                                                  ELSE
+                                                                                    "Purchase Header".VALIDATE("Currency Code",DocumentCurrencyCode);
+                                                                                END;
+
+                                                  Export::OnBeforePassVariable=BEGIN
+                                                                                 IF "Purchase Header"."Currency Code" = '' THEN
+                                                                                   DocumentCurrencyCode := GLSetup."LCY Code"
+                                                                                 ELSE
+                                                                                   DocumentCurrencyCode := "Purchase Header"."Currency Code";
+                                                                               END;
+                                                                                }
+
+    { [{C67279CE-0C47-49F6-8E59-E10F3BBF7984}];1 ;cbc:TaxCurrencyCode_16;Element;Text   ;
+                                                  VariableName=TaxCurrencyCode;
+                                                  Export::OnBeforePassVariable=BEGIN
+                                                                                 TaxCurrencyCode := DocumentCurrencyCode;
+                                                                               END;
+                                                                                }
+
+    { [{605CEB56-D72D-4B06-B697-E2876A4A5323}];1 ;cbc:PaymentCurrencyCode_17;Element;Text;
+                                                  VariableName=PaymentCurrencyCode;
+                                                  Export::OnBeforePassVariable=BEGIN
+                                                                                 PaymentCurrencyCode := DocumentCurrencyCode;
+                                                                               END;
+                                                                                }
+
+    { [{C4108CE8-100F-42E6-99B0-EC9D33D52729}];1 ;cac:AccountingSupplierParty_18;Element;Text }
+
+    { [{3E157DF3-6DB1-4F18-AB8F-5D039D574910}];2 ;cbc:CustomerAssignedAccountID_18;Element;Text;
+                                                  VariableName=CustomerAssignedAccountID;
+                                                  Export::OnBeforePassVariable=BEGIN
+                                                                                 CASE "Purchase Header"."Buy-from Vendor No." OF
+                                                                                   VendorNo:CustomerAssignedAccountID := 'MAJ000';
+                                                                                   ELSE
+                                                                                     CustomerAssignedAccountID := ' ';
+                                                                                 END;//CASE
+                                                                               END;
+                                                                                }
+
+    { [{56F2D237-4C45-4827-A6AC-FCA58D96B4C9}];2 ;cac:Party_19        ;Element ;Text     }
+
+    { [{9F9E3E24-FDFC-4542-A629-046B3F23D5AE}];3 ;cac:PartyIdentification_19;Element;Text }
+
+    { [{FA1846F5-5255-4E85-BC0D-9443C8D871F4}];4 ;cbc:ID_19           ;Element ;Text    ;
+                                                  VariableName=ID_19;
+                                                  Export::OnBeforePassVariable=BEGIN
+                                                                                 Vend.GET(VendorNo);
+                                                                                 ID_19 := ' ';
+                                                                               END;
+                                                                                }
+
+    { [{E1E94D1E-4170-4676-968D-6173E97C6BAF}];3 ;cac:PartyName_20    ;Element ;Text     }
+
+    { [{853E76F0-4115-41AD-8ED0-0D285BCEF496}];4 ;cac:Name_20         ;Element ;Field   ;
+                                                  DataType=Text;
+                                                  SourceField=Purchase Header::Buy-from Vendor Name }
+
+    { [{9DCDC5C2-6B3D-4D56-926C-5BDCF1A192DC}];3 ;cac:PostalAddress_21;Element ;Text     }
+
+    { [{CE28AC19-779E-4385-95B2-B920E114055A}];4 ;cbc:CityAddress_21  ;Element ;Field   ;
+                                                  DataType=Text;
+                                                  SourceField=Purchase Header::Buy-from City }
+
+    { [{3842690F-5783-43FB-9845-0703269F8E10}];4 ;cbc:PostalZone_22   ;Element ;Field   ;
+                                                  DataType=Code;
+                                                  SourceField=Purchase Header::Buy-from Post Code }
+
+    { [{35B64DF3-9D72-4692-8558-71244A1AA56E}];4 ;cac:AddressLine_23  ;Element ;Text     }
+
+    { [{E48D4284-D37B-4BE1-B985-F3D8FC2E5888}];5 ;cbc:Line_23         ;Element ;Field   ;
+                                                  DataType=Text;
+                                                  SourceField=Purchase Header::Buy-from Address }
+
+    { [{730B2ED5-F2C3-47A6-AAA0-456DB794C587}];4 ;cac:Country_24      ;Element ;Text     }
+
+    { [{E4A721BA-69B2-4829-B355-4B78875F9793}];5 ;cbc:IdentificationCode_24;Element;Field;
+                                                  DataType=Code;
+                                                  SourceField=Purchase Header::Buy-from Country/Region Code }
+
+    { [{0C8C5D1F-7029-486B-9D97-169EAED2146D}];4 ;cac:PartyTaxScheme_25;Element;Text     }
+
+    { [{4C66EF4C-C9C6-42E8-AF15-D1DD2CA0DD5E}];5 ;cbc:TaxTypeCode_25  ;Element ;Text    ;
+                                                  VariableName=TaxTypeCode;
+                                                  Export::OnBeforePassVariable=BEGIN
+                                                                                 TaxTypeCode := 'VAT';
+                                                                               END;
+                                                                                }
+
+    { [{EA35D3FE-49E3-4B95-86F4-5E253E5FAE5F}];5 ;cbc:CompanyID_26    ;Element ;Field   ;
+                                                  DataType=Text;
+                                                  SourceField=Purchase Header::VAT Registration No. }
+
+    { [{4C55D089-25BD-4BD7-A32B-D3239909C05C}];1 ;cac:AccountingCustomerParty_27;Element;Text }
+
+    { [{280AFED8-7ED0-4ABB-8D07-B497DBB31E47}];2 ;cbc:SupplierAssignedAccountID_27;Element;Text;
+                                                  VariableName=SupplierAssignedAccountID;
+                                                  Export::OnBeforePassVariable=BEGIN
+                                                                                 SupplierAssignedAccountID := CompanyInfo."Follower No. for MAJUSCULE";
+                                                                               END;
+                                                                                }
+
+    { [{642E6F49-98FD-4B5B-924A-67F8FCECF17B}];2 ;cac:Party_28        ;Element ;Text     }
+
+    { [{06EB017A-FF15-4D09-BAFF-AB00D4DDE20B}];3 ;cac:PartyIdentification_28;Element;Text }
+
+    { [{F6408716-442F-4DCA-88D1-E257DB17286B}];4 ;cbc:ID_28           ;Element ;Text    ;
+                                                  VariableName=ID2;
+                                                  Export::OnBeforePassVariable=BEGIN
+                                                                                 ID2 := CompanyInfo."Registration No.";
+                                                                               END;
+                                                                                }
+
+    { [{CF0C1908-B4D7-4E69-BF34-F13EB5783C51}];3 ;cac:PartyName_29    ;Element ;Text     }
+
+    { [{283EFFA5-4245-42CE-9600-39BB468D2860}];4 ;cac:Name_29         ;Element ;Text    ;
+                                                  VariableName=Name2;
+                                                  DataType=Text;
+                                                  Export::OnBeforePassVariable=BEGIN
+                                                                                 Name2 := CompanyInfo.Name;
+                                                                               END;
+                                                                                }
+
+    { [{85B5AF3E-0102-40CE-9080-E9E9A49FAF0B}];3 ;cac:PostalAddress_30;Element ;Text     }
+
+    { [{F188CD23-5D7C-4AC0-ABA6-04C2C83672F6}];4 ;cbc:CityAddress_30  ;Element ;Text    ;
+                                                  VariableName=CityAddress2;
+                                                  DataType=Text;
+                                                  Export::OnBeforePassVariable=BEGIN
+                                                                                 CityAddress2 := CompanyInfo.City;
+                                                                               END;
+                                                                                }
+
+    { [{36531B61-32ED-4FE0-A348-6892ABB8FC31}];4 ;cbc:PostalZone_31   ;Element ;Text    ;
+                                                  VariableName=PostalZone2;
+                                                  DataType=Code;
+                                                  Export::OnBeforePassVariable=BEGIN
+                                                                                 PostalZone2 := CompanyInfo."Post Code";
+                                                                               END;
+                                                                                }
+
+    { [{79A1E964-B692-426D-9D28-EC79F16B116D}];4 ;cbc:CountrySubentity_32;Element;Text   }
+
+    { [{2061A6A8-7711-439B-85A3-DD6A359FE848}];4 ;cac:AddressLine_33  ;Element ;Text     }
+
+    { [{0A5E149F-C872-43A9-994C-066820CF42A7}];5 ;cbc:Line_33         ;Element ;Text    ;
+                                                  VariableName=Line2;
+                                                  DataType=Text;
+                                                  Export::OnBeforePassVariable=BEGIN
+                                                                                 Line2 := CompanyInfo.Address;
+                                                                               END;
+                                                                                }
+
+    { [{92E656BC-784F-4B19-BAC1-041D8FC15745}];4 ;cac:Country_34      ;Element ;Text     }
+
+    { [{E10733D5-333A-47D8-ACAE-0656AB721F84}];5 ;cbc:IdentificationCode_34;Element;Text;
+                                                  VariableName=IdentificationCode2;
+                                                  DataType=Code;
+                                                  Export::OnBeforePassVariable=BEGIN
+                                                                                 IdentificationCode2 := CompanyInfo."Country/Region Code";
+                                                                               END;
+                                                                                }
+
+    { [{7F7F0270-95E1-48AD-B3D0-B764FF642D93}];4 ;cac:PartyTaxScheme_35;Element;Text     }
+
+    { [{541944C7-574B-4C99-A7B2-235D4FF65CDA}];5 ;cbc:TaxTypeCode_35  ;Element ;Text    ;
+                                                  VariableName=TaxTypeCode2;
+                                                  Export::OnBeforePassVariable=BEGIN
+                                                                                 TaxTypeCode2 := 'VAT';
+                                                                               END;
+                                                                                }
+
+    { [{40E2C7D2-CE56-4F13-9169-F2D8BF81CB8D}];5 ;cbc:CompanyID_36    ;Element ;Text    ;
+                                                  VariableName=CompanyID2;
+                                                  DataType=Text;
+                                                  Export::OnBeforePassVariable=BEGIN
+                                                                                 CompanyID2 := CompanyInfo."VAT Registration No.";
+                                                                               END;
+                                                                                }
+
+    { [{ADD93029-E003-44D9-B972-77EF6177F9FB}];1 ;Cac:Delivery_37     ;Element ;Text     }
+
+    { [{41A2C4C0-6C1E-45A8-B6B1-D0C893FEE070}];2 ;cbc:ID_37           ;Element ;Field   ;
+                                                  DataType=Code;
+                                                  SourceField=Purchase Header::Ship-to Code }
+
+    { [{71542061-7081-46A1-957D-D2C78855B35C}];2 ;cac:DeliveryAddress_38;Element;Text    }
+
+    { [{EF906981-6CD8-464A-B307-A6667414C15C}];3 ;cbc:ID_38           ;Element ;Field   ;
+                                                  DataType=Text;
+                                                  SourceField=Purchase Header::Ship-to Name }
+
+    { [{03A8D9FD-741F-47A6-A966-2B38A57DB7E3}];3 ;cbc:PostalZone_39   ;Element ;Field   ;
+                                                  DataType=Code;
+                                                  SourceField=Purchase Header::Ship-to Post Code }
+
+    { [{D6617F8B-ECB2-4146-9104-C156C93F91BC}];3 ;cac:AddressLine_40  ;Element ;Text     }
+
+    { [{3D6556B9-3401-4C6C-BEB8-CEF9CB11B551}];4 ;cbc:Line_40         ;Element ;Field   ;
+                                                  DataType=Text;
+                                                  SourceField=Purchase Header::Ship-to Address }
+
+    { [{E628CF7D-591C-4827-84EC-0B5195D1DC03}];3 ;cac:Country_41      ;Element ;Text     }
+
+    { [{705B2628-90F9-4516-B601-E205005C77BE}];4 ;cbc:IdentificationCode_41;Element;Field;
+                                                  DataType=Code;
+                                                  SourceField=Purchase Header::Ship-to Country/Region Code }
+
+    { [{D272F87E-5D0B-4F46-84A5-11C555F3D715}];3 ;cbc:cityName_42     ;Element ;Field   ;
+                                                  DataType=Text;
+                                                  SourceField=Purchase Header::Ship-to City }
+
+    { [{A3F18D7A-1C6C-4F06-B65E-1C7392A99F92}];1 ;cac:PaymentMeans_43 ;Element ;Text     }
+
+    { [{91D85649-6F0C-4606-9C73-A23422A64769}];2 ;cbc:PaymentMeansCode_43;Element;Text  ;
+                                                  VariableName=PaymentMeansCode;
+                                                  Import::OnAfterAssignVariable=BEGIN
+                                                                                  IF PaymentMeansCode <> '1' THEN BEGIN
+                                                                                    PaymentMethod.SETRANGE("UN/ECE 4461 Code",PaymentMeansCode);
+                                                                                    IF PaymentMethod.FINDFIRST THEN
+                                                                                      "Purchase Header".VALIDATE("Payment Method Code",PaymentMethod."UN/ECE 4461 Code");
+                                                                                  END;
+                                                                                END;
+
+                                                  Export::OnBeforePassVariable=BEGIN
+                                                                                 IF PaymentMethod.GET("Purchase Header"."Payment Method Code") THEN
+                                                                                   PaymentMeansCode := PaymentMethod."UN/ECE 4461 Code"
+                                                                                 ELSE
+                                                                                   PaymentMeansCode := '1';
+                                                                               END;
+                                                                                }
+
+    { [{519297F3-6B60-4F07-85D0-D28FC15C3E19}];2 ;cbc:PaymentDueDate_44;Element;Text    ;
+                                                  VariableName=PaymentDueDate;
+                                                  Import::OnAfterAssignVariable=VAR
+                                                                                  Day@1180250004 : Integer;
+                                                                                  Month@1180250003 : Integer;
+                                                                                  Year@1180250002 : Integer;
+                                                                                  OutputDate@1180250001 : Date;
+                                                                                BEGIN
+                                                                                  EVALUATE(Day,COPYSTR(IssueDate,9,2));
+                                                                                  EVALUATE(Month,COPYSTR(IssueDate,6,2));
+                                                                                  EVALUATE(Year,COPYSTR(IssueDate,1,4));
+                                                                                  OutputDate := DMY2DATE(Day,Month,Year);
+                                                                                  "Purchase Header".VALIDATE("Due Date",OutputDate);
+                                                                                END;
+
+                                                  Export::OnBeforePassVariable=BEGIN
+                                                                                 PaymentDueDate := FORMAT("Purchase Header"."Document Date",0,'<Year4>-<Month,2>-<Day,2>');
+                                                                               END;
+                                                                                }
+
+    { [{9B156926-916A-4D91-97CA-EEBE7E152FAB}];2 ;cbc:PaymentChannelCode_45;Element;Text;
+                                                  VariableName=PaymentChannelCode;
+                                                  Export::OnBeforePassVariable=BEGIN
+                                                                                 PaymentChannelCode := Text002;
+                                                                               END;
+                                                                                }
+
+    { [{CA0BE734-8E89-4F44-B4FF-8792354914A7}];2 ;cbc:InstructionNote_46;Element;Text   ;
+                                                  VariableName=InstructionNote;
+                                                  Import::OnAfterAssignVariable=VAR
+                                                                                  NextLineNo@1180250001 : Integer;
+                                                                                BEGIN
+                                                                                  IF InstructionNote <> '' THEN BEGIN
+                                                                                    PurchCommentLine.RESET;
+                                                                                    PurchCommentLine.SETRANGE("Document Type",PurchCommentLine."Document Type");
+                                                                                    PurchCommentLine.SETRANGE("No.",PurchCommentLine."No.");
+                                                                                    PurchCommentLine.SETRANGE("Document Line No.",0);
+                                                                                    IF PurchCommentLine.FINDLAST THEN
+                                                                                      NextLineNo := PurchCommentLine."Line No." + 100000
+                                                                                    ELSE
+                                                                                      NextLineNo := 10000;
+                                                                                    PurchCommentLine."Document Type" := "Purchase Header"."Document Type";
+                                                                                    PurchCommentLine."No." := "Purchase Header"."No.";
+                                                                                    PurchCommentLine."Document Line No." := 0;
+                                                                                    PurchCommentLine."Line No." := NextLineNo;
+                                                                                    PurchCommentLine.Date := TODAY;
+                                                                                    PurchCommentLine.Comment := InstructionNote;
+                                                                                  END;
+                                                                                END;
+
+                                                  Export::OnBeforePassVariable=BEGIN
+                                                                                 PurchCommentLine.RESET;
+                                                                                 IF PurchCommentLine.GET("Purchase Header"."Document Type","Purchase Header"."No.",0,10000) THEN
+                                                                                   InstructionNote := PurchCommentLine.Comment;
+                                                                               END;
+                                                                                }
+
+    { [{CC397F2E-9779-4304-8A31-64932CF508C6}];2 ;cac:PayerFinancialAccount_47;Element;Text }
+
+    { [{F339B154-F1A4-4606-AA21-EE1976095943}];3 ;cbc:ID_47           ;Element ;Text    ;
+                                                  VariableName=CompanyInfo_IBAN;
+                                                  Export::OnBeforePassVariable=BEGIN
+                                                                                 CompanyInfo_IBAN := CompanyInfo.IBAN;
+                                                                               END;
+                                                                                }
+
+    { [{B22D4CFA-C730-41B6-A211-D4A2855BF5F7}];1 ;cac:PaymentTerms_48 ;Element ;Text     }
+
+    { [{AE1CC693-B0DB-4A06-9CAF-D1E8F37457EF}];2 ;cbc:SettlementDiscountPercent_48;Element;Text }
+
+    { [{DCB88160-7563-4F02-ADF3-E96B3797D8E4}];2 ;cbc:PenaltySurchargePercent_49;Element;Text }
+
+    { [{6CD4DE47-8C2E-48A5-9F1C-BCA0AE054786}];2 ;cbc:Note_50         ;Element ;Text     }
+
+    { [{331AA88D-5C74-49D5-AC02-3440D20F95B2}];1 ;cac:AllowanceCharge_51;Element;Text    }
+
+    { [{E08CC98F-6627-48AD-9709-D56901016F21}];2 ;cbc:ID_51           ;Element ;Text     }
+
+    { [{E7DA35E9-99D4-4573-ADA7-D23A1C6A87C5}];2 ;cbc:ChargeIndicator_52;Element;Text    }
+
+    { [{9F8A47E2-D5ED-4BC6-BC7E-EA0E59978659}];2 ;cbc:AllowanceChargeReasonCode_53;Element;Text }
+
+    { [{95482F86-3D57-48F2-9EF9-2ED80AAC0CC3}];2 ;cbc:AllowanceChargeReason_54;Element;Text }
+
+    { [{A0F3A1C0-BE7A-4BEB-BCA8-541059B47276}];2 ;cbc:Amount_55       ;Element ;Text     }
+
+    { [{E2BF800C-D016-45AB-AD99-0343BCBE4AF9}];2 ;cbc:Amount_CurrencyID_56;Element;Text  }
+
+    { [{58D9F84B-728A-4468-BA18-D1BA422D0104}];2 ;cbc:MultiplierFactorNumeric_57;Element;Text }
+
+    { [{6C7A842B-3301-4C08-97CC-84502DDA0FC6}];2 ;cac:Taxtotal_58     ;Element ;Text     }
+
+    { [{5BF49610-B33A-4D41-A162-25A3BB9E73B2}];3 ;cbc:TaxAmount_58    ;Element ;Text     }
+
+    { [{43DC29AD-0F13-4E05-AF3D-6817AD6EF097}];3 ;cbc:TaxAmount_currencyID_59;Element;Text }
+
+    { [{12712C26-D7F9-4F00-821A-A8679F3F07C9}];3 ;cac:TaxSubTotal_60  ;Element ;Text     }
+
+    { [{920C41D0-E484-478E-A91D-E137E01650EA}];4 ;cbc:TaxAmount_60    ;Element ;Text     }
+
+    { [{0357C714-56F9-4084-BCFC-CA2734AD5034}];4 ;cbc:TaxAmount_CurrencyID_61;Element;Text }
+
+    { [{EBDC69C4-69AA-4310-9E22-7A01AD75078F}];4 ;cbc:CalculationSequenceNumeric_62;Element;Text }
+
+    { [{0686A4B5-4D18-4132-9A5E-E89E4C1DCFA9}];4 ;cbc:Percent_63      ;Element ;Text     }
+
+    { [{3913C10B-E2BF-49C3-9A87-56FFF2C22C21}];4 ;cac:TaxCategory_64  ;Element ;Text     }
+
+    { [{25C6179D-51DA-42C3-9770-5288FA2F9A2B}];5 ;cbc:ID_64           ;Element ;Text     }
+
+    { [{05DC0D6D-9C34-4243-8420-649B52C46A22}];5 ;cbc:Name_65         ;Element ;Text     }
+
+    { [{E6B0EC1E-634D-4EFD-8D26-72BD5F6AFFED}];5 ;cac:TaxScheme_66    ;Element ;Text     }
+
+    { [{41318FF7-CA29-4C0F-ACE1-CFE226CA0717}];6 ;cbc:ID_66           ;Element ;Text     }
+
+    { [{56FE6763-702E-4615-87FA-5CA65EB47935}];6 ;cbc:TaxTypeCode_67  ;Element ;Text     }
+
+    { [{5BD7F600-452D-4CE2-BC8C-2AA4B111995F}];1 ;cac:TaxTotal2_68    ;Element ;Text     }
+
+    { [{E294E0FC-FB24-4AF0-A34D-1B8B8EC397E8}];2 ;cbc:TaxAmount_68    ;Element ;Text     }
+
+    { [{4849C27D-0BE2-43E9-A3B5-2B61C0BB0794}];2 ;cbc:TaxAmount_currencyID_69;Element;Text }
+
+    { [{736C00B9-2D71-4EA5-8FE1-C5C57BCB274A}];2 ;cac:TaxSubTotal_70  ;Element ;Text     }
+
+    { [{C00B7280-7D3E-4118-805F-3AC537543A71}];3 ;cbc:TaxeAmount_70   ;Element ;Text     }
+
+    { [{FD0B53BA-95F5-4970-904E-9716ABDCABCC}];3 ;cbc:CalculationSequenceNumeric_71;Element;Text;
+                                                  VariableName=cbc:CalculationSequenceNum2 }
+
+    { [{D0B7C293-85F5-43A3-85D4-AD6AD89D4872}];3 ;cbc:Percent_72      ;Element ;Text     }
+
+    { [{FFBA693F-1084-48C9-8A7B-3923D2799DC4}];3 ;cac:TaxCategory_73  ;Element ;Text     }
+
+    { [{CCFBA3B2-EA22-442F-9043-F467948AFF0B}];4 ;cbc:ID_73           ;Element ;Text     }
+
+    { [{BDFF5938-1C11-4E7F-A2DC-E05F647A7A5C}];4 ;cbc:Name_74         ;Element ;Text     }
+
+    { [{CF6F6E77-A6ED-4CB2-A39D-D4BCBD10E9E5}];4 ;cac:TaxScheme_75    ;Element ;Text     }
+
+    { [{C0FF749B-C3D3-41C4-887C-846804AF5C4C}];5 ;cbc:ID_75           ;Element ;Text     }
+
+    { [{AB8706E4-686D-4CE5-A3D6-132842346747}];5 ;cbc:name_76         ;Element ;Text     }
+
+    { [{570BE1AB-77AB-485D-87D6-683801A2ADCA}];1 ;cac:legalMonetaryTotal_77;Element;Text }
+
+    { [{6A4D1B15-02F2-428E-A65F-8F74D8AC52F9}];2 ;cbc:LineExtensionAmount_77;Element;Text }
+
+    { [{EA1BEC29-79C7-4C98-B2F1-7A8B81EE9627}];2 ;cbc:LineExtensionAmount_currencyID_78;Element;Text }
+
+    { [{0D577C93-D978-464B-BDAD-06AAF9D497FF}];2 ;cbc:TaxExclusiveAmount_79;Element;Text }
+
+    { [{4E207FF5-5D52-4864-9FAD-68ABEF475586}];2 ;cbc:TaxExclusiveAmount_currencyID_80;Element;Text }
+
+    { [{FDDE67E4-CA2C-48AF-A7E8-CAB187033BE5}];2 ;cbc:TaxInclusiveAmount_81;Element;Text }
+
+    { [{7E1C5805-4D36-49A6-94AD-839D41E7B5C8}];2 ;cbc:TaxInclusiveAmount_currencyID_82;Element;Text }
+
+    { [{79784E52-5DE3-4904-9217-5151E57F44CC}];2 ;cbc:AllowanceTotalAmount_83;Element;Text }
+
+    { [{8ABC659B-3A51-49B7-9860-9D24E0698E31}];2 ;cbc:AllowanceTotalAmount_currencyID_84;Element;Text }
+
+    { [{12AC22D6-E250-43D6-BA26-1EA510122B81}];2 ;cbc:ChargeTotalAmount_85;Element;Text  }
+
+    { [{FA3CB67C-5DD6-4C53-99D8-3A14B8600AF0}];2 ;cbc:ChargeTotalAmount_currencyID_86;Element;Text }
+
+    { [{464F9959-C842-42DF-A4FD-98FBF19E8AF4}];2 ;cbc:PayableRoundingAmount_87;Element;Text }
+
+    { [{417E4EFC-7FC0-4CDB-8D90-131DE396449C}];2 ;cbc:PayableRoundingAmount_currencyID_88;Element;Text }
+
+    { [{E8AB42D3-D81C-4910-BFF7-D969196A2AE2}];2 ;cbc:PayableAmount_89;Element ;Text     }
+
+    { [{FB35EE1B-1ECF-4F99-82A5-581246ED970D}];2 ;cbc:PayableAmount_currencyID_90;Element;Text }
+
+    { [{9A8CB499-D3C1-4C68-9C37-D2D99E45D223}];1 ;cac:InvoiceLine     ;Element ;Table   ;
+                                                  VariableName=<Purchase Line>;
+                                                  SourceTable=Table39 }
+
+    { [{4A6B5D6D-B76F-4597-B9C3-2D3E25EBB335}];2 ;Cbc:ID_91           ;Element ;Text    ;
+                                                  DataType=Integer }
+
+    { [{533B3F76-818C-4870-9504-1C1EF08EAB95}];2 ;cbc:Note_92         ;Element ;Text    ;
+                                                  VariableName=<cbc:Notse_92> }
+
+    { [{4EE09B58-89DB-4EF9-A122-3390903006D0}];2 ;Cbc:InvoicedQuantity_93;Element;Text  ;
+                                                  DataType=Decimal }
+
+    { [{20EBB223-D2A4-43CB-814D-CEC48E81B7DF}];2 ;Cbc:InvoicedQuantity_unitCode_94;Element;Text }
+
+    { [{AA0B5E74-9033-4583-9209-21EEB81DE23E}];2 ;Cbc:LineExtensionAmount_95;Element;Text }
+
+    { [{3849A549-4091-4629-8C7A-E7AF08871E45}];2 ;Cbc:LineExtensionAmount_currencyID_96;Element;Text;
+                                                  VariableName=Cbc:LineExtensionAmount_curre2 }
+
+    { [{9B7E3A8F-A015-4629-8148-2A64636EB433}];2 ;Cbc:FreeOfChargeIndicator_97;Element;Text }
+
+    { [{62C34A83-9106-4B69-926E-EE017FDDEB19}];2 ;cac:OrderlineReference_98;Element;Text }
+
+    { [{F94E37F3-8309-4297-BC93-B37284392825}];3 ;cbc:LineID_98       ;Element ;Text    ;
+                                                  VariableName=<cbc:LineID> }
+
+    { [{1F600D21-75C7-4530-99DD-D0C9CEBC1E10}];3 ;cac:OrderReference_99;Element;Text     }
+
+    { [{46E749AB-4201-43CB-A9DB-633D32F6A927}];4 ;cbc:ID_99           ;Element ;Text     }
+
+    { [{25E4AB16-AF47-4BB4-871E-82BE3150AD48}];4 ;cbc:SalesOrderID_100;Element ;Text     }
+
+    { [{99355151-1654-41E4-8059-7F8FD95B8AC0}];4 ;cbc:IssueDate_101   ;Element ;Text     }
+
+    { [{77150184-378E-4DD5-A3AD-A725DA8E4719}];4 ;cbc:CustomerReference_102;Element;Text }
+
+    { [{EE23AAE2-61D7-4697-B4A4-505C3F299058}];2 ;cac:Delivery_103    ;Element ;Text     }
+
+    { [{2D04106B-3743-4495-B8F6-8524713470DD}];3 ;cbc:ID9_103         ;Element ;Text     }
+
+    { [{973FF2D0-E545-4B61-9017-3878BDFE62E7}];3 ;cbc:ActualDeliveryDate_104;Element;Text }
+
+    { [{89620807-60D6-44F1-ADA0-0AAAA7E2D67C}];2 ;cac:AllowanceCharge_105;Element;Text   }
+
+    { [{C5C9A741-DC53-44DA-9558-6F3445C0E2AB}];3 ;cbc:ID_105          ;Element ;Text     }
+
+    { [{FA481E02-442E-4DD8-A356-4C504C1D99C1}];3 ;cbc:ChargeIndicator_106;Element;Text   }
+
+    { [{69F9CA04-65E5-44E4-8E59-ACBCAB998DF6}];3 ;cbc:AllowanceChargeReasonCode_107;Element;Text;
+                                                  VariableName=cbc:AllowanceChargeReasonCode2 }
+
+    { [{050C344A-94E5-43AE-AB6F-AF94C70F9BED}];3 ;cbc:AllowanceChargeReason_108;Element;Text }
+
+    { [{1E20C8BA-E1EA-43E9-ADA6-200DC77F85EB}];3 ;cbc:Amount_109      ;Element ;Text     }
+
+    { [{BF4D5618-6E79-461A-82FA-101A832F8938}];3 ;cbc:Amount_CurrencyID_110;Element;Text }
+
+    { [{0CA25147-6BD2-4B28-8B9B-FDD37FE7AD6D}];3 ;cbc:MultiplierFactorNumeric_111;Element;Text }
+
+    { [{3A68AC41-E667-4956-8D0C-51FE5C2D3888}];3 ;cac:Taxtotal3_112   ;Element ;Text     }
+
+    { [{D3D2C0B2-A250-48D3-9F84-ECB0743353B0}];4 ;cbc:TaxAmount4_112  ;Element ;Text     }
+
+    { [{E66C356E-06CD-4C67-B551-EF2D96BEE246}];4 ;cbc:TaxAmount_currencyID_113;Element;Text }
+
+    { [{0A5C574B-B1F7-4F5B-9428-962D6E7A7C7D}];4 ;cac:TaxSubTotal_114 ;Element ;Text     }
+
+    { [{656260F6-D801-4285-BD5C-FE9C18D8AF0C}];5 ;cbc:TaxAmount_114   ;Element ;Text     }
+
+    { [{750B3581-920C-4731-AB3D-78BA245B731A}];5 ;cbc:TaxAmount_CurrencyID_115;Element;Text }
+
+    { [{B1D0340C-7D4F-451A-A626-F4B0F5AF3A53}];5 ;cbc:CalculationSequenceNumeric_116;Element;Text;
+                                                  VariableName=cbc:CalculationSequenceNum3 }
+
+    { [{BA3BAFA2-A0D6-4A0B-9461-E3FD4375E7DC}];5 ;cbc:Percent_117     ;Element ;Text     }
+
+    { [{40EB5398-0BA2-4856-8279-FED5E866DADA}];5 ;cac:TaxCategory_118 ;Element ;Text     }
+
+    { [{D97F023F-C400-4309-BB04-31870215B5CF}];6 ;cbc:ID_118          ;Element ;Text     }
+
+    { [{16EE0EEF-B53E-478F-A41B-1650100BE4CB}];6 ;cbc:Name_119        ;Element ;Text     }
+
+    { [{B0225CAB-7C19-46D0-AE33-4C0A63B45702}];6 ;cac:TaxScheme_120   ;Element ;Text     }
+
+    { [{C102EFE3-6CDD-4CAA-BA36-AC541A6E88EC}];7 ;cbc:ID_120          ;Element ;Text     }
+
+    { [{0AEC5B93-23D7-4877-BD36-1ACBC78494F2}];7 ;cbc:TaxTypeCode_121 ;Element ;Text     }
+
+    { [{A8726A40-26EE-4D0D-840C-78438D5F1403}];4 ;cbc:TaxAmount_122   ;Element ;Text     }
+
+    { [{2C21B7A0-3D49-462A-AB06-4537D30CB0C2}];4 ;cbc:TaxAmount_currencyID_123;Element;Text }
+
+    { [{798A038C-D4D0-4752-A8DD-D4333D4F57DC}];4 ;cac:TaxSubTotal_124 ;Element ;Text     }
+
+    { [{7F50585F-57C8-4655-81BD-783C165B891E}];5 ;cbc:TaxAmount_124   ;Element ;Text     }
+
+    { [{85E74E93-E4FE-473C-8176-E240C2A3C986}];5 ;cbc:TaxAmount_currencyID_125;Element;Text }
+
+    { [{BBCAE8B2-7454-4FA7-9928-F4AC60736E1D}];5 ;cbc:CalculationSequenceNumeric_126;Element;Text;
+                                                  VariableName=cbc:CalculationSequenceNum_126 }
+
+    { [{4F0ABA11-105C-47AD-87B9-F70D1F3CFA45}];5 ;cbc:Percent_127     ;Element ;Text     }
+
+    { [{583CC82D-C2BB-4DC8-AE88-CDAD3356D29A}];5 ;cac:TaxCategory_128 ;Element ;Text     }
+
+    { [{CAE26B66-8222-4647-82CC-4F2EBC8D2322}];6 ;cbc:ID_128          ;Element ;Text     }
+
+    { [{FA3F2FE6-2C77-4F3A-A61A-34166709C555}];6 ;cbc:Name_129        ;Element ;Text     }
+
+    { [{5B05BB68-61CB-4C3F-965D-8BF856FFD9A6}];6 ;cac:TaxScheme_130   ;Element ;Text     }
+
+    { [{3F5AFD00-A43B-413C-8AF0-4D1B70749F4F}];7 ;cbc:ID_130          ;Element ;Text     }
+
+    { [{36B90EAD-25E2-42A4-BE3F-A5797399D48F}];7 ;cbc:name_131        ;Element ;Text     }
+
+    { [{8A279798-E6F8-489E-BE4C-750C2261D321}];2 ;cac:item_132        ;Element ;Text     }
+
+    { [{2CC2DEDB-F282-4155-ADB7-D0FB39FCA2AE}];3 ;cbc:Description_132 ;Element ;Text     }
+
+    { [{FD1586B4-B42D-41EF-9D5A-71B5B7F297D7}];3 ;cac:SellersItemIdentification_133;Element;Text;
+                                                  VariableName=<cac:SellersItemIdication_> }
+
+    { [{77CED144-3C17-4852-BE0E-C131F9C049A6}];4 ;cbc:ID_133          ;Element ;Text     }
+
+    { [{2F212FEB-AEBB-4575-927F-C07DE459FC57}];3 ;cbc:AdditionalInformation_134;Element;Text }
+
+    { [{6B1AAAD1-E064-44D3-9748-7150F2256195}];3 ;cac:CommodityClassification_135;Element;Text }
+
+    { [{E7A67263-C234-4482-94B9-FC28249A666C}];4 ;cbc:CommodityCode_135;Element;Text     }
+
+    { [{F15E3020-A31B-42DB-8863-F90E9F6E9F63}];4 ;cbc:ItemClassificationCode_136;Element;Text }
+
+    { [{8A4996F7-95A4-454F-959F-5D8349C56E77}];3 ;cac:OriginCountry_137;Element;Text     }
+
+    { [{A5BD96AB-D344-4F04-9A5E-BF20AE1BE081}];4 ;cbc:IdentificationCode_137;Element;Text }
+
+    { [{CFC166EB-DEFB-42A5-8CCF-A7A3544B7850}];3 ;cac:SellersItemIdentification_138;Element;Text }
+
+    { [{0DEB317B-9827-4C20-8D31-208005D86DB6}];4 ;cac:MeasurementDimension_138;Element;Text }
+
+    { [{0473000B-F7B4-477A-9A96-0BDD2136A29E}];5 ;cbc:AttributeID_138 ;Element ;Text     }
+
+    { [{305DE55F-E63C-4DEA-9859-0DE5F621CEEE}];5 ;cbc:Measure_139     ;Element ;Text     }
+
+    { [{1870958A-092A-4175-A45C-D2846DBB6858}];5 ;cbc:Measure_unitCode_140;Element;Text  }
+
+    { [{B6365D81-44F8-462D-AD1D-57801D48F3C7}];2 ;cac:Price_141       ;Element ;Text     }
+
+    { [{8FDC828E-757F-42DA-A150-464C44D1EE84}];3 ;cbc:PriceAmount_141 ;Element ;Text     }
+
+    { [{B3579EB6-4530-4B37-9727-437D853E7DA4}];3 ;cbc:PriceAmount_currencyID_142;Element;Text }
+
+    { [{EF711F94-B574-4E97-8F09-749DA2D3A02C}];3 ;cbc:BaseQuantity_143;Element ;Text     }
+
+    { [{FC0446E0-C592-46C0-96F3-0A1FFD8A3EBC}];3 ;cbc:BaseQuantity_unitCode_144;Element;Text }
+
+  }
+  EVENTS
+  {
+  }
+  REQUESTPAGE
+  {
+    PROPERTIES
+    {
+    }
+    CONTROLS
+    {
+    }
+  }
+  CODE
+  {
+    VAR
+      GLSetup@1180250003 : Record 98;
+      CompanyInfo@1180250006 : Record 79;
+      PurchInvHeader@1180250001 : Record 122;
+      Text001@1180250002 : TextConst 'FRA=La facture fourn. nø%1 a d‚j… ‚t‚ valid‚.';
+      Vend@1180250004 : Record 23;
+      PaymentMethod@1180250007 : Record 289;
+      PurchCommentLine@1180250008 : Record 43;
+      VendorNo@1180250005 : Code[20];
+      Text002@1180250009 : TextConst 'FRA=IBAN';
+
+    BEGIN
+    END.
+  }
+}
+

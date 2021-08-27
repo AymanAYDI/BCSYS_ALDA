@@ -1,0 +1,41 @@
+OBJECT Page 50005 Segment of Product Grp. List
+{
+  OBJECT-PROPERTIES
+  {
+    Date=25/06/12;
+    Time=11:01:28;
+    Modified=Yes;
+    Version List=AC1.00;
+  }
+  PROPERTIES
+  {
+    SourceTable=Table50003;
+    PageType=Card;
+  }
+  CONTROLS
+  {
+    { 1900000001;0;Container;
+                ContainerType=ContentArea }
+
+    { 1180250001;1;Group  ;
+                GroupType=Repeater }
+
+    { 1180250002;2;Field  ;
+                SourceExpr="Product Group Code";
+                Visible=FALSE }
+
+    { 1180250004;2;Field  ;
+                SourceExpr=Code }
+
+    { 1180250006;2;Field  ;
+                SourceExpr=Description }
+
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

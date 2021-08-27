@@ -1,0 +1,99 @@
+OBJECT Page 50084 Model Permission Set List
+{
+  OBJECT-PROPERTIES
+  {
+    Date=23/03/16;
+    Time=18:51:28;
+    Modified=Yes;
+    Version List=;
+  }
+  PROPERTIES
+  {
+    SourceTable=Table50016;
+    PageType=List;
+    ActionList=ACTIONS
+    {
+      { 1000000004;  ;ActionContainer;
+                      ActionContainerType=ActionItems }
+      { 1000000005;1 ;ActionGroup;
+                      CaptionML=[ENU=Conception;
+                                 FRB=Conception] }
+      { 1000000006;2 ;Action    ;
+                      Name=ImportPermission;
+                      CaptionML=[ENU=Import Permission from Permissions Set;
+                                 FRB=Importer autor. depuis un ensemble];
+                      Image=ImportDatabase (KN icon);
+                      OnAction=VAR
+                                 PermissionSet@1000000000 : Record 2000000004;
+                                 Permission@1000000001 : Record 2000000005;
+                                 ModelPermission@1000000002 : Record 50017;
+                               BEGIN
+                                 IF ACTION::LookupOK = PAGE.RUNMODAL(50081,PermissionSet) THEN BEGIN
+                                   Permission.SETRANGE("Role ID", PermissionSet."Role ID");
+                                   IF Permission.FINDSET THEN
+                                   REPEAT
+                                     ModelPermission.TRANSFERFIELDS(Permission);
+                                     ModelPermission."Role ID" := "Role ID";
+                                     IF NOT ModelPermission.INSERT THEN ModelPermission.MODIFY;
+                                   UNTIL Permission.NEXT = 0;
+                                 END;
+                               END;
+                                }
+      { 1000000011;2 ;Action    ;
+                      Name=SavePublish;
+                      CaptionML=[ENU=Publish;
+                                 FRB=Publier];
+                      Promoted=Yes;
+                      PromotedIsBig=Yes;
+                      Image=PutawayLines;
+                      PromotedCategory=Process;
+                      OnAction=VAR
+                                 UserAcessControlMgt@1000000000 : Codeunit 50089;
+                               BEGIN
+                                 UserAcessControlMgt.PublishPermisionSet(Rec);
+                               END;
+                                }
+      { 1000000007;  ;ActionContainer;
+                      ActionContainerType=RelatedInformation }
+      { 1000000008;1 ;ActionGroup;
+                      CaptionML=[ENU=Permissions;
+                                 FRA=Permissions] }
+      { 1000000009;2 ;Action    ;
+                      Name=Permissions;
+                      CaptionML=[ENU=Permissions;
+                                 FRB=Autorisations];
+                      RunObject=Page 50087;
+                      RunPageLink=Role ID=FIELD(Role ID);
+                      Promoted=Yes;
+                      PromotedIsBig=Yes;
+                      Image=Permission;
+                      PromotedCategory=Report }
+    }
+  }
+  CONTROLS
+  {
+    { 1000000000;0;Container;
+                ContainerType=ContentArea }
+
+    { 1000000001;1;Group  ;
+                Name=Group;
+                GroupType=Repeater }
+
+    { 1000000002;2;Field  ;
+                SourceExpr="Role ID" }
+
+    { 1000000003;2;Field  ;
+                SourceExpr=Name }
+
+    { 1000000010;2;Field  ;
+                SourceExpr="Role ID Published" }
+
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

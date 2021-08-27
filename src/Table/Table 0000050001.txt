@@ -1,0 +1,221 @@
+OBJECT Table 50001 E.D.I. Log
+{
+  OBJECT-PROPERTIES
+  {
+    Date=28/04/16;
+    Time=14:14:43;
+    Modified=Yes;
+    Version List=AC1.00;
+  }
+  PROPERTIES
+  {
+    OnDelete=VAR
+               EDIEntry@1180250001 : Record 50002;
+               EDILogEntry@1180250002 : Record 50004;
+             BEGIN
+               EDIEntry.RESET;
+               EDIEntry.SETCURRENTKEY("EDI Code","Imp./Exp. Date",Error,Handled);
+               EDIEntry.SETRANGE("EDI Code","EDI Code");
+               EDIEntry.SETRANGE("Imp./Exp. Date","Treatment Date");
+               EDIEntry.DELETEALL(TRUE);
+
+               EDILogEntry.RESET;
+               EDILogEntry.SETRANGE("EDI Code","EDI Code");
+               EDILogEntry.SETRANGE("Treatment Date","Treatment Date");
+               EDILogEntry.DELETEALL(TRUE);
+             END;
+
+    CaptionML=[ENU=Electronic Data Interchange Log;
+               FRA=Trace d'‚change de Donn‚es Informatis‚];
+    LookupPageID=Page50031;
+    DrillDownPageID=Page50031;
+  }
+  FIELDS
+  {
+    { 1   ;   ;EDI Code            ;Code10        ;TableRelation="E.D.I. Setup";
+                                                   CaptionML=[ENU=EDI No.;
+                                                              FRA=Code EDI] }
+    { 2   ;   ;Direction           ;Option        ;CaptionML=[ENU=Direction;
+                                                              FRA=Sens];
+                                                   OptionCaptionML=[ENU=Import,Export;
+                                                                    FRA=Import,Export];
+                                                   OptionString=Import,Export }
+    { 3   ;   ;Filename            ;Text200       ;CaptionML=[ENU=Filename;
+                                                              FRA=Nom de fichier] }
+    { 4   ;   ;Treatment Date      ;DateTime      ;CaptionML=[ENU=Treatment Date;
+                                                              FRA=Date de traitement] }
+    { 5   ;   ;Status              ;Option        ;CaptionML=[ENU=Status;
+                                                              FRA=Statut];
+                                                   OptionCaptionML=[ENU=" ,OK,Error";
+                                                                    FRA=" ,OK,Erreur"];
+                                                   OptionString=[ ,OK,Error] }
+    { 6   ;   ;Error Text          ;Text250       ;CaptionML=[ENU=Error Text;
+                                                              FRA=Message d'erreur] }
+    { 10  ;   ;E.D.I. Log Entry Exist;Boolean     ;FieldClass=FlowField;
+                                                   CalcFormula=Exist("E.D.I. Log Entry" WHERE (EDI Code=FIELD(EDI Code),
+                                                                                               Treatment Date=FIELD(Treatment Date),
+                                                                                               Status=FILTER(Error)));
+                                                   CaptionML=[ENU=Electronic Data Interchange Log Entry Exist on Error;
+                                                              FRA=Existance d'‚criture trace d'‚change de Donn‚es Informatis‚ en erreur];
+                                                   Editable=No }
+    { 11  ;   ;Corrected           ;Boolean       ;CaptionML=[ENU=Corrected;
+                                                              FRA=Corrig‚] }
+    { 12  ;   ;Data Error          ;Boolean       ;CaptionML=[ENU=Data Error;
+                                                              FRA=Erreur de donn‚e];
+                                                   Editable=No }
+    { 13  ;   ;Mode                ;Option        ;InitValue=Normal;
+                                                   CaptionML=[ENU=Mode;
+                                                              FRA=Mode];
+                                                   OptionCaptionML=[ENU=Normal,Recovery;
+                                                                    FRA=Normal,R‚cup‚ration];
+                                                   OptionString=Normal,Recovery }
+    { 4000;   ;Batch ID            ;GUID           }
+  }
+  KEYS
+  {
+    {    ;EDI Code,Direction,Filename,Treatment Date;
+                                                   Clustered=Yes }
+    {    ;Treatment Date                           }
+    {    ;EDI Code,Treatment Date                  }
+  }
+  FIELDGROUPS
+  {
+  }
+  CODE
+  {
+    VAR
+      Text001@1180250006 : TextConst 'FRA=Traitement d''import : problŠme de fichier...D‚placer et renommer le fichier puis relancer le traitement completement.';
+      Text002@1180250005 : TextConst 'FRA=Traitement d''import : problŠme de donn‚es...Le traitement va tenter de r‚cup‚r‚ les donn‚es de transfert vers la base donn‚es...';
+      Text003@1180250004 : TextConst 'FRA=Traitement d''export : problŠme de donn‚es...Relancer le traitement completement.';
+      Text004@1180250003 : TextConst 'FRA=Traitement d''export : problŠme de fichier...Le traitement va tenter de transf‚rer les donn‚es de la base vers le fichier...';
+      Text005@1180250002 : TextConst 'FRA=Traitement d''imp./exp. d‚j… effectu‚.';
+      Text006@1180250001 : TextConst 'FRA=Traitement d''imp./exp. annul‚.';
+      Window@1180250007 : Dialog;
+
+    PROCEDURE ChangeMode@1180250001();
+    BEGIN
+      CALCFIELDS("Data Error");
+      TESTFIELD("Data Error",TRUE);
+      CASE Mode OF
+        Mode::Normal:Mode := Mode::Recovery;
+        Mode::Recovery:Mode := Mode::Normal;
+      END;//CASE
+      MODIFY;
+    END;
+
+    PROCEDURE CheckDataError@1180250002() : Boolean;
+    VAR
+      EDIEntry@1180250002 : Record 50002;
+    BEGIN
+      IF {(Mode = Mode::Normal) OR} (Status IN [Status::" ",Status::OK]) THEN
+        "Data Error" := FALSE
+      ELSE BEGIN
+        EDIEntry.RESET;
+        EDIEntry.SETRANGE("EDI Code","EDI Code");
+        EDIEntry.SETRANGE("Imp./Exp. Date","Treatment Date");
+        EDIEntry.SETRANGE(Error,TRUE);
+        EDIEntry.SETRANGE(Handled,FALSE);
+        CASE Direction OF
+          Direction::Import:BEGIN
+            "Data Error" := EDIEntry.FINDSET(FALSE,FALSE);
+          END;
+          Direction::Export:BEGIN
+            "Data Error" := NOT EDIEntry.FINDSET(FALSE,FALSE);
+          END;
+        END;
+      END;
+    END;
+
+    PROCEDURE CheckStatus@1180250004();
+    BEGIN
+      CASE Status OF
+        Status::" ":BEGIN
+          Corrected := TRUE;
+          MODIFY;
+          COMMIT;
+          ERROR(Text006);
+        END;
+        Status::Error:BEGIN
+          CASE Direction OF
+            Direction::Import:BEGIN
+              IF "Data Error" THEN BEGIN
+                Window.OPEN(Text002);
+                SLEEP(300);
+                Window.CLOSE;
+              END ELSE BEGIN
+                Status := Status::" ";
+                Corrected := TRUE;
+                "Error Text" := Text006;
+                MODIFY;
+                COMMIT;
+                ERROR('%1',Text001);
+              END;
+            END;
+            Direction::Export:BEGIN
+              IF "Data Error" THEN BEGIN
+                Status := Status::" ";
+                Corrected := TRUE;
+                "Error Text" := Text006;
+                MODIFY;
+                COMMIT;
+                ERROR('%1',Text003);
+              END ELSE BEGIN
+                Window.OPEN(Text004);
+                SLEEP(300);
+                Window.CLOSE;
+              END;
+            END;
+          END;//CASE
+        END;
+        Status::OK:BEGIN
+          ERROR(Text005);
+        END;
+      END;//CASE
+    END;
+
+    PROCEDURE Rescue@1180250003();
+    VAR
+      EDISetup@1180250002 : Record 50000;
+    BEGIN
+      CheckDataError();
+
+      IF "Data Error" THEN BEGIN
+        IF Mode = Mode::Normal THEN BEGIN
+          Mode := Mode::Recovery;
+          MODIFY;
+        END;
+      END;
+
+      CheckStatus();
+
+      EDISetup.GET("EDI Code");
+      CASE EDISetup."Object Type to Run" OF
+        EDISetup."Object Type to Run"::Codeunit:CODEUNIT.RUN(EDISetup."Object ID to Run",Rec);
+        EDISetup."Object Type to Run"::Report:REPORT.RUN(EDISetup."Object ID to Run",FALSE,FALSE,Rec);
+        //EDISetup."Object Type to Run"::Dataport:DATAPORT.RUN(EDISetup."Object ID to Run",FALSE,Rec);
+        EDISetup."Object Type to Run"::XMLport:BEGIN
+          CASE EDISetup.Direction OF
+            EDISetup.Direction::Import:XMLPORT.RUN(EDISetup."Object ID to Run",FALSE,FALSE,Rec);
+            EDISetup.Direction::Import:XMLPORT.RUN(EDISetup."Object ID to Run",FALSE,TRUE,Rec);
+          END;//CASE
+        END;
+      END;//CASE
+
+      Status := Status::OK;
+      CheckDataError();
+      Corrected := TRUE;
+      "Error Text":= '';
+      MODIFY;
+    END;
+
+    PROCEDURE DeleteLog@1180250005();
+    BEGIN
+      SETRANGE(Corrected,TRUE);
+      DELETEALL(TRUE);
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

@@ -4,17 +4,19 @@ OBJECT Page 5709 Get Receipt Lines
   {
     Date=09/09/14;
     Time=12:00:00;
-    Version List=NAVW18.00;
+    Modified=Yes;
+    Version List=NAVW18.00,AB6.BLI.001,AB6.JME.001;
   }
   PROPERTIES
   {
-    Editable=No;
+    Editable=Yes;
     CaptionML=[ENU=Get Receipt Lines;
                FRA=Extraire lignes r‚ception];
     SourceTable=Table121;
     PageType=List;
     OnAfterGetRecord=BEGIN
                        "Document No.HideValue" := FALSE;
+                       MontantLigne:=Quantity*"Unit Cost";
                        DocumentNoOnFormat;
                      END;
 
@@ -69,26 +71,54 @@ OBJECT Page 5709 Get Receipt Lines
     { 1   ;1   ;Group     ;
                 GroupType=Repeater }
 
+    { 1180250005;2;Field  ;
+                SourceExpr=Point‚;
+                Visible=FALSE;
+                Editable=TRUE }
+
+    { 1000000001;2;Field  ;
+                SourceExpr="Posting Date" }
+
+    { 1180250006;2;Field  ;
+                SourceExpr="Vendor Shipment No." }
+
     { 2   ;2   ;Field     ;
                 SourceExpr="Document No.";
                 HideValue="Document No.HideValue";
                 StyleExpr='Strong' }
 
+    { 1180250004;2;Field  ;
+                CaptionML=FRA=Nø Commande Achat;
+                SourceExpr="Order No.";
+                Editable=FALSE }
+
+    { 1180250002;2;Field  ;
+                CaptionML=FRA=Montant Facture;
+                SourceExpr=MontantFacture;
+                HideValue="Document No.HideValue" }
+
     { 4   ;2   ;Field     ;
                 SourceExpr="Buy-from Vendor No." }
 
     { 6   ;2   ;Field     ;
-                SourceExpr=Type }
+                SourceExpr=Type;
+                Editable=FALSE }
 
     { 8   ;2   ;Field     ;
-                SourceExpr="No." }
+                SourceExpr="No.";
+                Editable=FALSE }
+
+    { 1000000000;2;Field  ;
+                SourceExpr="Vendor Item No." }
 
     { 10  ;2   ;Field     ;
                 SourceExpr="Variant Code";
-                Visible=FALSE }
+                Visible=FALSE;
+                Editable=FALSE }
 
     { 12  ;2   ;Field     ;
-                SourceExpr=Description }
+                SourceExpr=Description;
+                Editable=FALSE }
 
     { 29  ;2   ;Field     ;
                 Lookup=No;
@@ -98,47 +128,66 @@ OBJECT Page 5709 Get Receipt Lines
 
     { 14  ;2   ;Field     ;
                 SourceExpr="Shortcut Dimension 1 Code";
-                Visible=FALSE }
+                Visible=TRUE;
+                Editable=FALSE }
 
     { 16  ;2   ;Field     ;
                 SourceExpr="Shortcut Dimension 2 Code";
-                Visible=FALSE }
+                Visible=TRUE;
+                Editable=FALSE }
 
     { 18  ;2   ;Field     ;
                 SourceExpr="Location Code";
-                Visible=FALSE }
+                Visible=FALSE;
+                Editable=FALSE }
 
     { 24  ;2   ;Field     ;
-                SourceExpr="Unit of Measure Code" }
+                SourceExpr="Unit of Measure Code";
+                Visible=FALSE;
+                Editable=FALSE }
 
     { 26  ;2   ;Field     ;
                 SourceExpr="Unit of Measure";
-                Visible=FALSE }
+                Visible=FALSE;
+                Editable=FALSE }
 
     { 32  ;2   ;Field     ;
                 SourceExpr="Appl.-to Item Entry";
                 Visible=FALSE }
 
     { 22  ;2   ;Field     ;
-                SourceExpr=Quantity }
+                SourceExpr=Quantity;
+                Editable=FALSE }
 
     { 34  ;2   ;Field     ;
                 SourceExpr="Job No.";
-                Visible=FALSE }
+                Visible=FALSE;
+                Editable=FALSE }
 
     { 36  ;2   ;Field     ;
                 SourceExpr="Prod. Order No.";
-                Visible=FALSE }
+                Visible=FALSE;
+                Editable=FALSE }
 
     { 38  ;2   ;Field     ;
                 SourceExpr="Expected Receipt Date";
-                Visible=FALSE }
+                Visible=FALSE;
+                Editable=FALSE }
 
     { 40  ;2   ;Field     ;
-                SourceExpr="Quantity Invoiced" }
+                SourceExpr="Quantity Invoiced";
+                Visible=FALSE }
 
     { 20  ;2   ;Field     ;
                 SourceExpr="Qty. Rcd. Not Invoiced" }
+
+    { 1180250003;2;Field  ;
+                SourceExpr="Unit Cost" }
+
+    { 1180250001;2;Field  ;
+                CaptionML=FRA=Montant Ligne;
+                SourceExpr=MontantLigne;
+                Editable=FALSE }
 
     { 1900000007;0;Container;
                 ContainerType=FactBoxArea }
@@ -162,6 +211,10 @@ OBJECT Page 5709 Get Receipt Lines
       TempPurchRcptLine@1002 : TEMPORARY Record 121;
       GetReceipts@1003 : Codeunit 74;
       "Document No.HideValue"@19020538 : Boolean INDATASET;
+      MontantLigne@1180250001 : Decimal;
+      MontantFacture@1180250002 : Decimal;
+      myPurchRcptLine@1180250003 : Record 121;
+      "Document No.Emphasize"@1000000000 : Boolean INDATASET;
 
     PROCEDURE SetPurchHeader@1(VAR PurchHeader2@1000 : Record 38);
     BEGIN
@@ -180,10 +233,13 @@ OBJECT Page 5709 Get Receipt Lines
         PurchRcptLine.COPYFILTERS(Rec);
         PurchRcptLine.SETRANGE("Document No.","Document No.");
         PurchRcptLine.SETFILTER("Qty. Rcd. Not Invoiced",'<>0');
-        IF PurchRcptLine.FINDFIRST THEN BEGIN
+        //AB6.JME.001--<<
+        //IF PurchRcptLine.FINDFIRST THEN BEGIN
+        IF PurchRcptLine.FINDFIRST THEN ;
+        //AB6.JME.001-->>
           TempPurchRcptLine := PurchRcptLine;
           TempPurchRcptLine.INSERT;
-        END;
+        //END;
       END;
       IF "Line No." = TempPurchRcptLine."Line No." THEN
         EXIT(TRUE);
@@ -198,11 +254,32 @@ OBJECT Page 5709 Get Receipt Lines
 
     LOCAL PROCEDURE DocumentNoOnFormat@19001080();
     BEGIN
-      IF NOT IsFirstDocLine THEN
+      //IF NOT IsFirstDocLine THEN         //Code 2015
+      //  "Document No.HideValue" := TRUE; //Code 2015
+      //AB6.S35
+      myPurchRcptLine.RESET;
+      IF IsFirstDocLine THEN BEGIN
+        "Document No.Emphasize" := TRUE;
+         MontantFacture:=0;
+         myPurchRcptLine.COPYFILTERS(Rec);
+         myPurchRcptLine.SETFILTER("Document No.",Rec."Document No.");
+         IF myPurchRcptLine.FIND('-') THEN
+         REPEAT
+            MontantFacture+=myPurchRcptLine.Quantity*myPurchRcptLine."Unit Cost";
+         UNTIL myPurchRcptLine.NEXT = 0;
+
+        // MontantFacture:=MontantLigne;
+      END ELSE BEGIN
         "Document No.HideValue" := TRUE;
+        MontantFacture+=MontantLigne;
+      END;
+      //
     END;
 
     BEGIN
+    {
+      //AB6.JME.001   17/10/12  Correction bug std
+    }
     END.
   }
 }

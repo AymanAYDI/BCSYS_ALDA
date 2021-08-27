@@ -2,9 +2,10 @@ OBJECT Table 5050 Contact
 {
   OBJECT-PROPERTIES
   {
-    Date=26/11/15;
-    Time=12:00:00;
-    Version List=NAVW19.00.00.43897,NAVFR9.00.00.43897;
+    Date=10/05/16;
+    Time=09:31:10;
+    Modified=Yes;
+    Version List=NAVW19.00.00.43897,NAVFR9.00.00.43897,BC6AUTOINV;
   }
   PROPERTIES
   {
@@ -687,6 +688,8 @@ OBJECT Table 5050 Contact
                                                               FRA=Forme juridique] }
     { 10804;  ;Stock Capital       ;Text30        ;CaptionML=[ENU=Stock Capital;
                                                               FRA=Capital social] }
+    { 50260;  ;Incl. in Email Inv. ;Boolean       ;CaptionML=[ENU=Incl. in Email Inv.;
+                                                              FRA=Incl. envoi email fact.] }
   }
   KEYS
   {

@@ -2,9 +2,10 @@ OBJECT Page 45 Sales List
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
-    Version List=NAVW19.00;
+    Date=01/07/16;
+    Time=17:50:13;
+    Modified=Yes;
+    Version List=NAVW19.00,AB6.JME.001;
   }
   PROPERTIES
   {
@@ -46,6 +47,7 @@ OBJECT Page 45 Sales List
                                  FRA=Dispo. r‚servation vente];
                       RunObject=Report 209;
                       Promoted=No;
+                      Visible=FALSE;
                       Image=Report;
                       PromotedCategory=Report }
     }
@@ -58,6 +60,9 @@ OBJECT Page 45 Sales List
     { 1   ;1   ;Group     ;
                 GroupType=Repeater }
 
+    { 1180250001;2;Field  ;
+                SourceExpr="Order Reference Customer" }
+
     { 2   ;2   ;Field     ;
                 SourceExpr="No." }
 
@@ -69,6 +74,9 @@ OBJECT Page 45 Sales List
 
     { 17  ;2   ;Field     ;
                 SourceExpr="External Document No." }
+
+    { 1180250002;2;Field  ;
+                SourceExpr="Your Reference" }
 
     { 33  ;2   ;Field     ;
                 SourceExpr="Sell-to Post Code";
@@ -124,7 +132,7 @@ OBJECT Page 45 Sales List
 
     { 139 ;2   ;Field     ;
                 SourceExpr="Posting Date";
-                Visible=FALSE }
+                Visible=TRUE }
 
     { 121 ;2   ;Field     ;
                 SourceExpr="Shortcut Dimension 1 Code";
@@ -140,10 +148,11 @@ OBJECT Page 45 Sales List
 
     { 99  ;2   ;Field     ;
                 SourceExpr="Salesperson Code";
-                Visible=FALSE }
+                Visible=TRUE }
 
     { 21  ;2   ;Field     ;
-                SourceExpr="Assigned User ID" }
+                SourceExpr="Assigned User ID";
+                Visible=FALSE }
 
     { 11  ;2   ;Field     ;
                 SourceExpr="Currency Code";
@@ -154,6 +163,9 @@ OBJECT Page 45 Sales List
 
     { 3   ;2   ;Field     ;
                 SourceExpr=Status }
+
+    { 1000000000;2;Field  ;
+                SourceExpr="Amount Including VAT" }
 
     { 1900000007;0;Container;
                 ContainerType=FactBoxArea }

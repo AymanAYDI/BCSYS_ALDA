@@ -2,12 +2,15 @@ OBJECT Query 21 Cust. Ledg. Entry Remain. Amt.
 {
   OBJECT-PROPERTIES
   {
-    Date=09/09/14;
-    Time=12:00:00;
+    Date=22/03/16;
+    Time=15:43:25;
+    Modified=Yes;
     Version List=NAVW18.00;
   }
   PROPERTIES
   {
+    Permissions=TableData 21=r,
+                TableData 379=r;
     CaptionML=[ENU=Cust. Ledg. Entry Remain. Amt.;
                FRA=Mnt ouv. ‚critures compt. clt];
   }

@@ -4,7 +4,8 @@ OBJECT Codeunit 5702 Dist. Integration
   {
     Date=15/09/15;
     Time=12:00:00;
-    Version List=NAVW19.00;
+    Modified=Yes;
+    Version List=NAVW19.00,AC1.00;
   }
   PROPERTIES
   {
@@ -338,7 +339,105 @@ OBJECT Codeunit 5702 Dist. Integration
       END;
     END;
 
+    PROCEDURE GetPurchItemCrossRefFromSales@1180250002(VAR SalesLine2@1000 : Record 37);
     BEGIN
+      //AC1.00
+
+      WITH SalesLine2 DO BEGIN
+        IF (Type = Type::Item) THEN BEGIN
+          ItemCrossReference.RESET;
+          ItemCrossReference.SETRANGE("Item No.","No.");
+          ItemCrossReference.SETRANGE("Variant Code","Variant Code");
+          ItemCrossReference.SETRANGE("Unit of Measure","Unit of Measure Code");
+          ItemCrossReference.SETRANGE("Cross-Reference Type","Cross-Reference Type"::Vendor);
+          ItemCrossReference.SETRANGE("Cross-Reference Type No.","Vendor No. for EDI Sending");
+          ItemCrossReference.SETRANGE("Item No.","No.");
+          IF ItemCrossReference.FINDFIRST THEN
+            Found := TRUE
+          ELSE BEGIN
+            //ItemCrossReference.SETRANGE("Item No.");
+            //Found := ItemCrossReference.FINDFIRST;
+            Found := FALSE;
+          END;
+
+          IF Found THEN
+            "Cross-Reference No. of Vendor" := ItemCrossReference."Cross-Reference No."
+          ELSE
+            "Cross-Reference No. of Vendor" := '';
+        END;
+      END;
+    END;
+
+    PROCEDURE GetPurchItemCrossRefFromPurch@1180250001(VAR PurchLine2@1000 : Record 39);
+    BEGIN
+      //AC1.00
+
+      WITH PurchLine2 DO BEGIN
+        IF (Type = Type::Item) THEN BEGIN
+          ItemCrossReference.RESET;
+          ItemCrossReference.SETRANGE("Item No.","No.");
+          ItemCrossReference.SETRANGE("Variant Code","Variant Code");
+          ItemCrossReference.SETRANGE("Unit of Measure","Unit of Measure Code");
+          ItemCrossReference.SETRANGE("Cross-Reference Type","Cross-Reference Type"::Vendor);
+          ItemCrossReference.SETRANGE("Cross-Reference Type No.",PurchLine2."Buy-from Vendor No.");
+          ItemCrossReference.SETRANGE("Item No.","No.");
+          IF ItemCrossReference.FINDFIRST THEN
+            Found := TRUE
+          ELSE BEGIN
+            //ItemCrossReference.SETRANGE("Item No.");
+            //Found := ItemCrossReference.FINDFIRST;
+            Found := FALSE;
+          END;
+
+          IF Found THEN BEGIN
+            "Cross-Reference No." := ItemCrossReference."Cross-Reference No.";
+            "Unit of Measure (Cross Ref.)" := ItemCrossReference."Unit of Measure";
+            "Cross-Reference Type" := ItemCrossReference."Cross-Reference Type";
+            "Cross-Reference Type No." := ItemCrossReference."Cross-Reference Type No.";
+          END ELSE BEGIN
+            "Cross-Reference No." := '';
+            "Cross-Reference Type" := "Cross-Reference Type"::" ";
+            "Cross-Reference Type No." := '';
+          END;
+        END;
+      END;
+    END;
+
+    PROCEDURE GetItemFromItemCrossRefVendor@1180250003(VAR SalesLine2@1180250002 : Record 37;VendorNo@1180250001 : Code[20];CrossRefNo@1180250003 : Code[20]);
+    BEGIN
+      //AC1.00
+
+      WITH SalesLine2 DO BEGIN
+        IF (Type = Type::Item) THEN BEGIN
+          ItemCrossReference.RESET;
+          ItemCrossReference.SETRANGE("Item No.","No.");
+          ItemCrossReference.SETRANGE("Variant Code","Variant Code");
+          ItemCrossReference.SETRANGE("Unit of Measure","Unit of Measure Code");
+          ItemCrossReference.SETRANGE("Cross-Reference Type","Cross-Reference Type"::Vendor);
+          ItemCrossReference.SETRANGE("Cross-Reference Type No.",VendorNo);
+          ItemCrossReference.SETRANGE("Cross-Reference No.",CrossRefNo);
+          IF ItemCrossReference.FINDFIRST THEN
+            Found := TRUE
+          ELSE BEGIN
+            ItemCrossReference.SETRANGE("Item No.");
+            Found := ItemCrossReference.FINDFIRST;
+          END;
+
+          IF Found THEN BEGIN
+            "No." := ItemCrossReference."Item No.";
+            "Vendor No. for EDI Sending" := VendorNo;
+          END ELSE BEGIN
+            "No." := '';
+            "Vendor No. for EDI Sending" := '';
+          END;
+        END;
+      END;
+    END;
+
+    BEGIN
+    {
+      AC1.00 ajout Function EnterPurchItemCrossRefFromSale() GetPurchItemCrossRefFromPurch() GetItemFromItemCrossRefVendor()
+    }
     END.
   }
 }

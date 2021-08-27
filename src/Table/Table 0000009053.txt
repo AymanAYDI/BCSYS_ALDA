@@ -2,8 +2,9 @@ OBJECT Table 9053 Sales Cue
 {
   OBJECT-PROPERTIES
   {
-    Date=22/12/15;
-    Time=12:00:00;
+    Date=20/04/16;
+    Time=18:05:22;
+    Modified=Yes;
     Version List=NAVW19.00.00.44365;
   }
   PROPERTIES
@@ -18,14 +19,16 @@ OBJECT Table 9053 Sales Cue
     { 2   ;   ;Sales Quotes - Open ;Integer       ;FieldClass=FlowField;
                                                    CalcFormula=Count("Sales Header" WHERE (Document Type=FILTER(Quote),
                                                                                            Status=FILTER(Open),
-                                                                                           Responsibility Center=FIELD(Responsibility Center Filter)));
+                                                                                           Responsibility Center=FIELD(Responsibility Center Filter),
+                                                                                           Salesperson Code=FIELD(Salesperson Code Filter)));
                                                    CaptionML=[ENU=Sales Quotes - Open;
                                                               FRA=Devis - Ouverts];
                                                    Editable=No }
     { 3   ;   ;Sales Orders - Open ;Integer       ;FieldClass=FlowField;
                                                    CalcFormula=Count("Sales Header" WHERE (Document Type=FILTER(Order),
                                                                                            Status=FILTER(Open),
-                                                                                           Responsibility Center=FIELD(Responsibility Center Filter)));
+                                                                                           Responsibility Center=FIELD(Responsibility Center Filter),
+                                                                                           Salesperson Code=FIELD(Salesperson Code Filter)));
                                                    AccessByPermission=TableData 110=R;
                                                    CaptionML=[ENU=Sales Orders - Open;
                                                               FRA=Commandes vente - Ouvertes];
@@ -35,7 +38,8 @@ OBJECT Table 9053 Sales Cue
                                                                                            Status=FILTER(Released),
                                                                                            Completely Shipped=CONST(No),
                                                                                            Shipment Date=FIELD(Date Filter2),
-                                                                                           Responsibility Center=FIELD(Responsibility Center Filter)));
+                                                                                           Responsibility Center=FIELD(Responsibility Center Filter),
+                                                                                           Salesperson Code=FIELD(Salesperson Code Filter)));
                                                    AccessByPermission=TableData 110=R;
                                                    CaptionML=[ENU=Ready to Ship;
                                                               FRA=Pràt pour expÇdition];
@@ -45,7 +49,8 @@ OBJECT Table 9053 Sales Cue
                                                                                            Status=FILTER(Released),
                                                                                            Completely Shipped=CONST(No),
                                                                                            Shipment Date=FIELD(Date Filter),
-                                                                                           Responsibility Center=FIELD(Responsibility Center Filter)));
+                                                                                           Responsibility Center=FIELD(Responsibility Center Filter),
+                                                                                           Salesperson Code=FIELD(Salesperson Code Filter)));
                                                    AccessByPermission=TableData 110=R;
                                                    CaptionML=[ENU=Delayed;
                                                               FRA=En retard];
@@ -53,7 +58,8 @@ OBJECT Table 9053 Sales Cue
     { 6   ;   ;Sales Return Orders - Open;Integer ;FieldClass=FlowField;
                                                    CalcFormula=Count("Sales Header" WHERE (Document Type=FILTER(Return Order),
                                                                                            Status=FILTER(Open),
-                                                                                           Responsibility Center=FIELD(Responsibility Center Filter)));
+                                                                                           Responsibility Center=FIELD(Responsibility Center Filter),
+                                                                                           Salesperson Code=FIELD(Salesperson Code Filter)));
                                                    AccessByPermission=TableData 6660=R;
                                                    CaptionML=[ENU=Sales Return Orders - Open;
                                                               FRA=Retours vente - Ouverts];
@@ -61,7 +67,8 @@ OBJECT Table 9053 Sales Cue
     { 7   ;   ;Sales Credit Memos - Open;Integer  ;FieldClass=FlowField;
                                                    CalcFormula=Count("Sales Header" WHERE (Document Type=FILTER(Credit Memo),
                                                                                            Status=FILTER(Open),
-                                                                                           Responsibility Center=FIELD(Responsibility Center Filter)));
+                                                                                           Responsibility Center=FIELD(Responsibility Center Filter),
+                                                                                           Salesperson Code=FIELD(Salesperson Code Filter)));
                                                    CaptionML=[ENU=Sales Credit Memos - Open;
                                                               FRA=Avoirs vente - Ouverts];
                                                    Editable=No }
@@ -71,7 +78,8 @@ OBJECT Table 9053 Sales Cue
                                                                                            Shipped=FILTER(Yes),
                                                                                            Completely Shipped=FILTER(No),
                                                                                            Shipment Date=FIELD(Date Filter2),
-                                                                                           Responsibility Center=FIELD(Responsibility Center Filter)));
+                                                                                           Responsibility Center=FIELD(Responsibility Center Filter),
+                                                                                           Salesperson Code=FIELD(Salesperson Code Filter)));
                                                    AccessByPermission=TableData 110=R;
                                                    CaptionML=[ENU=Partially Shipped;
                                                               FRA=Partiellement livrÇ];
@@ -83,13 +91,15 @@ OBJECT Table 9053 Sales Cue
                                                    Editable=No }
     { 10  ;   ;Sales Inv. - Pending Doc.Exch.;Integer;
                                                    FieldClass=FlowField;
-                                                   CalcFormula=Count("Sales Invoice Header" WHERE (Document Exchange Status=FILTER(Sent to Document Exchange Service|Delivery Failed)));
+                                                   CalcFormula=Count("Sales Invoice Header" WHERE (Document Exchange Status=FILTER(Sent to Document Exchange Service|Delivery Failed),
+                                                                                                   Salesperson Code=FIELD(Salesperson Code Filter)));
                                                    CaptionML=[ENU=Sales Invoices - Pending Document Exchange;
                                                               FRA=Factures vente - êchange de documents en attente];
                                                    Editable=No }
     { 12  ;   ;Sales CrM. - Pending Doc.Exch.;Integer;
                                                    FieldClass=FlowField;
-                                                   CalcFormula=Count("Sales Cr.Memo Header" WHERE (Document Exchange Status=FILTER(Sent to Document Exchange Service|Delivery Failed)));
+                                                   CalcFormula=Count("Sales Cr.Memo Header" WHERE (Document Exchange Status=FILTER(Sent to Document Exchange Service|Delivery Failed),
+                                                                                                   Salesperson Code=FIELD(Salesperson Code Filter)));
                                                    CaptionML=[ENU=Sales Credit Memos - Pending Document Exchange;
                                                               FRA=Avoirs vente - êchange de documents en attente];
                                                    Editable=No }
@@ -104,6 +114,23 @@ OBJECT Table 9053 Sales Cue
     { 22  ;   ;Responsibility Center Filter;Code10;FieldClass=FlowFilter;
                                                    CaptionML=[ENU=Responsibility Center Filter;
                                                               FRA=Filtre centre de gestion];
+                                                   Editable=No }
+    { 60043;  ;Salesperson Code Filter;Code150    ;FieldClass=FlowFilter;
+                                                   TableRelation=Salesperson/Purchaser;
+                                                   OnValidate=VAR
+                                                                ApprovalEntry@1001 : Record 454;
+                                                              BEGIN
+                                                              END;
+
+                                                   CaptionML=[ENU=Salesperson Code;
+                                                              FRA=Code vendeur] }
+    { 60045;  ;Sales Quotes - Released;Integer    ;FieldClass=FlowField;
+                                                   CalcFormula=Count("Sales Header" WHERE (Document Type=FILTER(Quote),
+                                                                                           Status=FILTER(<>Open),
+                                                                                           Responsibility Center=FIELD(Responsibility Center Filter),
+                                                                                           Salesperson Code=FIELD(Salesperson Code Filter)));
+                                                   CaptionML=[ENU=Sales Quotes - Released;
+                                                              FRA=Devis - LancÇs];
                                                    Editable=No }
   }
   KEYS
@@ -127,6 +154,13 @@ OBJECT Table 9053 Sales Cue
         SETRANGE("Responsibility Center Filter",RespCenterCode);
         FILTERGROUP(0);
       END;
+      //BC6>>
+      IF UserSetupMgt.GetSalesPersonFilter <> '' THEN BEGIN
+        FILTERGROUP(2);
+        SETFILTER("Salesperson Code Filter",UserSetupMgt.GetSalesPersonFilter);
+        FILTERGROUP(0);
+      END;
+      //BC6<<
     END;
 
     PROCEDURE CalculateAverageDaysDelayed@2() AverageDays : Decimal;
@@ -136,6 +170,7 @@ OBJECT Table 9053 Sales Cue
       CountDelayedInvoices@1001 : Integer;
     BEGIN
       FilterOrders(SalesHeader,FIELDNO(Delayed));
+      SalesHeader.SETPERMISSIONFILTER;
       IF SalesHeader.FINDSET THEN BEGIN
         REPEAT
           SumDelayDays += WORKDATE - SalesHeader."Shipment Date";
@@ -152,6 +187,9 @@ OBJECT Table 9053 Sales Cue
     BEGIN
       CountSalesOrders.SETRANGE(Status,CountSalesOrders.Status::Released);
       CountSalesOrders.SETRANGE(Completely_Shipped,FALSE);
+      //BC6>>
+      CountSalesOrders.SETFILTER(Salesperson_Code ,GETFILTER("Salesperson Code Filter"));
+      //BC6<<
       FILTERGROUP(2);
       CountSalesOrders.SETFILTER(Responsibility_Center,GETFILTER("Responsibility Center Filter"));
       FILTERGROUP(0);
@@ -187,6 +225,9 @@ OBJECT Table 9053 Sales Cue
       SalesHeader.SETRANGE("Document Type",SalesHeader."Document Type"::Order);
       SalesHeader.SETRANGE(Status,SalesHeader.Status::Released);
       SalesHeader.SETRANGE("Completely Shipped",FALSE);
+      //BC6>>
+      SalesHeader.SETFILTER("Salesperson Code" ,GETFILTER("Salesperson Code Filter"));
+      //BC6<<
       CASE FieldNumber OF
         FIELDNO("Ready to Ship"):
           BEGIN
@@ -207,6 +248,7 @@ OBJECT Table 9053 Sales Cue
             SalesHeader.FILTERGROUP(0);
           END;
       END;
+
       FILTERGROUP(2);
       SalesHeader.SETFILTER("Responsibility Center",GETFILTER("Responsibility Center Filter"));
       FILTERGROUP(0);
@@ -218,6 +260,14 @@ OBJECT Table 9053 Sales Cue
     BEGIN
       FilterOrders(SalesHeader,FieldNumber);
       PAGE.RUN(PAGE::"Sales Order List",SalesHeader);
+    END;
+
+    PROCEDURE ShowShipments@1000000000(FieldNumber@1001 : Integer);
+    VAR
+      SalesHeader@1000 : Record 36;
+    BEGIN
+      //BC6
+      PAGE.RUN(PAGE::"Liste des BL non facturÇs");
     END;
 
     BEGIN

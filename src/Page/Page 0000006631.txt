@@ -2,9 +2,10 @@ OBJECT Page 6631 Sales Return Order Subform
 {
   OBJECT-PROPERTIES
   {
-    Date=22/12/15;
-    Time=12:00:00;
-    Version List=NAVW19.00.00.44365;
+    Date=20/10/16;
+    Time=14:41:00;
+    Modified=Yes;
+    Version List=NAVW19.00.00.44365,AB6.JME.001;
   }
   PROPERTIES
   {
@@ -228,6 +229,9 @@ OBJECT Page 6631 Sales Return Order Subform
 
                 ShowMandatory=TypeChosen }
 
+    { 1000000001;2;Field  ;
+                SourceExpr="Line No." }
+
     { 34  ;2   ;Field     ;
                 SourceExpr="Cross-Reference No.";
                 Visible=FALSE;
@@ -240,6 +244,9 @@ OBJECT Page 6631 Sales Return Order Subform
                            InsertExtendedText(FALSE);
                          END;
                           }
+
+    { 1000000003;2;Field  ;
+                SourceExpr="Cross-Reference No. of Vendor" }
 
     { 64  ;2   ;Field     ;
                 SourceExpr="IC Partner Ref. Type";
@@ -396,6 +403,7 @@ OBJECT Page 6631 Sales Return Order Subform
     { 52  ;2   ;Field     ;
                 BlankZero=Yes;
                 SourceExpr="Qty. to Assign";
+                Visible=FALSE;
                 OnDrillDown=BEGIN
                               CurrPage.SAVERECORD;
                               ShowItemChargeAssgnt;
@@ -407,6 +415,7 @@ OBJECT Page 6631 Sales Return Order Subform
     { 60  ;2   ;Field     ;
                 BlankZero=Yes;
                 SourceExpr="Qty. Assigned";
+                Visible=FALSE;
                 OnDrillDown=BEGIN
                               CurrPage.SAVERECORD;
                               ShowItemChargeAssgnt;
@@ -464,6 +473,17 @@ OBJECT Page 6631 Sales Return Order Subform
     { 48  ;2   ;Field     ;
                 SourceExpr="Appl.-to Item Entry";
                 Visible=FALSE }
+
+    { 1180250001;2;Field  ;
+                SourceExpr="Line No. Reference Customer";
+                Visible=FALSE }
+
+    { 1000000000;2;Field  ;
+                SourceExpr="External Line No." }
+
+    { 1000000002;2;Field  ;
+                Name=<Vendor No. for EDI Sending>;
+                SourceExpr="Vendor No. for EDI Sending" }
 
     { 17  ;2   ;Field     ;
                 SourceExpr="Deferral Code";

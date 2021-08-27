@@ -1,0 +1,129 @@
+OBJECT Report 50092 Batch Update Order Micro No.
+{
+  OBJECT-PROPERTIES
+  {
+    Date=22/04/16;
+    Time=11:29:17;
+    Modified=Yes;
+    Version List=AC1.00,2016;
+  }
+  PROPERTIES
+  {
+    Permissions=TableData 39=rm;
+    CaptionML=[ENU="Batch : Update Purch. Line No. = 0";
+               FRA="TPL : mise … jour nø ligne achat = 0"];
+    ShowPrintStatus=No;
+    ProcessingOnly=Yes;
+    OnPreReport=BEGIN
+                  Window.OPEN(
+                    Text000 + '\' +
+                    '@1@@@@@@@@@@@@@@@@@@@@@');
+                  Window.UPDATE(1,0);
+                END;
+
+    OnPostReport=BEGIN
+                   Window.CLOSE;
+                 END;
+
+  }
+  DATASET
+  {
+    { 5290;    ;DataItem;                    ;
+               DataItemTable=Table36;
+               DataItemTableView=SORTING(Document Type,No.);
+               OnPreDataItem=BEGIN
+                               CurrRec := 0;
+                               RecCount := COUNT;
+                               Window.UPDATE(1,0);
+
+                               LOCKTABLE(TRUE,FALSE);
+                             END;
+
+               OnAfterGetRecord=BEGIN
+                                  CurrRec += 1;
+                                  Window.UPDATE(1,ROUND(CurrRec / RecCount * 10000,1));
+
+                                  IF STRLEN(FORMAT("Micro Order No.")) = 6 THEN BEGIN
+                                    "Micro Order No." := FORMAT("Micro Order No.") + '00';
+                                    MODIFY;
+                                  END;
+                                END;
+                                 }
+
+    { 5291;1   ;DataItem;                    ;
+               DataItemTable=Table37;
+               DataItemTableView=SORTING(Document Type,Document No.,Line No.);
+               OnAfterGetRecord=BEGIN
+                                  IF STRLEN(FORMAT("Micro Order No.")) = 6 THEN BEGIN
+                                    "Micro Order No." := FORMAT("Micro Order No.") + '00';
+                                    MODIFY;
+                                  END;
+                                END;
+
+               DataItemLink=Document Type=FIELD(Document Type),
+                            Document No.=FIELD(No.) }
+
+    { 5292;    ;DataItem;                    ;
+               DataItemTable=Table38;
+               DataItemTableView=SORTING(Document Type,No.);
+               OnPreDataItem=BEGIN
+                               CurrRec := 0;
+                               RecCount := COUNT;
+                               Window.UPDATE(1,0);
+
+                               LOCKTABLE(TRUE,FALSE);
+                             END;
+
+               OnAfterGetRecord=BEGIN
+                                  CurrRec += 1;
+                                  Window.UPDATE(1,ROUND(CurrRec / RecCount * 10000,1));
+
+                                  IF STRLEN(FORMAT("Micro Order No.")) = 6 THEN BEGIN
+                                    "Micro Order No." := FORMAT("Micro Order No.") + '00';
+                                    MODIFY;
+                                  END;
+                                END;
+                                 }
+
+    { 5293;1   ;DataItem;                    ;
+               DataItemTable=Table39;
+               DataItemTableView=SORTING(Document Type,Document No.,Line No.);
+               OnAfterGetRecord=BEGIN
+                                  IF STRLEN(FORMAT("Micro Order No.")) = 6 THEN BEGIN
+                                    "Micro Order No." := FORMAT("Micro Order No.") + '00';
+                                    MODIFY;
+                                  END;
+                                END;
+
+               DataItemLink=Document Type=FIELD(Document Type),
+                            Document No.=FIELD(No.) }
+
+  }
+  REQUESTPAGE
+  {
+    PROPERTIES
+    {
+    }
+    CONTROLS
+    {
+    }
+  }
+  LABELS
+  {
+  }
+  CODE
+  {
+    VAR
+      Window@1180250003 : Dialog;
+      Text000@1180250004 : TextConst 'ENU=Batch in process...;FRA=Traitement en cours...';
+      RecCount@1180250005 : Integer;
+      CurrRec@1180250006 : Integer;
+
+    BEGIN
+    END.
+  }
+  RDLDATA
+  {
+  }
+}
+

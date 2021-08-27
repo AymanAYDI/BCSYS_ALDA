@@ -1,0 +1,1686 @@
+OBJECT MenuSuite 1080 Dept - Partner
+{
+  OBJECT-PROPERTIES
+  {
+    Date=23/07/18;
+    Time=12:32:12;
+    Modified=Yes;
+    Version List=BC6AUTOINV;
+  }
+  PROPERTIES
+  {
+  }
+  MENUNODES
+  {
+    {                ;[{783B68E0-4D0F-4CDF-A60B-D45CE7B35B27}] ;NextNodeID=[{96FCB35B-884B-45F2-9161-B36BDD495182}] }
+    { MenuGroup      ;[{96FCB35B-884B-45F2-9161-B36BDD495182}] ;Name=E.D.I.;
+                                                                CaptionML=[ENU=E.D.I.;
+                                                                           FRA=E.D.I.];
+                                                                MemberOfMenu=[{19A352FE-D90D-424E-B85F-CF3B8E98CF0E}];
+                                                                ParentNodeID=[{28B406BE-DD89-43EC-B2B9-6BB90DC2583B}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{C32C8699-C9D7-4B6D-B56E-729737E9ECD9}];
+                                                                FirstChild=[{1F67BC7C-CDDD-4484-B7F7-EF4906994229}];
+                                                                IsDepartmentPage=Yes }
+    { MenuItem       ;[{1F67BC7C-CDDD-4484-B7F7-EF4906994229}] ;Name=Electronic Data Interchange Setup List;
+                                                                CaptionML=[ENU=EDI;
+                                                                           FRA=EDI];
+                                                                MemberOfMenu=[{19A352FE-D90D-424E-B85F-CF3B8E98CF0E}];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=50000;
+                                                                ParentNodeID=[{96FCB35B-884B-45F2-9161-B36BDD495182}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{67C884AE-B3F4-4EE6-88F2-8594EE7C0926}];
+                                                                DepartmentCategory=Lists }
+    { MenuGroup      ;[{67C884AE-B3F4-4EE6-88F2-8594EE7C0926}] ;Name=Periodic Activities;
+                                                                CaptionML=[ENU=Periodic Activities;
+                                                                           FRA=Traitements];
+                                                                MemberOfMenu=[{19A352FE-D90D-424E-B85F-CF3B8E98CF0E}];
+                                                                ParentNodeID=[{96FCB35B-884B-45F2-9161-B36BDD495182}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{040FFAE4-FFE2-4696-AE7A-FEC535EA2FE6}];
+                                                                FirstChild=[{3D4755E5-5D2C-4DD9-80FD-8A96E2123303}];
+                                                                IsDepartmentPage=Yes }
+    { MenuGroup      ;[{040FFAE4-FFE2-4696-AE7A-FEC535EA2FE6}] ;Name=Reports;
+                                                                CaptionML=[ENU=Reports;
+                                                                           FRA=Etats];
+                                                                MemberOfMenu=[{19A352FE-D90D-424E-B85F-CF3B8E98CF0E}];
+                                                                ParentNodeID=[{96FCB35B-884B-45F2-9161-B36BDD495182}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{1F67BC7C-CDDD-4484-B7F7-EF4906994229}];
+                                                                FirstChild=[{B0287628-5A9B-429A-BD37-CEA6F95C1CD3}];
+                                                                IsDepartmentPage=Yes }
+    { MenuItem       ;[{3D4755E5-5D2C-4DD9-80FD-8A96E2123303}] ;Name=Cancel Exported Inv.;
+                                                                CaptionML=[ENU=Cancel Exported Inv.;
+                                                                           FRA=Annule facture exportÇe];
+                                                                MemberOfMenu=[{19A352FE-D90D-424E-B85F-CF3B8E98CF0E}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=50025;
+                                                                ParentNodeID=[{67C884AE-B3F4-4EE6-88F2-8594EE7C0926}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{7122466A-B2D3-418C-B18A-D7C5A48E0CBA}];
+                                                                DepartmentCategory=Administration }
+    { MenuItem       ;[{7122466A-B2D3-418C-B18A-D7C5A48E0CBA}] ;Name=Cancel Exported Cr.Memo;
+                                                                CaptionML=[ENU=Cancel Exported Cr.Memo;
+                                                                           FRA=Annule avoir exportÇ];
+                                                                MemberOfMenu=[{19A352FE-D90D-424E-B85F-CF3B8E98CF0E}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=50026;
+                                                                ParentNodeID=[{67C884AE-B3F4-4EE6-88F2-8594EE7C0926}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{3D4755E5-5D2C-4DD9-80FD-8A96E2123303}];
+                                                                DepartmentCategory=Administration }
+    { MenuItem       ;[{B0287628-5A9B-429A-BD37-CEA6F95C1CD3}] ;Name=E.D.I. Log List;
+                                                                CaptionML=[ENU=E.D.I. Log List;
+                                                                           FRA=Liste EDI log];
+                                                                MemberOfMenu=[{19A352FE-D90D-424E-B85F-CF3B8E98CF0E}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=50023;
+                                                                ParentNodeID=[{040FFAE4-FFE2-4696-AE7A-FEC535EA2FE6}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{B0287628-5A9B-429A-BD37-CEA6F95C1CD3}];
+                                                                DepartmentCategory=Administration }
+    {                ;[{A24506AF-48E9-4520-8A6E-9134CCD45DEC}] ;NextNodeID=[{568B7172-F93E-487B-84DF-6BFA0CF0B16A}] }
+    { MenuItem       ;[{568B7172-F93E-487B-84DF-6BFA0CF0B16A}] ;Name=Rapprochement bancaire ALDA;
+                                                                CaptionML=FRA=Rapprochement bancaire ALDA;
+                                                                MemberOfMenu=[{F8D2429D-034B-4C58-9B5E-81BE962DB1BC}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=50028;
+                                                                ParentNodeID=[{02D95892-72EC-4AEC-9063-4F416006CB33}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{E5C6F440-F8C5-4EDE-AA71-B2225F048BBE}];
+                                                                DepartmentCategory=Reports and Analysis }
+    {                ;[{5BC37081-EC0E-486E-B4E2-A673FAA4A2AB}] ;NextNodeID=[{78F5196B-19BC-490D-B01E-73D77E7F3FFF}] }
+    { MenuItem       ;[{78F5196B-19BC-490D-B01E-73D77E7F3FFF}] ;Name=CA n-1 versus n;
+                                                                CaptionML=[ENU=CA n-1 versus n;
+                                                                           FRA=CA n-1 versus n];
+                                                                MemberOfMenu=[{2DC8C4FE-7346-4124-8C20-383346384C03}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=50049;
+                                                                ParentNodeID=[{7F0B1093-76F1-4A34-ADCB-CD03B43F74F2}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{00000000-0000-0000-0000-000000000000}];
+                                                                DepartmentCategory=Reports and Analysis }
+    {                ;[{19B2C8C3-B752-4809-8625-527B7F59D8B2}] ;NextNodeID=[{97B2055D-2EBE-46E8-B462-303FAD852B4F}] }
+    { MenuItem       ;[{97B2055D-2EBE-46E8-B462-303FAD852B4F}] ;Name=Import UBL;
+                                                                CaptionML=[ENU=Import UBL;
+                                                                           FRA=Import UBL];
+                                                                MemberOfMenu=[{F8D2429D-034B-4C58-9B5E-81BE962DB1BC}];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=50022;
+                                                                ParentNodeID=[{831F6BAC-BC3F-4C93-B9A1-0C2E45ABEFC4}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{00000000-0000-0000-0000-000000000000}];
+                                                                DepartmentCategory=Tasks }
+    {                ;[{F1BC557C-C9E0-4E0D-B5F1-C57CD3BDA1E7}] ;NextNodeID=[{06A2557A-BE50-4FF6-A64C-61DA98F2CDD5}] }
+    { MenuGroup      ;[{06A2557A-BE50-4FF6-A64C-61DA98F2CDD5}] ;Name=Tasks;
+                                                                CaptionML=[ENU=Tasks;
+                                                                           FRA=Traitements];
+                                                                MemberOfMenu=[{2DC8C4FE-7346-4124-8C20-383346384C03}];
+                                                                ParentNodeID=[{2DC8C4FE-7346-4124-8C20-383346384C03}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{00000000-0000-0000-0000-000000000000}];
+                                                                FirstChild=[{965C4B00-8F79-43B6-BF2A-E99421DBBB24}];
+                                                                IsDepartmentPage=Yes }
+    { MenuItem       ;[{965C4B00-8F79-43B6-BF2A-E99421DBBB24}] ;Name=ALDA Combine Shipments;
+                                                                CaptionML=[ENU=ALDA Combine Shipments;
+                                                                           FRA=Regrouper les B.L. par rÇf cde Clt];
+                                                                MemberOfMenu=[{2DC8C4FE-7346-4124-8C20-383346384C03}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=50015;
+                                                                ParentNodeID=[{06A2557A-BE50-4FF6-A64C-61DA98F2CDD5}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{21AB7F09-E50D-4CCE-BE7D-4F9F61D11798}];
+                                                                DepartmentCategory=Tasks }
+    { MenuItem       ;[{21AB7F09-E50D-4CCE-BE7D-4F9F61D11798}] ;Name=Combined Shipments;
+                                                                CaptionML=[ENU=Combine Shipments...;
+                                                                           FRA=Regrouper les B.L....];
+                                                                MemberOfMenu=[{2DC8C4FE-7346-4124-8C20-383346384C03}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=295;
+                                                                ParentNodeID=[{06A2557A-BE50-4FF6-A64C-61DA98F2CDD5}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{00000000-0000-0000-0000-000000000000}];
+                                                                DepartmentCategory=Tasks }
+    {                ;[{19A352FE-D90D-424E-B85F-CF3B8E98CF0E}] ;NextNodeID=[{ADEDFA39-136E-4A67-9245-839EB148B913}] }
+    { Menu           ;[{ADEDFA39-136E-4A67-9245-839EB148B913}] ;Name=ADV;
+                                                                CaptionML=[ENU=ADV;
+                                                                           FRA=ADV];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                ParentNodeID=[{00000000-0000-0000-0000-000000000000}];
+                                                                Image=2;
+                                                                IsShortcut=No;
+                                                                Visible=Yes;
+                                                                Enabled=Yes;
+                                                                NextNodeID=[{00000000-0000-0000-0000-000000000000}];
+                                                                FirstChild=[{2809BE9B-11F9-4FB1-B0B3-D709EDAB3723}] }
+    { MenuGroup      ;[{4D70F420-9D0A-4F87-BD5C-718C533E11AF}] ;Name=Tasks;
+                                                                CaptionML=[ENU=Tasks;
+                                                                           FRA=Traitements];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                ParentNodeID=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{00000000-0000-0000-0000-000000000000}];
+                                                                FirstChild=[{E3EF6FF0-D26D-462F-9A6C-E3228ABACE64}];
+                                                                IsDepartmentPage=Yes }
+    { MenuItem       ;[{E3EF6FF0-D26D-462F-9A6C-E3228ABACE64}] ;Name=ALDA Combine Shipments;
+                                                                CaptionML=[ENU=ALDA Combine Shipments...;
+                                                                           FRA=Regrouper les B.L. par rÇf cde Clt...];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=50015;
+                                                                ParentNodeID=[{4D70F420-9D0A-4F87-BD5C-718C533E11AF}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{5473F70B-8269-4B68-BD80-80E21CAA3309}];
+                                                                DepartmentCategory=Tasks }
+    { MenuItem       ;[{5473F70B-8269-4B68-BD80-80E21CAA3309}] ;Name=Combined Shipments;
+                                                                CaptionML=[ENU=Combine Shipments...;
+                                                                           FRA=Regrouper les B.L....];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=295;
+                                                                ParentNodeID=[{4D70F420-9D0A-4F87-BD5C-718C533E11AF}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{00000000-0000-0000-0000-000000000000}];
+                                                                DepartmentCategory=Tasks }
+    { MenuGroup      ;[{2809BE9B-11F9-4FB1-B0B3-D709EDAB3723}] ;Name=Sales;
+                                                                CaptionML=[ENU=Sales;
+                                                                           FRA=Ventes];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                ParentNodeID=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{C7BE62D0-9960-45B3-86E2-37DD12127804}];
+                                                                FirstChild=[{37AD25F4-59C5-4FC2-8EE6-925486416669}] }
+    { MenuItem       ;[{37AD25F4-59C5-4FC2-8EE6-925486416669}] ;Name=Contacts;
+                                                                CaptionML=[ENU=Contacts;
+                                                                           FRA=Contacts];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=5052;
+                                                                ParentNodeID=[{2809BE9B-11F9-4FB1-B0B3-D709EDAB3723}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{C8B267A6-96FB-4506-A4D3-0F6C3971AC6D}];
+                                                                DepartmentCategory=Lists }
+    { MenuItem       ;[{C8B267A6-96FB-4506-A4D3-0F6C3971AC6D}] ;Name=Customers;
+                                                                CaptionML=[ENU=Customers;
+                                                                           FRA=Clients];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=22;
+                                                                ParentNodeID=[{2809BE9B-11F9-4FB1-B0B3-D709EDAB3723}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{44793940-BF47-4F58-8AE7-D73C25008BEB}];
+                                                                DepartmentCategory=Lists }
+    { MenuItem       ;[{44793940-BF47-4F58-8AE7-D73C25008BEB}] ;Name=Salespeople;
+                                                                CaptionML=[ENU=Salespeople;
+                                                                           FRA=Vendeurs];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=14;
+                                                                ParentNodeID=[{2809BE9B-11F9-4FB1-B0B3-D709EDAB3723}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{BC2B5273-519A-4FF3-8F33-A3612070642C}];
+                                                                DepartmentCategory=Lists }
+    { MenuItem       ;[{BC2B5273-519A-4FF3-8F33-A3612070642C}] ;Name=Teams;
+                                                                CaptionML=[ENU=Teams;
+                                                                           FRA=Equipes];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=5105;
+                                                                ParentNodeID=[{2809BE9B-11F9-4FB1-B0B3-D709EDAB3723}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{BFB560E3-B638-4A58-9DB3-1D2D7C42F9AA}];
+                                                                DepartmentCategory=Lists }
+    { MenuItem       ;[{BFB560E3-B638-4A58-9DB3-1D2D7C42F9AA}] ;Name=To-dos;
+                                                                CaptionML=[ENU=To-dos;
+                                                                           FRA=Actions];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=5099;
+                                                                ParentNodeID=[{2809BE9B-11F9-4FB1-B0B3-D709EDAB3723}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{41C4CCD5-F220-43E6-81C1-6B819EF9132B}];
+                                                                DepartmentCategory=Tasks }
+    { MenuItem       ;[{41C4CCD5-F220-43E6-81C1-6B819EF9132B}] ;Name=Opportunities;
+                                                                CaptionML=[ENU=Opportunities;
+                                                                           FRA=OpportunitÇs];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=5131;
+                                                                ParentNodeID=[{2809BE9B-11F9-4FB1-B0B3-D709EDAB3723}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{97A21D85-02B9-461E-A93C-D397878C0C3B}];
+                                                                DepartmentCategory=Tasks }
+    { MenuGroup      ;[{97A21D85-02B9-461E-A93C-D397878C0C3B}] ;Name=Reports;
+                                                                CaptionML=[ENU=Reports;
+                                                                           FRA=êtats];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                ParentNodeID=[{2809BE9B-11F9-4FB1-B0B3-D709EDAB3723}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{CAD0DA07-373C-4156-AE99-2A1EA8F237E1}];
+                                                                FirstChild=[{263C39BA-5588-4949-9F97-CE4A6C8B032F}];
+                                                                IsDepartmentPage=No }
+    { MenuGroup      ;[{263C39BA-5588-4949-9F97-CE4A6C8B032F}] ;Name=Contacts;
+                                                                CaptionML=[ENU=Contacts;
+                                                                           FRA=Contacts];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                ParentNodeID=[{97A21D85-02B9-461E-A93C-D397878C0C3B}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{AA343E3F-A6D5-4C80-B8E5-0A2972CBB16D}];
+                                                                FirstChild=[{08198769-87E9-4977-97CE-3F6E3A48D548}];
+                                                                IsDepartmentPage=No }
+    { MenuItem       ;[{08198769-87E9-4977-97CE-3F6E3A48D548}] ;Name=Contact - List;
+                                                                CaptionML=[ENU=Contact List;
+                                                                           FRA=Liste des contacts];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=5050;
+                                                                ParentNodeID=[{263C39BA-5588-4949-9F97-CE4A6C8B032F}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{579B0EDC-3B97-45F4-A5A2-E093361D31F3}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuItem       ;[{579B0EDC-3B97-45F4-A5A2-E093361D31F3}] ;Name=Contact - Company Summary;
+                                                                CaptionML=[ENU=Contact - Company Summary;
+                                                                           FRA=Contact - ActivitÇ sociÇtÇ];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=5051;
+                                                                ParentNodeID=[{263C39BA-5588-4949-9F97-CE4A6C8B032F}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{0486D16E-6E91-4451-9E7F-F6BE03A65110}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuItem       ;[{0486D16E-6E91-4451-9E7F-F6BE03A65110}] ;Name=Orgl. Profile Summary;
+                                                                CaptionML=[ENU=Contact - Person Summary;
+                                                                           FRA=Contact - ActivitÇ personne];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=5053;
+                                                                ParentNodeID=[{263C39BA-5588-4949-9F97-CE4A6C8B032F}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{40C26C7C-3521-4948-97E5-86D5990D45CA}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuItem       ;[{40C26C7C-3521-4948-97E5-86D5990D45CA}] ;Name=Contact - Labels;
+                                                                CaptionML=[ENU=Contact Labels;
+                                                                           FRA=êtiquettes contact];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=5056;
+                                                                ParentNodeID=[{263C39BA-5588-4949-9F97-CE4A6C8B032F}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{D6DB3568-C0B0-4028-BE34-FFDC7D98D215}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuItem       ;[{D6DB3568-C0B0-4028-BE34-FFDC7D98D215}] ;Name=Questionnaire - Handouts;
+                                                                CaptionML=[ENU=Questionnaire - Handouts;
+                                                                           FRA=Questionnaire - Documentation];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=5066;
+                                                                ParentNodeID=[{263C39BA-5588-4949-9F97-CE4A6C8B032F}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{3FACF69C-BD9A-4698-9421-69073EF862C4}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuItem       ;[{3FACF69C-BD9A-4698-9421-69073EF862C4}] ;Name=Questionnaire - Test;
+                                                                CaptionML=[ENU=Questionnaire - Test;
+                                                                           FRA=Questionnaire - Test];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=5067;
+                                                                ParentNodeID=[{263C39BA-5588-4949-9F97-CE4A6C8B032F}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{00000000-0000-0000-0000-000000000000}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuGroup      ;[{AA343E3F-A6D5-4C80-B8E5-0A2972CBB16D}] ;Name=Customers;
+                                                                CaptionML=[ENU=Customers;
+                                                                           FRA=Clients];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                ParentNodeID=[{97A21D85-02B9-461E-A93C-D397878C0C3B}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{81CCACB5-8061-4BD9-A045-034C25F054A5}];
+                                                                FirstChild=[{9B0277D4-98BB-4202-BEF9-E00740BDE14F}];
+                                                                IsDepartmentPage=No }
+    { MenuItem       ;[{9B0277D4-98BB-4202-BEF9-E00740BDE14F}] ;Name=Customer - List;
+                                                                CaptionML=[ENU=Customer List;
+                                                                           FRA=Liste des clients];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=101;
+                                                                ParentNodeID=[{AA343E3F-A6D5-4C80-B8E5-0A2972CBB16D}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{C82A530B-FC16-4D8C-B4CE-2ED70217BEB9}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuItem       ;[{C82A530B-FC16-4D8C-B4CE-2ED70217BEB9}] ;Name=Customer Register;
+                                                                CaptionML=[ENU=Customer Register;
+                                                                           FRA=Historique des transactions client];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=103;
+                                                                ParentNodeID=[{AA343E3F-A6D5-4C80-B8E5-0A2972CBB16D}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{6644EEAB-D6F3-409C-A75B-07E3B1ABF221}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuItem       ;[{6644EEAB-D6F3-409C-A75B-07E3B1ABF221}] ;Name=Customer - Order Summary;
+                                                                CaptionML=[ENU=Customer - Order Summary;
+                                                                           FRA=Clients : Liste des commandes];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=107;
+                                                                ParentNodeID=[{AA343E3F-A6D5-4C80-B8E5-0A2972CBB16D}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{7263BD8F-202E-4612-9753-42E6678D19D6}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuItem       ;[{7263BD8F-202E-4612-9753-42E6678D19D6}] ;Name=Customer - Order Detail;
+                                                                CaptionML=[ENU=Customer - Order Detail;
+                                                                           FRA=Clients - DÇtail des commandes];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=108;
+                                                                ParentNodeID=[{AA343E3F-A6D5-4C80-B8E5-0A2972CBB16D}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{33ADC71C-979A-4A08-B7B6-939D096CE4A4}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuItem       ;[{33ADC71C-979A-4A08-B7B6-939D096CE4A4}] ;Name=Customer - Labels;
+                                                                CaptionML=[ENU=Customer Labels;
+                                                                           FRA=êtiquettes client];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=110;
+                                                                ParentNodeID=[{AA343E3F-A6D5-4C80-B8E5-0A2972CBB16D}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{D3E72034-EA84-45D5-BCBF-7E1E25D9D811}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuItem       ;[{D3E72034-EA84-45D5-BCBF-7E1E25D9D811}] ;Name=Customer - Top 10 List;
+                                                                CaptionML=[ENU=Customer Top 10 List;
+                                                                           FRA=Clients - Palmaräs];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=111;
+                                                                ParentNodeID=[{AA343E3F-A6D5-4C80-B8E5-0A2972CBB16D}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{ED507C67-45BD-41F1-87C6-99F5338CD57E}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuItem       ;[{ED507C67-45BD-41F1-87C6-99F5338CD57E}] ;Name=Customer/Item Sales;
+                                                                CaptionML=[ENU=Customer/Item Sales;
+                                                                           FRA=Ventes d'articles par client];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=113;
+                                                                ParentNodeID=[{AA343E3F-A6D5-4C80-B8E5-0A2972CBB16D}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{7D606CB9-3DAA-42AF-95AF-F02B275DAC83}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuItem       ;[{7D606CB9-3DAA-42AF-95AF-F02B275DAC83}] ;Name=Customer - Sales List;
+                                                                CaptionML=[ENU=Sales List;
+                                                                           FRA=Liste des ventes];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=119;
+                                                                ParentNodeID=[{AA343E3F-A6D5-4C80-B8E5-0A2972CBB16D}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{1A2679DC-A0D1-4D00-9870-DA4C0FE0E2E2}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuItem       ;[{1A2679DC-A0D1-4D00-9870-DA4C0FE0E2E2}] ;Name=Customer - Balance to Date;
+                                                                CaptionML=[ENU=Customer Balance to Date;
+                                                                           FRA=êcritures clients ouvertes];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=121;
+                                                                ParentNodeID=[{AA343E3F-A6D5-4C80-B8E5-0A2972CBB16D}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{BC0AEDE7-A49D-4047-A168-98392F06FFC8}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuItem       ;[{BC0AEDE7-A49D-4047-A168-98392F06FFC8}] ;Name=Customer - Trial Balance;
+                                                                CaptionML=[ENU=Customer Trial Balance;
+                                                                           FRA=Balance clients];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=129;
+                                                                ParentNodeID=[{AA343E3F-A6D5-4C80-B8E5-0A2972CBB16D}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{00000000-0000-0000-0000-000000000000}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuGroup      ;[{81CCACB5-8061-4BD9-A045-034C25F054A5}] ;Name=Salespeople/Teams;
+                                                                CaptionML=[ENU=Salespeople/Teams;
+                                                                           FRA=Vendeurs/Equipes];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                ParentNodeID=[{97A21D85-02B9-461E-A93C-D397878C0C3B}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{54AE25B5-F112-4C5A-982F-9308E99A4C0B}];
+                                                                FirstChild=[{BF321D5B-BC17-45FE-A3F0-BE8D0E4762D5}];
+                                                                IsDepartmentPage=No }
+    { MenuItem       ;[{BF321D5B-BC17-45FE-A3F0-BE8D0E4762D5}] ;Name=Sales Statistics;
+                                                                CaptionML=[ENU=Sales Statistics;
+                                                                           FRA=Statistiques vente];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=112;
+                                                                ParentNodeID=[{81CCACB5-8061-4BD9-A045-034C25F054A5}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{0A0B2EE6-39D3-4CA8-A83B-ABBCA7026AD9}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuItem       ;[{0A0B2EE6-39D3-4CA8-A83B-ABBCA7026AD9}] ;Name=Salesperson - Sales Statistics;
+                                                                CaptionML=[ENU=Salesperson Sales Statistics;
+                                                                           FRA=Statistiques vente vendeurs];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=114;
+                                                                ParentNodeID=[{81CCACB5-8061-4BD9-A045-034C25F054A5}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{FF7B5139-CE60-4FC4-A075-4E6F963994B7}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuItem       ;[{FF7B5139-CE60-4FC4-A075-4E6F963994B7}] ;Name=Salesperson - Commission;
+                                                                CaptionML=[ENU=Salesperson Commission;
+                                                                           FRA=Commission vendeurs];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=115;
+                                                                ParentNodeID=[{81CCACB5-8061-4BD9-A045-034C25F054A5}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{A7D33E93-1502-4042-8533-FCC279ED3AFC}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuItem       ;[{A7D33E93-1502-4042-8533-FCC279ED3AFC}] ;Name=Salesperson - To-dos;
+                                                                CaptionML=[ENU=Salesperson To-dos;
+                                                                           FRA=Actions vendeurs];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=5057;
+                                                                ParentNodeID=[{81CCACB5-8061-4BD9-A045-034C25F054A5}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{FFF117F6-C0F8-42D8-A847-69C6A1767E38}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuItem       ;[{FFF117F6-C0F8-42D8-A847-69C6A1767E38}] ;Name=Salesperson - Opportunities;
+                                                                CaptionML=[ENU=Salesperson Opportunities;
+                                                                           FRA=OpportunitÇs vendeurs];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=5058;
+                                                                ParentNodeID=[{81CCACB5-8061-4BD9-A045-034C25F054A5}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{39E65F22-2569-4A56-87A5-A9125933349A}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuItem       ;[{39E65F22-2569-4A56-87A5-A9125933349A}] ;Name=Team - To-dos;
+                                                                CaptionML=[ENU=Team To-dos;
+                                                                           FRA=Actions d'Çquipe];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=5059;
+                                                                ParentNodeID=[{81CCACB5-8061-4BD9-A045-034C25F054A5}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{00000000-0000-0000-0000-000000000000}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuGroup      ;[{54AE25B5-F112-4C5A-982F-9308E99A4C0B}] ;Name=Opportunities;
+                                                                CaptionML=[ENU=Opportunities;
+                                                                           FRA=OpportunitÇs];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                ParentNodeID=[{97A21D85-02B9-461E-A93C-D397878C0C3B}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{15303598-BFF8-44D4-BF69-79A58A8653B7}];
+                                                                FirstChild=[{9DC5B7B9-4B93-4F1F-B461-CFEA1C1BFF46}];
+                                                                IsDepartmentPage=No }
+    { MenuItem       ;[{9DC5B7B9-4B93-4F1F-B461-CFEA1C1BFF46}] ;Name=Opportunity - List;
+                                                                CaptionML=[ENU=Opportunity - List;
+                                                                           FRA=OpportunitÇs - Liste];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=5061;
+                                                                ParentNodeID=[{54AE25B5-F112-4C5A-982F-9308E99A4C0B}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{470B3B5F-0A12-4169-A739-B493EF14FB1D}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuItem       ;[{470B3B5F-0A12-4169-A739-B493EF14FB1D}] ;Name=Sales Cycle - Analysis;
+                                                                CaptionML=[ENU=Sales Cycle - Analysis;
+                                                                           FRA=Cycle de vente - Analyse];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=5062;
+                                                                ParentNodeID=[{54AE25B5-F112-4C5A-982F-9308E99A4C0B}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{27B05287-E897-43FD-B36A-835886EC09F4}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuItem       ;[{27B05287-E897-43FD-B36A-835886EC09F4}] ;Name=Opportunity - Details;
+                                                                CaptionML=[ENU=Opportunity - Details;
+                                                                           FRA=OpportunitÇ - DÇtail];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=5068;
+                                                                ParentNodeID=[{54AE25B5-F112-4C5A-982F-9308E99A4C0B}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{00000000-0000-0000-0000-000000000000}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuGroup      ;[{15303598-BFF8-44D4-BF69-79A58A8653B7}] ;Name=Miscellaneous;
+                                                                CaptionML=[ENU=Miscellaneous;
+                                                                           FRA=Divers];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                ParentNodeID=[{97A21D85-02B9-461E-A93C-D397878C0C3B}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{D30EACAE-E4E8-47DF-B4CF-2F5F4B792E32}];
+                                                                FirstChild=[{8EFF977F-6444-4704-B6E4-B87B79D1817A}] }
+    { MenuItem       ;[{8EFF977F-6444-4704-B6E4-B87B79D1817A}] ;Name=Sales Deferral Summary;
+                                                                CaptionML=[ENU=Sales Deferral Summary;
+                                                                           FRA=RÇsumÇ Çchelonnement ventes];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=1701;
+                                                                ParentNodeID=[{15303598-BFF8-44D4-BF69-79A58A8653B7}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{00000000-0000-0000-0000-000000000000}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuGroup      ;[{CAD0DA07-373C-4156-AE99-2A1EA8F237E1}] ;Name=Documents;
+                                                                CaptionML=[ENU=Documents;
+                                                                           FRA=Documents];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                ParentNodeID=[{2809BE9B-11F9-4FB1-B0B3-D709EDAB3723}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{00000000-0000-0000-0000-000000000000}];
+                                                                FirstChild=[{48648D70-3E2D-4C3F-A5AC-C178AC72CD97}];
+                                                                IsDepartmentPage=No }
+    { MenuItem       ;[{48648D70-3E2D-4C3F-A5AC-C178AC72CD97}] ;Name=Contact - Cover Sheet;
+                                                                CaptionML=[ENU=Contact - Cover Sheet;
+                                                                           FRA=Contact - Bordereau d'envoi];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=5055;
+                                                                ParentNodeID=[{CAD0DA07-373C-4156-AE99-2A1EA8F237E1}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{00000000-0000-0000-0000-000000000000}];
+                                                                DepartmentCategory=Documents }
+    { MenuGroup      ;[{C7BE62D0-9960-45B3-86E2-37DD12127804}] ;Name=Order Processing;
+                                                                CaptionML=[ENU=Order Processing;
+                                                                           FRA=Traitement des commandes];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                ParentNodeID=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{4D70F420-9D0A-4F87-BD5C-718C533E11AF}];
+                                                                FirstChild=[{ADC15A46-4F81-43BF-A5AA-F51077A5F38F}] }
+    { MenuItem       ;[{ADC15A46-4F81-43BF-A5AA-F51077A5F38F}] ;Name=Customers;
+                                                                CaptionML=[ENU=Customers;
+                                                                           FRA=Clients];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=22;
+                                                                ParentNodeID=[{C7BE62D0-9960-45B3-86E2-37DD12127804}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{2ACC0F2E-C5B5-4987-8028-B60B784D8A58}];
+                                                                DepartmentCategory=Lists }
+    { MenuItem       ;[{2ACC0F2E-C5B5-4987-8028-B60B784D8A58}] ;Name=Contacts;
+                                                                CaptionML=[ENU=Contacts;
+                                                                           FRA=Contacts];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=5052;
+                                                                ParentNodeID=[{C7BE62D0-9960-45B3-86E2-37DD12127804}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{E6BDDC4D-B0C8-4A27-BD16-EC2048C71DB3}];
+                                                                DepartmentCategory=Lists }
+    { MenuItem       ;[{E6BDDC4D-B0C8-4A27-BD16-EC2048C71DB3}] ;Name=Quotes;
+                                                                CaptionML=[ENU=Sales Quotes;
+                                                                           FRA=Devis];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=9300;
+                                                                ParentNodeID=[{C7BE62D0-9960-45B3-86E2-37DD12127804}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{638A3599-296C-4716-85AA-9081FE863340}];
+                                                                DepartmentCategory=Lists }
+    { MenuItem       ;[{638A3599-296C-4716-85AA-9081FE863340}] ;Name=Orders;
+                                                                CaptionML=[ENU=Sales Orders;
+                                                                           FRA=Commandes vente];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=9305;
+                                                                ParentNodeID=[{C7BE62D0-9960-45B3-86E2-37DD12127804}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{BEAE95F2-4F33-4734-A8E1-3CA9760545A1}];
+                                                                DepartmentCategory=Lists }
+    { MenuItem       ;[{BEAE95F2-4F33-4734-A8E1-3CA9760545A1}] ;Name=Invoices;
+                                                                CaptionML=[ENU=Sales Invoices;
+                                                                           FRA=Factures vente];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=9301;
+                                                                ParentNodeID=[{C7BE62D0-9960-45B3-86E2-37DD12127804}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{54FA5B45-843F-4D8A-BC1F-7088CA13A43B}];
+                                                                DepartmentCategory=Lists }
+    { MenuItem       ;[{54FA5B45-843F-4D8A-BC1F-7088CA13A43B}] ;Name=Credit Memos;
+                                                                CaptionML=[ENU=Sales Credit Memos;
+                                                                           FRA=Avoirs vente];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=9302;
+                                                                ParentNodeID=[{C7BE62D0-9960-45B3-86E2-37DD12127804}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{6518FFF5-49E2-425D-AA12-451AA2D843FF}];
+                                                                DepartmentCategory=Lists }
+    { MenuGroup      ;[{08E5BA45-2EC6-404A-809B-BCDCB2C6F627}] ;Name=Reports;
+                                                                CaptionML=[ENU=Reports;
+                                                                           FRA=êtats];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                ParentNodeID=[{C7BE62D0-9960-45B3-86E2-37DD12127804}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{1625C802-0D04-4F58-A74C-9F671213C3C0}];
+                                                                FirstChild=[{E5F771CF-0114-4A51-B88F-5AC0A31B859B}];
+                                                                IsDepartmentPage=No }
+    { MenuItem       ;[{E5F771CF-0114-4A51-B88F-5AC0A31B859B}] ;Name=Customer - Order Detail;
+                                                                CaptionML=[ENU=Customer - Order Detail;
+                                                                           FRA=Clients : DÇtail des commandes];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=108;
+                                                                ParentNodeID=[{08E5BA45-2EC6-404A-809B-BCDCB2C6F627}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{B3F51A8A-2FBA-4CF0-948A-A065D2E53375}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuItem       ;[{B3F51A8A-2FBA-4CF0-948A-A065D2E53375}] ;Name=Customer - Order Summary;
+                                                                CaptionML=[ENU=Customer - Order Summary;
+                                                                           FRA=Clients : Liste des commandes];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=107;
+                                                                ParentNodeID=[{08E5BA45-2EC6-404A-809B-BCDCB2C6F627}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{8F33580D-00E3-4A6A-BEF3-4DE982F07EBE}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuItem       ;[{8F33580D-00E3-4A6A-BEF3-4DE982F07EBE}] ;Name=Work Order;
+                                                                CaptionML=[ENU=Work Order;
+                                                                           FRA=Ordre de fabrication];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=752;
+                                                                ParentNodeID=[{08E5BA45-2EC6-404A-809B-BCDCB2C6F627}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{951C890F-029A-4282-B434-213EA8D44FA4}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuItem       ;[{951C890F-029A-4282-B434-213EA8D44FA4}] ;Name=Sales Statistics;
+                                                                CaptionML=[ENU=Sales Statistics;
+                                                                           FRA=Statistiques vente];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=112;
+                                                                ParentNodeID=[{08E5BA45-2EC6-404A-809B-BCDCB2C6F627}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{1C179E20-3D01-46D1-8FEC-D421DEDBC525}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuItem       ;[{1C179E20-3D01-46D1-8FEC-D421DEDBC525}] ;Name=Customer/Item Sales;
+                                                                CaptionML=[ENU=Customer/Item Sales;
+                                                                           FRA=Ventes d'articles par client];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=113;
+                                                                ParentNodeID=[{08E5BA45-2EC6-404A-809B-BCDCB2C6F627}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{703957CF-490D-4979-806A-E7B803C1CE4D}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuItem       ;[{703957CF-490D-4979-806A-E7B803C1CE4D}] ;Name=Customer - Sales List;
+                                                                CaptionML=[ENU=Customer - Sales List;
+                                                                           FRA=Clients : Liste des ventes];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=119;
+                                                                ParentNodeID=[{08E5BA45-2EC6-404A-809B-BCDCB2C6F627}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{9E316BEE-95DA-498F-B347-EA9515FA4D85}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuItem       ;[{9E316BEE-95DA-498F-B347-EA9515FA4D85}] ;Name=Sales Invoice Nos.;
+                                                                CaptionML=[ENU=Sales Invoice Nos.;
+                                                                           FRA=N¯ facture vente];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=124;
+                                                                ParentNodeID=[{08E5BA45-2EC6-404A-809B-BCDCB2C6F627}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{57E0D9C1-07B7-44B7-A55E-F8959692D871}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuItem       ;[{57E0D9C1-07B7-44B7-A55E-F8959692D871}] ;Name=Sales Credit Memo Nos.;
+                                                                CaptionML=[ENU=Sales Credit Memo Nos.;
+                                                                           FRA=N¯ avoir vente];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=125;
+                                                                ParentNodeID=[{08E5BA45-2EC6-404A-809B-BCDCB2C6F627}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{44090494-0383-41F6-BDA8-3160E32D1791}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuItem       ;[{44090494-0383-41F6-BDA8-3160E32D1791}] ;Name=EC Sales List;
+                                                                CaptionML=[ENU=EC Sales List;
+                                                                           FRA=Liste des ventes UE];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=130;
+                                                                ParentNodeID=[{08E5BA45-2EC6-404A-809B-BCDCB2C6F627}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{C33A3A32-1E6A-44F5-9370-16933DD1472F}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuItem       ;[{C33A3A32-1E6A-44F5-9370-16933DD1472F}] ;Name=EC Sales List - Services;
+                                                                CaptionML=[ENU=EC Sales List - Services;
+                                                                           FRA=Liste des ventes UE - Services];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=10876;
+                                                                ParentNodeID=[{08E5BA45-2EC6-404A-809B-BCDCB2C6F627}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{BE71A2D6-662B-4B9B-80C8-5AB338C05D00}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuItem       ;[{BE71A2D6-662B-4B9B-80C8-5AB338C05D00}] ;Name=Sales Reservation Avail.;
+                                                                CaptionML=[ENU=Sales Reservation Avail.;
+                                                                           FRA=Dispo. rÇservation vente];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=209;
+                                                                ParentNodeID=[{08E5BA45-2EC6-404A-809B-BCDCB2C6F627}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{AC9BBDBB-CF5F-4ADC-AA54-C1340591157B}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuGroup      ;[{1625C802-0D04-4F58-A74C-9F671213C3C0}] ;Name=Documents;
+                                                                CaptionML=[ENU=Documents;
+                                                                           FRA=Documents];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                ParentNodeID=[{C7BE62D0-9960-45B3-86E2-37DD12127804}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{00000000-0000-0000-0000-000000000000}];
+                                                                FirstChild=[{84A3A5F9-EEAC-4963-8A09-79FC432462DA}];
+                                                                IsDepartmentPage=No }
+    { MenuItem       ;[{84A3A5F9-EEAC-4963-8A09-79FC432462DA}] ;Name=Order Confirmation;
+                                                                CaptionML=[ENU=Order Confirmation;
+                                                                           FRA=Confirmation de commande];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=205;
+                                                                ParentNodeID=[{1625C802-0D04-4F58-A74C-9F671213C3C0}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{5D3EFF13-5D81-4ABD-88B5-07EE98F310D5}];
+                                                                DepartmentCategory=Documents }
+    { MenuItem       ;[{5D3EFF13-5D81-4ABD-88B5-07EE98F310D5}] ;Name=Sales Document - Test;
+                                                                CaptionML=[ENU=Sales Document Test;
+                                                                           FRA=Test document vente];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=202;
+                                                                ParentNodeID=[{1625C802-0D04-4F58-A74C-9F671213C3C0}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{9D1E5421-43C3-4D9E-B9A7-4C95CE5F6C4D}];
+                                                                DepartmentCategory=Documents }
+    { MenuItem       ;[{9D1E5421-43C3-4D9E-B9A7-4C95CE5F6C4D}] ;Name=Sales - Quote;
+                                                                CaptionML=[ENU=Sales Quote;
+                                                                           FRA=Devis];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=204;
+                                                                ParentNodeID=[{1625C802-0D04-4F58-A74C-9F671213C3C0}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{8068B714-595E-4E18-A096-ADF2CA85B8D1}];
+                                                                DepartmentCategory=Documents }
+    { MenuItem       ;[{8068B714-595E-4E18-A096-ADF2CA85B8D1}] ;Name=Blanket Sales Order;
+                                                                CaptionML=[ENU=Blanket Sales Order;
+                                                                           FRA=Commande ouverte vente];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=210;
+                                                                ParentNodeID=[{1625C802-0D04-4F58-A74C-9F671213C3C0}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{2FF37CB7-A7F3-42F1-AC4A-198174EEAFA5}];
+                                                                DepartmentCategory=Documents }
+    { MenuItem       ;[{2FF37CB7-A7F3-42F1-AC4A-198174EEAFA5}] ;Name=Sales - Invoice;
+                                                                CaptionML=[ENU=Sales Invoice;
+                                                                           FRA=Facture vente];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=206;
+                                                                ParentNodeID=[{1625C802-0D04-4F58-A74C-9F671213C3C0}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{AE6C0717-94A0-4A93-B79A-0B2744F88219}];
+                                                                DepartmentCategory=Documents }
+    { MenuItem       ;[{AE6C0717-94A0-4A93-B79A-0B2744F88219}] ;Name=Sales - Credit Memo;
+                                                                CaptionML=[ENU=Sales Credit Memo;
+                                                                           FRA=Avoir vente];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=207;
+                                                                ParentNodeID=[{1625C802-0D04-4F58-A74C-9F671213C3C0}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{ACA1B772-617F-4E40-903C-DE602E12DE94}];
+                                                                DepartmentCategory=Documents }
+    { MenuItem       ;[{ACA1B772-617F-4E40-903C-DE602E12DE94}] ;Name=Sales - Shipment;
+                                                                CaptionML=[ENU=Sales - Shipment;
+                                                                           FRA=Ventes : ExpÇdition];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=208;
+                                                                ParentNodeID=[{1625C802-0D04-4F58-A74C-9F671213C3C0}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{B7BA6E1B-72F5-4145-9152-7A34C8E513D5}];
+                                                                DepartmentCategory=Documents }
+    { MenuItem       ;[{B7BA6E1B-72F5-4145-9152-7A34C8E513D5}] ;Name=Customer - Payment Receipt;
+                                                                CaptionML=[ENU=Customer - Payment Receipt;
+                                                                           FRA=Reáu paiement client];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=211;
+                                                                ParentNodeID=[{1625C802-0D04-4F58-A74C-9F671213C3C0}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{980B0C27-3F72-40EF-B6C4-AA0EEB0EE46F}];
+                                                                DepartmentCategory=Documents }
+    { MenuItem       ;[{980B0C27-3F72-40EF-B6C4-AA0EEB0EE46F}] ;Name=Return Order;
+                                                                CaptionML=[ENU=Return Order;
+                                                                           FRA=Retour];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=6641;
+                                                                ParentNodeID=[{1625C802-0D04-4F58-A74C-9F671213C3C0}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{5A1256DE-BD54-4329-A4E5-1B702E02D830}];
+                                                                DepartmentCategory=Documents }
+    { MenuItem       ;[{5A1256DE-BD54-4329-A4E5-1B702E02D830}] ;Name=Sales - Return Receipt;
+                                                                CaptionML=[ENU=Sales - Return Receipt;
+                                                                           FRA=Ventes : RÇception retour];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=6646;
+                                                                ParentNodeID=[{1625C802-0D04-4F58-A74C-9F671213C3C0}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{441F3878-6F67-4437-90F5-7A459A33777B}];
+                                                                DepartmentCategory=Documents }
+    { MenuItem       ;[{441F3878-6F67-4437-90F5-7A459A33777B}] ;Name=Item Tracking Appendix;
+                                                                CaptionML=[ENU=Item Tracking Appendix;
+                                                                           FRA=Annexe traáabilitÇ];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=6521;
+                                                                ParentNodeID=[{1625C802-0D04-4F58-A74C-9F671213C3C0}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{00000000-0000-0000-0000-000000000000}];
+                                                                DepartmentCategory=Documents }
+    { MenuItem       ;[{9E895927-9A71-43DE-9783-EF60B80A2E8F}] ;Name=FAE;
+                                                                CaptionML=[ENU=Shipment Lines not invoiced;
+                                                                           FRA=FAE-LivrÇ Non facturÇ];
+                                                                MemberOfMenu=[{F8D2429D-034B-4C58-9B5E-81BE962DB1BC}];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=50015;
+                                                                ParentNodeID=[{C87075E0-8655-4172-A582-517A26D81202}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{FB11285D-A438-47B9-B2EC-097994AD1E4B}];
+                                                                DepartmentCategory=Lists }
+    {                ;[{268062B4-59D2-414F-9A96-A2A362A57414}] ;NextNodeID=[{9E895927-9A71-43DE-9783-EF60B80A2E8F}] }
+    { MenuItem       ;[{BCC5061B-6D14-462B-A068-D10736FF76F7}] ;Name=Receipt Lines not invoiced;
+                                                                CaptionML=[ENU=Receipt Lines not invoiced;
+                                                                           FRA=Lignes rÇception non facturÇes];
+                                                                MemberOfMenu=[{F8D2429D-034B-4C58-9B5E-81BE962DB1BC}];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=50013;
+                                                                ParentNodeID=[{5D5A3EDE-B00E-4220-9494-0E8829F8E741}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{51060E6F-D188-4B08-B76E-B3F17B5E8BE2}];
+                                                                DepartmentCategory=Lists }
+    {                ;[{83C99A3C-15D0-40B6-AD70-41DF54AD2CBC}] ;NextNodeID=[{BCC5061B-6D14-462B-A068-D10736FF76F7}] }
+    { MenuItem       ;[{6518FFF5-49E2-425D-AA12-451AA2D843FF}] ;Name=Shipment not invoiced;
+                                                                CaptionML=[ENU=Shipment not invoiced;
+                                                                           FRA=Liste des BL non facturÇs];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=50009;
+                                                                ParentNodeID=[{C7BE62D0-9960-45B3-86E2-37DD12127804}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{08E5BA45-2EC6-404A-809B-BCDCB2C6F627}];
+                                                                DepartmentCategory=Lists }
+    {                ;[{25520AF3-5294-48E2-9AD9-04BC1B18B799}] ;NextNodeID=[{4D18FA95-263F-4AF7-9D9D-C1E1A0360A8A}] }
+    { MenuItem       ;[{4D18FA95-263F-4AF7-9D9D-C1E1A0360A8A}] ;Name=User Overview;
+                                                                CaptionML=ENU=User Overview;
+                                                                MemberOfMenu=[{19A352FE-D90D-424E-B85F-CF3B8E98CF0E}];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=50082;
+                                                                ParentNodeID=[{CE071304-B7E2-48FB-8C1B-BE4DE780F337}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{00000000-0000-0000-0000-000000000000}];
+                                                                DepartmentCategory=Administration }
+    { MenuItem       ;[{D30EACAE-E4E8-47DF-B4CF-2F5F4B792E32}] ;Name=Liste rÇappro hors MJ;
+                                                                CaptionML=[ENU=Items : buy MJ Excluded;
+                                                                           FRA=Liste rÇappro hors MJ];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=50013;
+                                                                ParentNodeID=[{97A21D85-02B9-461E-A93C-D397878C0C3B}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{00000000-0000-0000-0000-000000000000}];
+                                                                DepartmentCategory=Reports and Analysis }
+    {                ;[{21275BDF-1688-47FF-99ED-15EC989B7524}] ;NextNodeID=[{D0378D89-A90A-4F63-8BE0-5B07BBCB305E}] }
+    { MenuItem       ;[{D0378D89-A90A-4F63-8BE0-5B07BBCB305E}] ;Name=Flux de donnÇes;
+                                                                CaptionML=[ENU=Data Flows;
+                                                                           FRA=Flux de donnÇes];
+                                                                MemberOfMenu=[{19A352FE-D90D-424E-B85F-CF3B8E98CF0E}];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=50030;
+                                                                ParentNodeID=[{A75C4023-A4B3-40BC-A98D-829183AE95CE}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{4A8194E3-6CED-423F-86A1-0A6BA471C05B}];
+                                                                DepartmentCategory=Lists }
+    {                ;[{D4407D08-C780-43D3-AA50-A065110A1332}] ;NextNodeID=[{F0453EEC-23CB-4AA0-B983-8F72D969A32E}] }
+    { MenuItem       ;[{F0453EEC-23CB-4AA0-B983-8F72D969A32E}] ;Name=Modif. Factures vente enregistrÇes;
+                                                                CaptionML=[ENU=Update Posted Sales Invoices;
+                                                                           FRA=Modif. Factures vente enregistrÇes];
+                                                                MemberOfMenu=[{2DC8C4FE-7346-4124-8C20-383346384C03}];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=50018;
+                                                                ParentNodeID=[{0DD141CC-3311-4CB7-BE8C-9E20E331DF60}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{325390B0-EC50-40E0-8797-0C970A996354}];
+                                                                DepartmentCategory=Tasks }
+    { MenuItem       ;[{569ACD5E-DE55-491A-A555-169B08345893}] ;Name=Import Taxe;
+                                                                CaptionML=[ENU=Tax Import;
+                                                                           FRA=Import Taxe];
+                                                                MemberOfMenu=[{2DC8C4FE-7346-4124-8C20-383346384C03}];
+                                                                RunObjectType=Codeunit;
+                                                                RunObjectID=50032;
+                                                                ParentNodeID=[{D2F898F2-A0BB-4482-A977-CE588C77032C}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{01CCE9A9-331D-42ED-BE34-1FAF394EE08E}];
+                                                                DepartmentCategory=Tasks }
+    {                ;[{7865C154-032E-4D26-9DD3-24580A860777}] ;NextNodeID=[{569ACD5E-DE55-491A-A555-169B08345893}] }
+    { MenuItem       ;[{AC9BBDBB-CF5F-4ADC-AA54-C1340591157B}] ;Name=ALDA - Reliquats achats;
+                                                                CaptionML=[ENU=ALDA - Purchase Outstanding Qty.;
+                                                                           FRA=ALDA - Reliquats achats];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=50007;
+                                                                ParentNodeID=[{08E5BA45-2EC6-404A-809B-BCDCB2C6F627}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{1B737BCF-6C6B-4F1F-999F-5D7C18DABD64}];
+                                                                DepartmentCategory=Reports and Analysis }
+    { MenuItem       ;[{1B737BCF-6C6B-4F1F-999F-5D7C18DABD64}] ;Name=ALDA - Reliquats vente;
+                                                                CaptionML=[ENU=ALDA - Sales Outstanding Qty.;
+                                                                           FRA=ALDA - Reliquats vente];
+                                                                MemberOfMenu=[{ADEDFA39-136E-4A67-9245-839EB148B913}];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=50008;
+                                                                ParentNodeID=[{08E5BA45-2EC6-404A-809B-BCDCB2C6F627}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{00000000-0000-0000-0000-000000000000}];
+                                                                DepartmentCategory=Reports and Analysis }
+    {                ;[{0813EE18-DD04-4A0B-9570-0B0F0C7701DE}] ;NextNodeID=[{0179BFD5-90F4-4EC1-A29D-3C0A571F8EB2}] }
+    { MenuGroup      ;[{0179BFD5-90F4-4EC1-A29D-3C0A571F8EB2}] ;Name=General Setup;
+                                                                CaptionML=[ENU=General;
+                                                                           FRA=GÇnÇral];
+                                                                Visible=Yes }
+    { MenuItem       ;[{5881C68C-F1F7-47BA-8ED5-02D8149B2599}] ;Name=Change Log Setup;
+                                                                CaptionML=[ENU=Change Log Setup;
+                                                                           FRA=Paramätres journal modification];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=592;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Tasks }
+    { MenuItem       ;[{B9645C88-A380-4EF3-B4AC-3B2D83AED173}] ;Name=Change Log;
+                                                                CaptionML=[ENU=Change Log Entries;
+                                                                           FRA=êcritures journal modification];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=595;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Lists }
+    { MenuItem       ;[{C6F13DFE-E8E6-4C80-A7DE-7F8B066DAF1B}] ;Name=Launch Applications;
+                                                                CaptionML=[ENU=Launch Applications;
+                                                                           FRA=Lancer les applications];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=691;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Lists }
+    { MenuItem       ;[{BD33948E-9AEC-4C7B-8121-B543D8CD39F4}] ;Name=Printer Selections;
+                                                                CaptionML=[ENU=Printer Selections;
+                                                                           FRA=SÇlections d'imprimantes];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=64;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Lists }
+    { MenuItem       ;[{20AE5F7B-8682-4A81-99FC-92E4F6F04F17}] ;Name=Report Selections;
+                                                                CaptionML=[ENU=Report Selections Bank Account;
+                                                                           FRA=SÇlection des Çtats - Compte bancaire];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=385;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Tasks }
+    { MenuItem       ;[{581FDA66-C4FB-4B3E-8820-F648736D6EE7}] ;Name=Report Selection Service;
+                                                                CaptionML=[ENU=Report Selections Service;
+                                                                           FRA=SÇlection des Çtats - Service];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=5932;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Tasks }
+    { MenuItem       ;[{C9FBBF22-C8FF-4629-A9E0-E5A4248F13D5}] ;Name=Report Selections Prod. Order;
+                                                                CaptionML=[ENU=Report Selections Prod. Order;
+                                                                           FRA=SÇlection des Çtats - O.F.];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=99000917;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Tasks }
+    { MenuItem       ;[{5CBDAF64-D366-4302-B0E2-13DCAB032ACF}] ;Name=Report Selections Inventory;
+                                                                CaptionML=[ENU=Report Selections Inventory;
+                                                                           FRA=SÇlection des Çtats - Stocks];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=5754;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Tasks }
+    { MenuItem       ;[{029F0A0A-0510-4184-A5E8-54DDE9045ACB}] ;Name=Report Selection Purchase;
+                                                                CaptionML=[ENU=Report Selections Purchase;
+                                                                           FRA=SÇlection des Çtats - Achats];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=347;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Tasks }
+    { MenuItem       ;[{426E7737-6278-486B-8340-F1A63272A734}] ;Name=Report Selection Sales;
+                                                                CaptionML=[ENU=Report Selections Sales;
+                                                                           FRA=SÇlection des Çtats - Ventes];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=306;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Tasks }
+    { MenuItem       ;[{19B52597-0F9E-4DF9-B208-02107FD786C8}] ;Name=Report Selection Reminder and;
+                                                                CaptionML=[ENU=Report Selections Reminder/Fin. Charge;
+                                                                           FRA=SÇlection des Çtats - Relance et intÇràts];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=524;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Tasks }
+    { MenuItem       ;[{7BC138AC-F8D0-41DC-AAA8-31B292DF07D1}] ;Name=Manage Style Sheets;
+                                                                CaptionML=[ENU=Manage Style Sheets;
+                                                                           FRA=GÇrer feuilles de style];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=697;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Administration }
+    { MenuItem       ;[{80A69CC6-D7A7-4B15-85EC-8091046E7003}] ;Name=Sessions;
+                                                                CaptionML=[ENU=Sessions;
+                                                                           FRA=Sessions];
+                                                                RunObjectType=Codeunit;
+                                                                RunObjectID=9500;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Tasks }
+    { MenuItem       ;[{FDFADFA2-FB26-401E-84D4-EE60B34FC91D}] ;Name=Companies;
+                                                                CaptionML=[ENU=Companies;
+                                                                           FRA=SociÇtÇs];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=357;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Lists }
+    { MenuItem       ;[{70EB9970-5CFE-4662-BC60-4F1A9D987552}] ;Name=Users;
+                                                                CaptionML=[ENU=Users;
+                                                                           FRA=Utilisateurs];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=9800;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Lists }
+    { MenuItem       ;[{069632DA-ABF7-4C96-800F-8CAED965B781}] ;Name=User Groups;
+                                                                CaptionML=[ENU=User Groups;
+                                                                           FRA=Groupes d'utilisateurs];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=9830;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Lists }
+    { MenuItem       ;[{B75099DB-5AA2-495A-B91A-EBF833978C3C}] ;Name=Permission Sets;
+                                                                CaptionML=[ENU=Permission Sets;
+                                                                           FRA=Ensembles d'autorisations];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=9802;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Lists }
+    { MenuItem       ;[{9D421E54-688E-48E4-8876-0B3BAA758ED8}] ;Name=Devices;
+                                                                CaptionML=[ENU=Devices;
+                                                                           FRA=PÇriphÇriques];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=9813;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Lists }
+    { MenuItem       ;[{AAAC2FE2-E376-45F8-9BD4-6608324DBDD8}] ;Name=Control Add-ins;
+                                                                CaptionML=[ENU=Control Add-ins;
+                                                                           FRA=Macros complÇmentaires de contrìle];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=9820;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Lists }
+    { MenuItem       ;[{7D6561AD-B77E-441E-BAE9-B645DA8DB8C3}] ;Name=Change Password;
+                                                                CaptionML=[ENU=Change Password;
+                                                                           FRA=Changer le mot de passe];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=9809;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Tasks }
+    { MenuItem       ;[{A5339620-831B-4C45-8A54-A1191F1C9AC3}] ;Name=Import from a Data File;
+                                                                CaptionML=[ENU=Import from a Data File;
+                                                                           FRA=Importer depuis un fichier de donnÇes];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=9900;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Tasks }
+    { MenuItem       ;[{FDE09CB3-6C41-4949-83FB-92ED15DE18D5}] ;Name=Export to a Data File;
+                                                                CaptionML=[ENU=Export to a Data File;
+                                                                           FRA=Exporter vers un fichier de donnÇes];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=9901;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Tasks }
+    { MenuItem       ;[{2957D39E-35C5-475F-AF52-D851B97F5D1A}] ;Name=Field Encryption Setup;
+                                                                AccessByPermission=System 5420=X;
+                                                                CaptionML=[ENU=Data Encryption Management;
+                                                                           FRA=Gestion du chiffrement des donnÇes];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=9905;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Tasks }
+    { MenuItem       ;[{6C152B6F-B672-421C-BE50-83E98C8A2301}] ;Name=Account Schedule KPI Web Servi;
+                                                                CaptionML=[ENU=Account Schedule KPI Web Service Setup;
+                                                                           FRA=Tableau d'analyse - Paramätres du service web KPI];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=195;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Administration }
+    { MenuItem       ;[{7234476B-98CB-47D4-BABA-CA8ED3D7CD56}] ;Name=Acc. Sched. KPI Web Service;
+                                                                CaptionML=[ENU=Account Schedule KPI Web Service;
+                                                                           FRA=Tableau d'analyse - Service web KPI];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=197;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Administration }
+    { MenuGroup      ;[{3D9AA18A-B927-425A-B290-BD144B684B0E}] ;Name=Reports;
+                                                                CaptionML=[ENU=Reports;
+                                                                           FRA=êtats];
+                                                                Visible=Yes }
+    { MenuItem       ;[{6BDA4404-EB53-4F45-86CE-BBEE22E97DA4}] ;Name=Report Layouts;
+                                                                CaptionML=[ENU=Report Layout Selection;
+                                                                           FRA=SÇlection prÇsentation Çtat];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=9652;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Administration }
+    { MenuItem       ;[{F2C83643-C0CD-44E3-998C-B5FA766692AD}] ;Name=Custom Report Layouts;
+                                                                CaptionML=[ENU=Custom Report Layouts;
+                                                                           FRA=PrÇsentations Çtat personnalisÇes];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=9650;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Administration }
+    { MenuItem       ;[{DEB1DE10-72DF-4339-9E44-911BF31F6C88}] ;Name=Report Selection - Sales;
+                                                                CaptionML=[ENU=Report Selection - Sales;
+                                                                           FRA=SÇlection des Çtats : Ventes];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=306;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Administration }
+    { MenuItem       ;[{9ECFA118-8B57-4B2C-86E2-CE10A462A144}] ;Name=Report Selection - Purchase;
+                                                                CaptionML=[ENU=Report Selection - Purchase;
+                                                                           FRA=SÇlection des Çtats : Achats];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=347;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Administration }
+    { MenuItem       ;[{B65C4E9E-99C5-4954-A936-2C2C44B13C97}] ;Name=Report Selection - Bank Acc.;
+                                                                CaptionML=[ENU=Report Selection - Bank Acc.;
+                                                                           FRA=SÇlection des Çtats : Banque];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=385;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Administration }
+    { MenuItem       ;[{BE46E1A8-A67F-4235-AD01-E520A79F45A7}] ;Name=Report Selection - Reminder;
+                                                                CaptionML=[ENU=Report Selection - Reminder;
+                                                                           FRA=SÇlection des Çtats : Relance];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=524;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Administration }
+    { MenuItem       ;[{84F5AB4D-3384-4766-9AB0-7989EFB11F66}] ;Name=Report Selection - Cash Flow;
+                                                                CaptionML=[ENU=Report Selection - Cash Flow;
+                                                                           FRA=SÇlection des Çtats - TrÇsorerie];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=865;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Administration }
+    { MenuItem       ;[{A1CAA220-D630-4155-BFDF-397FCDCA2525}] ;Name=Report Selection - Inventory;
+                                                                CaptionML=[ENU=Report Selection - Inventory;
+                                                                           FRA=SÇlection des Çtats : Stocks];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=5754;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Administration }
+    { MenuItem       ;[{4D30212A-27A9-4543-8798-488F702F40C9}] ;Name=Report Selection - Service;
+                                                                CaptionML=[ENU=Report Selection - Service;
+                                                                           FRA=SÇlection des Çtats : Services];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=5932;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Administration }
+    { MenuItem       ;[{0CF0A996-087F-4136-8E5A-50D3BF4F3DD0}] ;Name=Report Inbox;
+                                                                CaptionML=[ENU=Report Inbox;
+                                                                           FRA=Boåte de rÇception Çtat];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=680;
+                                                                Visible=Yes;
+                                                                NextNodeID=[{6BDA4404-EB53-4F45-86CE-BBEE22E97DA4}];
+                                                                DepartmentCategory=Lists }
+    { MenuGroup      ;[{159E77E4-0021-4367-95C6-68FA32DB9FB4}] ;Name=Services;
+                                                                CaptionML=[ENU=Services;
+                                                                           FRA=Services];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{6BCB834C-EB0C-4D77-A972-39B274D266ED}] }
+    { MenuItem       ;[{D7B287A5-D9C4-4D9D-AE3D-A0274EA004D6}] ;Name=Bank Data Conv. Service Setup;
+                                                                CaptionML=[ENU=Bank Data Conv. Service Setup;
+                                                                           FRA=Paramätres service conv. donnÇes banque];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=1260;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Administration }
+    { MenuItem       ;[{06D18B49-2CC3-46E2-99B5-E73CFEB51F56}] ;Name=OCR Service Setup;
+                                                                CaptionML=[ENU=OCR Service Setup;
+                                                                           FRA=Paramätres service OCR];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=1270;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Administration }
+    { MenuItem       ;[{44A4DAAA-604A-4D16-854B-BD8B7E6F7460}] ;Name=Doc. Exch. Service Setup;
+                                                                CaptionML=[ENU=Document Exchange Service Setup;
+                                                                           FRA=Paramätres du service d'Çchange de documents];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=1275;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Administration }
+    { MenuItem       ;[{85C60724-2BF2-4C45-BF83-4F2C3297876F}] ;Name=CRM Connection Setup;
+                                                                AccessByPermission=TableData 5330=IM;
+                                                                CaptionML=[ENU=Microsoft Dynamics CRM Connection Setup;
+                                                                           FRA=Paramätres de la connexion Ö Microsoft Dynamics CRM];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=5330;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Administration }
+    { MenuItem       ;[{6FE7F52F-893E-4761-8248-97D1360CCD1B}] ;Name=Payment Services Connection Setup;
+                                                                CaptionML=[ENU=Payment Services Connection Setup;
+                                                                           FRA=Paramätres de la connexion des services de paiement];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=825;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Administration }
+    { MenuItem       ;[{2A96CC77-0DDE-449E-A583-3C2AB989AC9D}] ;Name=SharePoint Connection Setup;
+                                                                CaptionML=[ENU=SharePoint Connection Setup;
+                                                                           FRA=Paramätres de la connexion Ö SharePoint];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=9551;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Administration }
+    { MenuItem       ;[{F120CBC2-793A-49E5-A12B-3BAA4F9BE2BC}] ;Name=SMTP Mail Setup;
+                                                                CaptionML=[ENU=SMTP Mail Setup;
+                                                                           FRA=ParamÇtrage courrier SMTP];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=409;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Administration }
+    { MenuItem       ;[{F9797B04-ACF3-4D64-A323-00939AB7D376}] ;Name=Social Listening Setup;
+                                                                CaptionML=[ENU=Social Engagement Setup;
+                                                                           FRA=ParamÇtrage de Social Engagement];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=870;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Administration }
+    { MenuItem       ;[{063C5F4E-8D4F-45ED-97BF-C6B9BBDE8CA6}] ;Name=Currency Exchange Rate Services;
+                                                                CaptionML=[ENU=Currency Exchange Rate Services;
+                                                                           FRA=Services de taux de change devise];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=1650;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Administration }
+    { MenuItem       ;[{2E248CCA-400D-4FCB-91DD-CE38F9351F2F}] ;Name=Web Services;
+                                                                CaptionML=[ENU=Web Services;
+                                                                           FRA=Services web];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=810;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Lists }
+    { MenuItem       ;[{6475F264-C31C-40E2-8278-B59082477099}] ;Name=Service Connections Overview;
+                                                                CaptionML=[ENU=Service Connections;
+                                                                           FRA=Connexions au service];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=1279;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Lists }
+    { MenuItem       ;[{1E5DA5B4-C075-4977-98B1-561D0FE52D42}] ;Name=Integration Table Mappings;
+                                                                CaptionML=[ENU=Integration Table Mappings;
+                                                                           FRA=Correspondances table intÇgration];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=5335;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Lists }
+    { MenuItem       ;[{164F1071-174D-4C2D-B5BB-7D4B236CAE1B}] ;Name=Integration Synchronization Jobs;
+                                                                CaptionML=[ENU=Integration Synchronization Jobs;
+                                                                           FRA=Projets de synchronisation d'intÇgration];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=5338;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Lists }
+    { MenuItem       ;[{24F755DE-8930-4260-BDAD-B04509BCDAA4}] ;Name=Integration Synchronization Errors;
+                                                                CaptionML=[ENU=Integration Synchronization Errors;
+                                                                           FRA=Erreurs de synchronisation d'intÇgration];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=5339;
+                                                                Visible=Yes;
+                                                                NextNodeID=[{D7B287A5-D9C4-4D9D-AE3D-A0274EA004D6}];
+                                                                DepartmentCategory=Lists }
+    {                ;[{5F104C4C-9817-4A17-8A98-6B5470F0AEE6}] ;NextNodeID=[{A75C4023-A4B3-40BC-A98D-829183AE95CE}] }
+    { MenuGroup      ;[{A75C4023-A4B3-40BC-A98D-829183AE95CE}] ;Name=Workflow;
+                                                                CaptionML=[ENU=Workflow;
+                                                                           FRA=Flux de travail];
+                                                                Visible=Yes }
+    { MenuItem       ;[{4A8194E3-6CED-423F-86A1-0A6BA471C05B}] ;Name=Workflows;
+                                                                CaptionML=[ENU=Workflows;
+                                                                           FRA=Flux de travail];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=1500;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Lists }
+    { MenuItem       ;[{6FD652A4-5C34-4E56-BCD7-BE501E84DA58}] ;Name=Workflow Templates;
+                                                                CaptionML=[ENU=Workflow Templates;
+                                                                           FRA=Modäles flux de travail];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=1505;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Lists }
+    { MenuItem       ;[{D93D7C98-9278-428B-8159-E93B51AB134C}] ;Name=Workflow Categories;
+                                                                CaptionML=[ENU=Workflow Categories;
+                                                                           FRA=CatÇgories flux de travail];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=1508;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Lists }
+    { MenuItem       ;[{72082321-5626-4366-AF26-1013B2ECDD57}] ;Name=Workflow Step Instances;
+                                                                CaptionML=[ENU=Workflow Step Instances;
+                                                                           FRA=Instances d'Çtape de flux de travail];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=1504;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Lists }
+    { MenuItem       ;[{5CECE8D1-FBD0-420F-9F79-8E10E444FC5D}] ;Name=Archived Workflow Step Instances;
+                                                                CaptionML=[ENU=Archived Workflow Step Instances;
+                                                                           FRA=Instances d'Çtape de flux de travail archivÇes];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=1530;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=History }
+    { MenuItem       ;[{5185927E-2B92-42CB-ACDA-CCE7E8394B01}] ;Name=Workflow User Group;
+                                                                CaptionML=[ENU=Workflow User Groups;
+                                                                           FRA=Groupe d'utilisateurs du flux de travail];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=1533;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Lists }
+    { MenuItem       ;[{6EB35C55-01AF-4BFE-A7F4-6B998E242A21}] ;Name=Approval User Setup;
+                                                                CaptionML=[ENU=Approval User Setup;
+                                                                           FRA=Paramätres utilisateur approbation];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=663;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Administration }
+    { MenuItem       ;[{55081F1F-919C-4F91-ADA8-20A9234BE291}] ;Name=Send Overdue Appr. Notif.;
+                                                                CaptionML=[ENU=Send Overdue Approval Notifications;
+                                                                           FRA=Envoyer les notifications d'approbation Çchues];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=1509;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Tasks }
+    { MenuItem       ;[{75FE89BD-7E40-45A6-9E49-8493E70B30B8}] ;Name=Overdue Approval Entries;
+                                                                CaptionML=[ENU=Overdue Approval Entries;
+                                                                           FRA=êcritures approbation Çchues];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=666;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=History }
+    { MenuItem       ;[{572548B9-68ED-4906-BC68-366F6A0238E7}] ;Name=Dynamic Request Page Entities;
+                                                                CaptionML=[ENU=Dynamic Request Page Entities;
+                                                                           FRA=EntitÇs de page de requàte dynamiques];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=1535;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Administration }
+    { MenuItem       ;[{42537BDC-4B50-45B4-B62B-BF9C22DECC35}] ;Name=Dynamic Request Page Fields;
+                                                                CaptionML=[ENU=Dynamic Request Page Fields;
+                                                                           FRA=Champs de page de requàte dynamiques];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=1536;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Administration }
+    { MenuItem       ;[{58FB2981-7342-4D44-A6F3-2F1312A7FA1F}] ;Name=Restricted Records;
+                                                                CaptionML=[ENU=Restricted Records;
+                                                                           FRA=Enregistrements limitÇs];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=1550;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Lists }
+    { MenuItem       ;[{ADA1B08B-D10A-4F54-A40B-743108BE2977}] ;Name=WF Event/Event Combinations;
+                                                                CaptionML=[ENU=Workflow Event Hierarchies;
+                                                                           FRA=HiÇrarchies des ÇvÇnements de flux de travail];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=1506;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Administration }
+    { MenuItem       ;[{7423B50B-463F-4538-827E-A90ACACF1438}] ;Name=WF Event/Response Combinations;
+                                                                CaptionML=[ENU=Workflow Event/Response Combinations;
+                                                                           FRA=Combinaisons ÇvÇnement/rÇponse de flux de travail];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=1507;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Administration }
+    { MenuGroup      ;[{6A5EF103-F7E0-4E57-946C-2B05C65F2459}] ;Name=Document Approval;
+                                                                CaptionML=[ENU=Document Approval;
+                                                                           FRA=Approbation de document];
+                                                                Visible=Yes }
+    { MenuItem       ;[{027B1955-573D-4036-9A95-F418DA58BC9C}] ;Name=Incoming Documents Setup;
+                                                                CaptionML=[ENU=Incoming Documents Setup;
+                                                                           FRA=Paramätres des documents entrants];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=191;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Administration }
+    { MenuItem       ;[{489ACF70-019B-477A-8953-98123AA8B29D}] ;Name=Overdue Approval Entries;
+                                                                CaptionML=[ENU=Overdue Approval Entries;
+                                                                           FRA=êcritures approbation Çchues];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=666;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=History }
+    { MenuItem       ;[{58718CCE-D877-4B43-973A-4A6997AA0765}] ;Name=Send Overdue Approval Notifications;
+                                                                CaptionML=[ENU=Send Overdue Approval Notifications;
+                                                                           FRA=Envoyer les notifications d'approbation Çchues];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=1509;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Tasks }
+    { MenuItem       ;[{9A06F974-8522-4B02-8AF2-2F6DDFE9E34D}] ;Name=Approval User Setup;
+                                                                CaptionML=[ENU=Approval User Setup;
+                                                                           FRA=Paramätres utilisateur approbation];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=663;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Administration }
+    { MenuItem       ;[{2E8476B4-8E32-4895-A4C6-F22103302037}] ;Name=Approval Entries;
+                                                                CaptionML=[ENU=Approval Entries;
+                                                                           FRA=êcritures approbation];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=658;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Lists }
+    { MenuItem       ;[{08D629DC-BFE1-4FE3-9659-48F8C46CB3E2}] ;Name=Posted Approval Entries;
+                                                                CaptionML=[ENU=Posted Approval Entries;
+                                                                           FRA=êcritures approbation enreg.];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=659;
+                                                                Visible=Yes;
+                                                                NextNodeID=[{027B1955-573D-4036-9A95-F418DA58BC9C}];
+                                                                DepartmentCategory=History }
+    { MenuGroup      ;[{AB75812B-94FE-492E-A0D7-F2D5BABB3F92}] ;Name=Notifications;
+                                                                CaptionML=[ENU=Notifications;
+                                                                           FRA=Notifications];
+                                                                Visible=Yes }
+    { MenuItem       ;[{7353460B-4282-422C-9F1D-A14CCD4F04A4}] ;Name=Notification Templates;
+                                                                CaptionML=[ENU=Notification Templates;
+                                                                           FRA=Modäles de notification];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=1510;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Administration }
+    { MenuItem       ;[{F6EBEB0E-F53E-4FAD-80AE-6FC108EE5CC8}] ;Name=Notification Entries;
+                                                                CaptionML=[ENU=Notification Entries;
+                                                                           FRA=êcritures notification];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=1511;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Lists }
+    { MenuItem       ;[{B42C3BB3-F466-403F-BA75-3C9C4F901785}] ;Name=Notification Setup;
+                                                                CaptionML=[ENU=Notification Setup;
+                                                                           FRA=Paramätres de notification];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=1512;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Administration }
+    { MenuItem       ;[{E8EAFFC5-1B38-46A7-A84A-B21948D5C097}] ;Name=Sent Notification Entries;
+                                                                CaptionML=[ENU=Sent Notification Entries;
+                                                                           FRA=êcritures notification envoyÇes];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=1514;
+                                                                Visible=Yes;
+                                                                NextNodeID=[{7353460B-4282-422C-9F1D-A14CCD4F04A4}];
+                                                                DepartmentCategory=Lists }
+    { MenuGroup      ;[{7513F41B-3582-4320-AEA8-361F31514711}] ;Name=RapidStart Services for Microsoft Dynamics NAV;
+                                                                CaptionML=[ENU=RapidStart Services for Microsoft Dynamics NAV;
+                                                                           FRA=Services RapidStart pour Microsoft Dynamics NAV];
+                                                                Visible=Yes }
+    { MenuItem       ;[{3EDB10BE-2428-4A28-8DC2-965D2C063DCC}] ;Name=Config. Questionnaire;
+                                                                CaptionML=[ENU=Configuration Questionnaire;
+                                                                           FRA=Questionnaire configuration];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=8610;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Lists }
+    { MenuItem       ;[{9BA1512E-F88D-4948-924A-E5DD82233A0B}] ;Name=Setup Master Templates;
+                                                                CaptionML=[ENU=Configuration Templates;
+                                                                           FRA=Modäles configuration];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=8620;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Lists }
+    { MenuItem       ;[{233A8EB3-372D-42A2-A6D9-45442D373778}] ;Name=Create G/L acc. Journal Lines;
+                                                                CaptionML=[ENU=Create G/L Acc. Journal Lines;
+                                                                           FRA=CrÇer lignes feuille cpte gÇn.];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=8610;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Tasks }
+    { MenuItem       ;[{469B9203-6193-41FA-BF14-1EA2C48DC66E}] ;Name=Create Customer Journal Lines;
+                                                                CaptionML=[ENU=Create Customer Journal Lines;
+                                                                           FRA=CrÇer lignes journal comptes clients];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=8611;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Tasks }
+    { MenuItem       ;[{7A4B1252-59C4-4E4F-876A-E0C39725C7FD}] ;Name=Create Vendor Journal Lines;
+                                                                CaptionML=[ENU=Create Vendor Journal Lines;
+                                                                           FRA=CrÇer lignes journal comptes fournisseurs];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=8612;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Tasks }
+    { MenuItem       ;[{7C3BFA12-28F8-400E-88C7-4E6A7AA9FE66}] ;Name=Create Item Journal Lines;
+                                                                CaptionML=[ENU=Create Item Journal Lines;
+                                                                           FRA=CrÇer lignes feuille article];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=8613;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Tasks }
+    { MenuItem       ;[{96185858-73D0-4C69-8973-9C66C817CA66}] ;Name=Configuration Worksheet;
+                                                                CaptionML=[ENU=Configuration Worksheet;
+                                                                           FRA=Feuille configuration];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=8632;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Tasks }
+    { MenuItem       ;[{31C2C433-00C8-4CF0-82FE-917152A55F54}] ;Name=Data Migration;
+                                                                CaptionML=[ENU=Configuration Packages;
+                                                                           FRA=Packages configuration];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=8615;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Lists }
+    { MenuGroup      ;[{2D0F5BF0-EFD9-410B-99ED-2872831AF605}] ;Name=New Group;
+                                                                CaptionML=[ENU=Microsoft Office Outlook Integration;
+                                                                           FRA=IntÇgration Microsoft Office Outlook];
+                                                                Visible=Yes }
+    { MenuItem       ;[{255DC8BA-CA9E-4B3A-A215-9952699D244C}] ;Name=Outlook Synch. Entities;
+                                                                CaptionML=[ENU=Outlook Synch. Entities;
+                                                                           FRA=EntitÇs synch. Outlook];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=5302;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Lists }
+    { MenuItem       ;[{E55E8F58-3656-4154-B664-3C8746ABDED6}] ;Name=Outlook Synch. User Setup;
+                                                                CaptionML=[ENU=Outlook Synch. User Setup;
+                                                                           FRA=Paramätres utilisateur synch. Outlook];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=5305;
+                                                                Visible=Yes;
+                                                                NextNodeID=[{255DC8BA-CA9E-4B3A-A215-9952699D244C}];
+                                                                DepartmentCategory=Lists }
+    { MenuGroup      ;[{A07A2127-D15F-4AF6-8301-EC0DA819FAE6}] ;Name=New Group;
+                                                                CaptionML=[ENU=RoleTailored Client;
+                                                                           FRA=Client personnalisÇ];
+                                                                Visible=Yes }
+    { MenuItem       ;[{6C48064C-8C6B-491A-B76A-D2319BC97721}] ;Name=Generic Charts;
+                                                                CaptionML=[ENU=Generic Charts;
+                                                                           FRA=Graphiques gÇnÇriques];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=9182;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Lists }
+    { MenuItem       ;[{C23B6A8D-383A-4D9C-BF4A-54EDBD2837D2}] ;Name=Profiles;
+                                                                CaptionML=[ENU=Profiles;
+                                                                           FRA=Profils];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=9171;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Lists }
+    { MenuItem       ;[{87D179DE-9043-483C-858A-BA381B886A0D}] ;Name=User Personalization;
+                                                                CaptionML=[ENU=User Personalization;
+                                                                           FRA=Personnalisation utilisateur];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=9173;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Lists }
+    { MenuGroup      ;[{C39FF9CB-B938-4C00-8481-93C860893B41}] ;Name=New Group;
+                                                                CaptionML=[ENU=Periodic Activities;
+                                                                           FRA=Traitements];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{6C48064C-8C6B-491A-B76A-D2319BC97721}];
+                                                                IsDepartmentPage=No }
+    { MenuItem       ;[{1280293F-A6FE-4707-9A06-2A94D2661CA3}] ;Name=Export Profiles;
+                                                                CaptionML=[ENU=Export Profiles;
+                                                                           FRA=Exporter les profils];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=9171;
+                                                                Visible=Yes;
+                                                                DepartmentCategory=Tasks }
+    { MenuItem       ;[{68A2A5F6-24D6-4872-8CA3-229713FD9BDA}] ;Name=Import Profiles;
+                                                                CaptionML=[ENU=Import Profiles;
+                                                                           FRA=Importer les profils];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=9172;
+                                                                Visible=Yes;
+                                                                NextNodeID=[{1280293F-A6FE-4707-9A06-2A94D2661CA3}];
+                                                                DepartmentCategory=Tasks }
+    { MenuItem       ;[{75C35E48-7440-4FBB-BBDC-96FA25772619}] ;Name=Payment Services Config;
+                                                                CaptionML=[ENU=Payment Services Setup;
+                                                                           FRA=DÇfinition des services de paiement];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=826;
+                                                                Visible=Yes;
+                                                                NextNodeID=[{75C35E48-7440-4FBB-BBDC-96FA25772619}];
+                                                                DepartmentCategory=Administration }
+    { MenuItem       ;[{325390B0-EC50-40E0-8797-0C970A996354}] ;Name=Modif. Factures vente enregistrÇes;
+                                                                CaptionML=[ENU=Update Posted Sales Cr. Memos;
+                                                                           FRA=Modif. Avoirs vente enregistrÇs];
+                                                                MemberOfMenu=[{2DC8C4FE-7346-4124-8C20-383346384C03}];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=50021;
+                                                                ParentNodeID=[{0DD141CC-3311-4CB7-BE8C-9E20E331DF60}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{00000000-0000-0000-0000-000000000000}];
+                                                                DepartmentCategory=Tasks }
+  }
+}
+

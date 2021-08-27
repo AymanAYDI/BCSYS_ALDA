@@ -4,6 +4,7 @@ OBJECT Codeunit 86 Sales-Quote to Order
   {
     Date=26/11/15;
     Time=12:00:00;
+    Modified=Yes;
     Version List=NAVW19.00.00.43897;
   }
   PROPERTIES
@@ -37,6 +38,9 @@ OBJECT Codeunit 86 Sales-Quote to Order
             SalesOrderHeader."Quote No." := "No.";
             SalesOrderLine.LOCKTABLE;
             SalesOrderHeader.INSERT(TRUE);
+
+            //ACBDU 280513
+            SalesOrderHeader.UpdateOrderRefCust();
 
             SalesOrderHeader."Order Date" := "Order Date";
             IF "Posting Date" <> 0D THEN

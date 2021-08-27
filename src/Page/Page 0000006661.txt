@@ -4,6 +4,7 @@ OBJECT Page 6661 Posted Return Receipt Subform
   {
     Date=22/12/15;
     Time=12:00:00;
+    Modified=Yes;
     Version List=NAVW19.00.00.44365;
   }
   PROPERTIES
@@ -81,6 +82,8 @@ OBJECT Page 6661 Posted Return Receipt Subform
     { 1   ;1   ;Group     ;
                 GroupType=Repeater }
 
+    { 1180250001;2;Field   }
+
     { 2   ;2   ;Field     ;
                 SourceExpr=Type }
 
@@ -144,6 +147,9 @@ OBJECT Page 6661 Posted Return Receipt Subform
     { 48  ;2   ;Field     ;
                 SourceExpr="Shortcut Dimension 2 Code";
                 Visible=FALSE }
+
+    { 1180250002;2;Field  ;
+                SourceExpr="External Line No." }
 
   }
   CODE

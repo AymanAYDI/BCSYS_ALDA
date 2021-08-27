@@ -4,7 +4,8 @@ OBJECT Page 14 Salespeople/Purchasers
   {
     Date=15/09/15;
     Time=12:00:00;
-    Version List=NAVW19.00;
+    Modified=Yes;
+    Version List=NAVW19.00,AB6.JME.001;
   }
   PROPERTIES
   {
@@ -46,6 +47,7 @@ OBJECT Page 14 Salespeople/Purchasers
                       RunObject=Page 5107;
                       RunPageView=SORTING(Salesperson Code);
                       RunPageLink=Salesperson Code=FIELD(Code);
+                      Visible=FALSE;
                       Image=TeamSales }
       { 15      ;2   ;Action    ;
                       CaptionML=[ENU=Con&tacts;
@@ -95,6 +97,7 @@ OBJECT Page 14 Salespeople/Purchasers
                       RunObject=Page 5087;
                       RunPageView=SORTING(Salesperson Code);
                       RunPageLink=Salesperson Code=FIELD(Code);
+                      Visible=FALSE;
                       Image=Campaign }
       { 21      ;2   ;Action    ;
                       CaptionML=[ENU=S&egments;
@@ -102,6 +105,7 @@ OBJECT Page 14 Salespeople/Purchasers
                       RunObject=Page 5093;
                       RunPageView=SORTING(Salesperson Code);
                       RunPageLink=Salesperson Code=FIELD(Code);
+                      Visible=FALSE;
                       Image=Segment }
       { 22      ;2   ;Separator ;
                       CaptionML=[ENU="";
@@ -113,6 +117,7 @@ OBJECT Page 14 Salespeople/Purchasers
                       RunObject=Page 5076;
                       RunPageView=SORTING(Salesperson Code);
                       RunPageLink=Salesperson Code=FIELD(Code);
+                      Visible=FALSE;
                       Image=InteractionLog }
       { 29      ;2   ;Action    ;
                       CaptionML=[ENU=Postponed &Interactions;
@@ -120,6 +125,7 @@ OBJECT Page 14 Salespeople/Purchasers
                       RunObject=Page 5082;
                       RunPageView=SORTING(Salesperson Code);
                       RunPageLink=Salesperson Code=FIELD(Code);
+                      Visible=FALSE;
                       Image=PostponedInteractions }
       { 24      ;2   ;Action    ;
                       CaptionML=[ENU=T&o-dos;
@@ -128,10 +134,12 @@ OBJECT Page 14 Salespeople/Purchasers
                       RunPageView=SORTING(Salesperson Code);
                       RunPageLink=Salesperson Code=FIELD(Code),
                                   System To-do Type=FILTER(Organizer|Salesperson Attendee);
+                      Visible=FALSE;
                       Image=TaskList }
       { 30      ;2   ;ActionGroup;
                       CaptionML=[ENU=Oppo&rtunities;
                                  FRA=Oppo&rtunit‚s];
+                      Visible=FALSE;
                       Image=OpportunityList }
       { 25      ;3   ;Action    ;
                       CaptionML=[ENU=List;

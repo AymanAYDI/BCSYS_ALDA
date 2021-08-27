@@ -1,0 +1,211 @@
+OBJECT Codeunit 50022 GIM ImportXMLFile
+{
+  OBJECT-PROPERTIES
+  {
+    Date=14/10/15;
+    Time=09:58:51;
+    Modified=Yes;
+    Version List=GIM;
+  }
+  PROPERTIES
+  {
+    OnRun=BEGIN
+          END;
+
+  }
+  CODE
+  {
+    VAR
+      GIMXmlMgt@1000000013 : Codeunit 50020;
+      GIMXMLMapping@1000000012 : Record 50011;
+      Enum@1000000011 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Collections.IEnumerator";
+      TableFilter@1000000010 : Text[250];
+      XmlID@1000000009 : Text[80];
+      ChangeLogMgt@1000000008 : Codeunit 423;
+      TableID@1000000007 : Integer;
+      Continue@1000000006 : Boolean;
+      XmlDoc@1000000005 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlDocument";
+      XmlElem@1000000004 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlElement";
+      XmlElemRootRecID@1000000003 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlElement";
+      RecID@1000000002 : RecordID;
+      XmlDocRecID@1000000001 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlDocument";
+      RecIDArray@1180250001 : ARRAY [10] OF RecordID;
+      GlobalRecRef@1180250002 : RecordRef;
+
+    PROCEDURE StoreBuffer@1000000000(VAR _XmlBuffer@1000000005 : TEMPORARY Record 50012);
+    VAR
+      RecID@1000000003 : RecordID;
+      FieldR@1000000001 : FieldRef;
+      KeyR@1000000000 : KeyRef;
+      First@1000000004 : Boolean;
+      RecRef@1180250001 : RecordRef;
+    BEGIN
+      _XmlBuffer.SETFILTER("Table No.",'<>0');
+      _XmlBuffer.SETFILTER("Field No.",'<>0');
+      First := _XmlBuffer.FINDFIRST;
+      IF First THEN BEGIN
+        REPEAT
+          IF NOT First THEN
+          BEGIN
+            InsertRecRef(_XmlBuffer."Xml ID",FALSE,_XmlBuffer,RecRef);
+          END;
+          OpenRecRef(_XmlBuffer."Table No.", _XmlBuffer."Xml ID",RecRef);
+          FieldR := RecRef.FIELD(_XmlBuffer."Field No.");
+          IF (ChangeLogMgt.EvaluateTextToFieldRef(_XmlBuffer.ValueAsText,FieldR)) THEN
+          BEGIN
+        //    MESSAGE(XmlBuffer.ValueAsText);
+
+          END;
+          First := FALSE;
+        UNTIL _XmlBuffer.NEXT = 0 ;
+        InsertRecRef(_XmlBuffer."Xml ID",TRUE,_XmlBuffer,RecRef);
+      END;
+    END;
+
+    LOCAL PROCEDURE OpenRecRef@1000000002(_TableID@1000000000 : Integer;_XmlID@1000000002 : Text[80];VAR RecRef@1180250001 : RecordRef);
+    BEGIN
+      IF TableID <> _TableID THEN
+      BEGIN
+        IF TableID <> 0 THEN
+          RecRef.CLOSE;
+        RecRef.OPEN(_TableID);
+        RecRef.INIT;
+        TableID := _TableID;
+        XmlID := _XmlID;
+      END;
+    END;
+
+    LOCAL PROCEDURE InsertRecRef@1000000005(_XmlID@1000000003 : Text[80];Last@1000000005 : Boolean;VAR _XmlBuffer@1000000001 : TEMPORARY Record 50012;VAR RecRef@1180250001 : RecordRef);
+    VAR
+      EntryNo@1000000002 : Integer;
+      L_XmlBuffer@1000000004 : TEMPORARY Record 50012;
+      L_FieldRef@1000000000 : FieldRef;
+    BEGIN
+      IF (XmlID <> _XmlID) OR Last THEN
+      BEGIN
+        CheckKey(_XmlBuffer,RecRef);
+        InsertGlobalRecRef(RecRef);
+        RecID := RecRef.RECORDID;
+        RecIDArray[_XmlBuffer.Indent] := RecID;
+        XmlID := _XmlID ;
+        NewXmlItem;
+
+        RecRef.INIT;
+      END;
+    END;
+
+    LOCAL PROCEDURE CheckKey@1000000016(VAR _XmlBuffer@1000000001 : TEMPORARY Record 50012;RecRef@1180250002 : RecordRef);
+    VAR
+      KeyFldRef@1000000006 : FieldRef;
+      KeyRef1@1000000005 : KeyRef;
+      i@1000000004 : Integer;
+      textResult@1180250004 : Text[100];
+    BEGIN
+      KeyRef1 := RecRef.KEYINDEX(1);
+      FOR i := 1 TO KeyRef1.FIELDCOUNT DO BEGIN
+        KeyFldRef := KeyRef1.FIELDINDEX(i);
+        IF NOT HasValue(KeyFldRef) THEN
+          IF KeyFldRef.RELATION <> 0 THEN BEGIN
+            textResult := GetGlobalFieldValue(RecIDArray[_XmlBuffer.Indent - 1], KeyFldRef.NUMBER);
+            ChangeLogMgt.EvaluateTextToFieldRef(textResult,KeyFldRef);
+          END;
+      END;
+    END;
+
+    LOCAL PROCEDURE HasValue@10(FldRef@1000 : FieldRef) : Boolean;
+    VAR
+      Field@1102601000 : Record 2000000041;
+      HasValue@1001 : Boolean;
+      Int@1002 : Integer;
+      Dec@1003 : Decimal;
+      D@1007 : Date;
+      T@1008 : Time;
+    BEGIN
+      EVALUATE(Field.Type,FORMAT(FldRef.TYPE));
+
+      CASE Field.Type OF
+        Field.Type::Boolean:
+          HasValue := FldRef.VALUE;
+        Field.Type::Option:
+          HasValue := TRUE;
+        Field.Type::Integer:
+          BEGIN
+            Int := FldRef.VALUE;
+            HasValue := Int <> 0;
+          END;
+        Field.Type::Decimal:
+          BEGIN
+            Dec := FldRef.VALUE;
+            HasValue := Dec <> 0;
+          END;
+        Field.Type::Date:
+          BEGIN
+            D := FldRef.VALUE;
+            HasValue := D <> 0D;
+          END;
+        Field.Type::Time:
+          BEGIN
+            T := FldRef.VALUE;
+            HasValue := T <> 0T;
+          END;
+        Field.Type::BLOB:
+          HasValue := FALSE;
+        ELSE
+          HasValue := FORMAT(FldRef.VALUE) <> '';
+      END;
+
+      EXIT(HasValue);
+    END;
+
+    LOCAL PROCEDURE NewXmlItem@1000000001();
+    VAR
+      XmlItem@1000000001 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlElement";
+    BEGIN
+      IF ISNULL(XmlDocRecID) THEN BEGIN
+        XmlDocRecID := XmlDocRecID.XmlDocument();
+        XmlElemRootRecID := XmlDocRecID.CreateElement('root');
+      END;
+
+      XmlItem := XmlDocRecID.CreateElement('item');
+      XmlItem.SetAttribute('recordid',FORMAT(RecID));
+      XmlElemRootRecID.AppendChild(XmlItem);
+    END;
+
+    PROCEDURE GetXmlDocRecId@1000000003(VAR XmlDoc@1000000000 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlDocument");
+    BEGIN
+      IF NOT ISNULL(XmlDocRecID) THEN
+      BEGIN
+        XmlDocRecID.AppendChild(XmlElemRootRecID);
+        XmlDoc  := XmlDocRecID;
+      END;
+    END;
+
+    PROCEDURE InsertGlobalRecRef@1180250006(VAR _RecRef@1180250001 : RecordRef);
+    BEGIN
+      GlobalRecRef.OPEN(_RecRef.NUMBER);
+      GlobalRecRef := _RecRef;
+      GlobalRecRef.INSERT(TRUE);
+      _RecRef := GlobalRecRef;
+      GlobalRecRef.CLOSE;
+    END;
+
+    PROCEDURE GetGlobalFieldValue@1180250010(_RecID@1180250002 : RecordID;_FieldNo@1180250003 : Integer) result : Text[100];
+    VAR
+      FieldR@1180250004 : FieldRef;
+      F@1180250001 : Record 2000000041;
+    BEGIN
+      IF NOT GlobalRecRef.GET(RecID) THEN
+        EXIT('');
+      IF NOT GlobalRecRef.FIELDEXIST(_FieldNo) THEN
+        EXIT('');
+
+      FieldR := GlobalRecRef.FIELD(_FieldNo);
+      result := FORMAT(FieldR.VALUE);
+      GlobalRecRef.CLOSE;
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

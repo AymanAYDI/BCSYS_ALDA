@@ -4,7 +4,8 @@ OBJECT Page 20 General Ledger Entries
   {
     Date=15/09/15;
     Time=12:00:00;
-    Version List=NAVW19.00,NAVFR9.00;
+    Modified=Yes;
+    Version List=NAVW19.00,NAVFR9.00,ALDA;
   }
   PROPERTIES
   {
@@ -202,6 +203,16 @@ OBJECT Page 20 General Ledger Entries
                 SourceExpr="Global Dimension 2 Code";
                 Visible=FALSE }
 
+    { 1180250001;2;Field  ;
+                SourceExpr="Country Dimension Code";
+                OnAssistEdit=BEGIN
+                               // ALDA 171214D.begin
+                               CountryDimCodeCodeAssistEdit;
+                               CurrPage.UPDATE(FALSE);
+                               // ALDA 171214D.End
+                             END;
+                              }
+
     { 51  ;2   ;Field     ;
                 SourceExpr="IC Partner Code";
                 Visible=FALSE }
@@ -249,7 +260,7 @@ OBJECT Page 20 General Ledger Entries
 
     { 42  ;2   ;Field     ;
                 SourceExpr="Source Code";
-                Visible=FALSE }
+                Visible=TRUE }
 
     { 44  ;2   ;Field     ;
                 SourceExpr="Reason Code";
@@ -277,6 +288,12 @@ OBJECT Page 20 General Ledger Entries
 
     { 20  ;2   ;Field     ;
                 SourceExpr="Entry No." }
+
+    { 1000000000;2;Field  ;
+                SourceExpr="VAT Bus. Posting Group" }
+
+    { 1000000001;2;Field  ;
+                SourceExpr="VAT Prod. Posting Group" }
 
     { 1900000007;0;Container;
                 ContainerType=FactBoxArea }

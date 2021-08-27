@@ -1,0 +1,64 @@
+OBJECT Table 50015 Access Control by Entity
+{
+  OBJECT-PROPERTIES
+  {
+    Date=21/03/16;
+    Time=18:41:39;
+    Modified=Yes;
+    Version List=;
+  }
+  PROPERTIES
+  {
+    DataPerCompany=No;
+    CaptionML=[ENU=Access Control;
+               FRB=Contr“le d'accŠs;
+               NLB=Toegangsbeheer];
+  }
+  FIELDS
+  {
+    { 1   ;   ;User Security ID    ;GUID          ;TableRelation=User."User Security ID";
+                                                   CaptionML=[ENU=User Security ID;
+                                                              FRB=ID s‚curit‚ utilisateur;
+                                                              NLB=Gebruikersbeveiligings-id] }
+    { 2   ;   ;Role ID             ;Code20        ;TableRelation="Model Permission Set"."Role ID";
+                                                   CaptionML=[ENU=Role ID;
+                                                              FRB=ID r“le;
+                                                              NLB=Rol-id] }
+    { 3   ;   ;Company Name        ;Text30        ;TableRelation=Company.Name;
+                                                   CaptionML=[ENU=Company Name;
+                                                              FRB=Nom de la soci‚t‚;
+                                                              NLB=Bedrijfsnaam] }
+    { 5   ;   ;User Name           ;Code50        ;FieldClass=FlowField;
+                                                   CalcFormula=Lookup(User."User Name" WHERE (User Security ID=FIELD(User Security ID)));
+                                                   CaptionML=[ENU=User Name;
+                                                              FRB=Nom utilisateur;
+                                                              NLB=Gebruikersnaam] }
+    { 7   ;   ;Role Name           ;Text30        ;FieldClass=FlowField;
+                                                   CalcFormula=Lookup("Model Permission Set".Name WHERE (Role ID=FIELD(Role ID)));
+                                                   CaptionML=[ENU=Role Name;
+                                                              FRB=Nom r“le;
+                                                              NLB=Rolnaam] }
+    { 77100;  ;Entity Code         ;Text30        ;TableRelation=Salesperson/Purchaser.Code;
+                                                   ValidateTableRelation=No;
+                                                   TestTableRelation=No;
+                                                   CaptionML=[ENU=Entity Code;
+                                                              FRB=Code entit‚] }
+    { 77101;  ;Dimension Code Filter;Code20        }
+  }
+  KEYS
+  {
+    {    ;User Security ID,Role ID,Company Name,Entity Code;
+                                                   Clustered=Yes }
+    {    ;Role ID                                  }
+  }
+  FIELDGROUPS
+  {
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

@@ -2,9 +2,10 @@ OBJECT Page 42 Sales Order
 {
   OBJECT-PROPERTIES
   {
-    Date=26/11/15;
-    Time=12:00:00;
-    Version List=NAVW19.00.00.43897,NAVFR9.00.00.43897;
+    Date=26/02/19;
+    Time=12:20:42;
+    Modified=Yes;
+    Version List=NAVW19.00.00.43897,NAVFR9.00.00.43897,AC2.00,ALDA;
   }
   PROPERTIES
   {
@@ -105,6 +106,7 @@ OBJECT Page 42 Sales Order
       { 78      ;2   ;Action    ;
                       CaptionML=[ENU=A&pprovals;
                                  FRA=&Approbations];
+                      Visible=FALSE;
                       Image=Approvals;
                       OnAction=VAR
                                  ApprovalEntries@1001 : Page 658;
@@ -127,7 +129,16 @@ OBJECT Page 42 Sales Order
                       RunObject=Page 829;
                       RunPageLink=Document No.=FIELD(No.),
                                   Customer No.=FIELD(Bill-to Customer No.);
+                      Visible=FALSE;
                       Image=CreditCardLog }
+      { 1180250009;2 ;Separator  }
+      { 1180250010;2 ;Action    ;
+                      CaptionML=[ENU=Vendor Purchase &Order;
+                                 FRA=&Commande achat fournisseur];
+                      OnAction=BEGIN
+                                 VendorPurchOrderOnPush();
+                               END;
+                                }
       { 11      ;2   ;Action    ;
                       AccessByPermission=TableData 90=R;
                       CaptionML=[ENU=Assembly Orders;
@@ -176,6 +187,17 @@ OBJECT Page 42 Sales Order
                       RunPageView=SORTING(Order No.);
                       RunPageLink=Order No.=FIELD(No.);
                       Image=Invoice }
+      { 1000000007;2 ;Action    ;
+                      Name=ShowPurchDocument;
+                      CaptionML=[ENU=Show Purch. Document;
+                                 FRA=Afficher document achat];
+                      PromotedIsBig=Yes;
+                      Image=Purchase;
+                      OnAction=BEGIN
+                                 //BC6>>
+                                 ShowPurchOrder();
+                               END;
+                                }
       { 15      ;1   ;ActionGroup;
                       CaptionML=[ENU=Warehouse;
                                  FRA=Entrep“t];
@@ -187,6 +209,7 @@ OBJECT Page 42 Sales Order
                       RunPageView=SORTING(Source Document,Source No.,Location Code);
                       RunPageLink=Source Document=CONST(Sales Order),
                                   Source No.=FIELD(No.);
+                      Visible=FALSE;
                       Image=PickLines }
       { 168     ;2   ;Action    ;
                       CaptionML=[ENU=Whse. Shipment Lines;
@@ -196,6 +219,7 @@ OBJECT Page 42 Sales Order
                       RunPageLink=Source Type=CONST(37),
                                   Source Subtype=FIELD(Document Type),
                                   Source No.=FIELD(No.);
+                      Visible=FALSE;
                       Image=ShipmentLines }
       { 17      ;1   ;ActionGroup;
                       CaptionML=[ENU=Prepayment;
@@ -208,6 +232,7 @@ OBJECT Page 42 Sales Order
                       RunObject=Page 143;
                       RunPageView=SORTING(Prepayment Order No.);
                       RunPageLink=Prepayment Order No.=FIELD(No.);
+                      Visible=FALSE;
                       Image=PrepaymentInvoice }
       { 235     ;2   ;Action    ;
                       CaptionML=[ENU=Prepayment Credi&t Memos;
@@ -215,6 +240,7 @@ OBJECT Page 42 Sales Order
                       RunObject=Page 144;
                       RunPageView=SORTING(Prepayment Order No.);
                       RunPageLink=Prepayment Order No.=FIELD(No.);
+                      Visible=FALSE;
                       Image=PrepaymentCreditMemo }
       { 1900000004;0 ;ActionContainer;
                       ActionContainerType=ActionItems }
@@ -293,6 +319,9 @@ OBJECT Page 42 Sales Order
                                  ReleaseSalesDoc@1000 : Codeunit 414;
                                  PrepaymentMgt@1120000 : Codeunit 441;
                                BEGIN
+                                 //AC1.00
+                                 ApprovalsMgmt.TestSalesOrder(Rec);
+
                                  IF PrepaymentMgt.TestSalesPrepayment(Rec) THEN
                                    ERROR(STRSUBSTNO(Text10800,"Document Type","No."));
 
@@ -362,6 +391,7 @@ OBJECT Page 42 Sales Order
                       Ellipsis=Yes;
                       CaptionML=[ENU=Move Negative Lines;
                                  FRA=D‚placer lignes n‚gatives];
+                      Visible=FALSE;
                       Image=MoveNegativeLines;
                       OnAction=BEGIN
                                  CLEAR(MoveNegSalesLines);
@@ -384,6 +414,7 @@ OBJECT Page 42 Sales Order
                       AccessByPermission=TableData 410=R;
                       CaptionML=[ENU=Send IC Sales Order Cnfmn.;
                                  FRA=Confirmation envoi commande vente IC];
+                      Visible=FALSE;
                       Image=IntercompanyOrder;
                       OnAction=VAR
                                  ICInOutboxMgt@1000 : Codeunit 427;
@@ -458,6 +489,7 @@ OBJECT Page 42 Sales Order
                       AccessByPermission=TableData 99000880=R;
                       CaptionML=[ENU=Order &Promising;
                                  FRA=Pro&messe de livraison];
+                      Visible=FALSE;
                       Image=OrderPromising;
                       OnAction=VAR
                                  OrderPromisingLine@1000 : TEMPORARY Record 99000880;
@@ -482,6 +514,7 @@ OBJECT Page 42 Sales Order
       { 121     ;2   ;Action    ;
                       CaptionML=[ENU=Pla&nning;
                                  FRA=Pla&nification];
+                      Visible=FALSE;
                       Image=Planning;
                       OnAction=VAR
                                  SalesPlanForm@1001 : Page 99000883;
@@ -499,6 +532,7 @@ OBJECT Page 42 Sales Order
                       CaptionML=[ENU=Send A&pproval Request;
                                  FRA=Envoyer demande d'a&pprobation];
                       Promoted=Yes;
+                      Visible=FALSE;
                       Enabled=NOT OpenApprovalEntriesExist;
                       Image=SendApprovalRequest;
                       PromotedCategory=Category9;
@@ -514,6 +548,7 @@ OBJECT Page 42 Sales Order
                       CaptionML=[ENU=Cancel Approval Re&quest;
                                  FRA=Annuler demande d'appro&bation];
                       Promoted=Yes;
+                      Visible=FALSE;
                       Enabled=OpenApprovalEntriesExist;
                       Image=Cancel;
                       PromotedCategory=Category9;
@@ -530,6 +565,7 @@ OBJECT Page 42 Sales Order
       { 256     ;2   ;Action    ;
                       CaptionML=[ENU=Authorize;
                                  FRA=Autoriser];
+                      Visible=FALSE;
                       Image=AuthorizeCreditCard;
                       OnAction=BEGIN
                                  Authorize;
@@ -538,6 +574,7 @@ OBJECT Page 42 Sales Order
       { 257     ;2   ;Action    ;
                       CaptionML=[ENU=Void A&uthorize;
                                  FRA=Annuler l'a&utorisation];
+                      Visible=FALSE;
                       Image=VoidCreditCard;
                       OnAction=BEGIN
                                  Void;
@@ -553,6 +590,7 @@ OBJECT Page 42 Sales Order
                       CaptionML=[ENU=Create Inventor&y Put-away/Pick;
                                  FRA=Cr‚er pr‚lŠv./rangement stoc&k];
                       Promoted=Yes;
+                      Visible=FALSE;
                       Image=CreateInventoryPickup;
                       PromotedCategory=Process;
                       OnAction=BEGIN
@@ -566,6 +604,7 @@ OBJECT Page 42 Sales Order
                       AccessByPermission=TableData 7320=R;
                       CaptionML=[ENU=Create &Whse. Shipment;
                                  FRA=Cr‚er &exp‚dition entrep“t];
+                      Visible=FALSE;
                       Image=NewShipment;
                       OnAction=VAR
                                  GetSourceDocOutbound@1001 : Codeunit 5752;
@@ -658,6 +697,7 @@ OBJECT Page 42 Sales Order
       { 236     ;2   ;ActionGroup;
                       CaptionML=[ENU=Prepa&yment;
                                  FRA=Acom&pte];
+                      Visible=FALSE;
                       Image=Prepayment }
       { 231     ;3   ;Action    ;
                       Ellipsis=Yes;
@@ -698,6 +738,7 @@ OBJECT Page 42 Sales Order
                       Ellipsis=Yes;
                       CaptionML=[ENU=Post Prepayment &Credit Memo;
                                  FRA=Valider &avoir acompte];
+                      Visible=FALSE;
                       Image=PrepaymentPost;
                       OnAction=VAR
                                  SalesPostYNPrepmt@1000 : Codeunit 443;
@@ -726,6 +767,7 @@ OBJECT Page 42 Sales Order
                       Ellipsis=Yes;
                       CaptionML=[ENU=Work Order;
                                  FRA=Ordre de fabrication];
+                      Visible=FALSE;
                       Image=Print;
                       OnAction=BEGIN
                                  DocPrint.PrintSalesOrder(Rec,Usage::"Work Order");
@@ -735,6 +777,14 @@ OBJECT Page 42 Sales Order
                       CaptionML=[ENU=Pick Instruction;
                                  FRA=Instruction pr‚lŠvement];
                       Image=Print;
+                      OnAction=BEGIN
+                                 DocPrint.PrintSalesOrder(Rec,Usage::"Pick Instruction");
+                               END;
+                                }
+      { 1000000006;2 ;Action    ;
+                      Name=<Action1462002>;
+                      CaptionML=[ENU=Pick Ticket;
+                                 FRA=Etiquette];
                       OnAction=BEGIN
                                  DocPrint.PrintSalesOrder(Rec,Usage::"Pick Instruction");
                                END;
@@ -791,9 +841,16 @@ OBJECT Page 42 Sales Order
 
                 ShowMandatory=TRUE }
 
+    { 1180250014;2;Field  ;
+                SourceExpr="Cost Center Code" }
+
+    { 1180250015;2;Field  ;
+                SourceExpr="Area Code" }
+
     { 157 ;2   ;Field     ;
                 SourceExpr="Sell-to Contact No.";
                 Importance=Additional;
+                Visible=FALSE;
                 OnValidate=BEGIN
                              IF GETFILTER("Sell-to Contact No.") = xRec."Sell-to Contact No." THEN
                                IF "Sell-to Contact No." <> xRec."Sell-to Contact No." THEN
@@ -813,6 +870,9 @@ OBJECT Page 42 Sales Order
                 SourceExpr="Sell-to Address 2";
                 Importance=Additional }
 
+    { 1000000009;2;Field  ;
+                SourceExpr="Sell-to County" }
+
     { 72  ;2   ;Field     ;
                 SourceExpr="Sell-to Post Code";
                 Importance=Additional }
@@ -825,9 +885,18 @@ OBJECT Page 42 Sales Order
                 SourceExpr="Sell-to Contact";
                 Importance=Additional }
 
+    { 1180250005;2;Field  ;
+                SourceExpr="Sell-to Fax No.";
+                Importance=Additional }
+
+    { 1000000000;2;Field  ;
+                SourceExpr="Customer Price Group";
+                Importance=Promoted }
+
     { 198 ;2   ;Field     ;
                 SourceExpr="No. of Archived Versions";
-                Importance=Additional }
+                Importance=Additional;
+                Visible=FALSE }
 
     { 12  ;2   ;Field     ;
                 SourceExpr="Posting Date";
@@ -843,11 +912,13 @@ OBJECT Page 42 Sales Order
                 QuickEntry=FALSE }
 
     { 135 ;2   ;Field     ;
-                SourceExpr="Requested Delivery Date" }
+                SourceExpr="Requested Delivery Date";
+                Visible=TRUE }
 
     { 137 ;2   ;Field     ;
                 SourceExpr="Promised Delivery Date";
-                Importance=Additional }
+                Importance=Additional;
+                Visible=TRUE }
 
     { 243 ;2   ;Field     ;
                 SourceExpr="Quote No.";
@@ -868,19 +939,23 @@ OBJECT Page 42 Sales Order
 
     { 1148;2   ;Field     ;
                 SourceExpr="Campaign No.";
-                Importance=Additional }
+                Importance=Additional;
+                Visible=FALSE }
 
     { 245 ;2   ;Field     ;
                 SourceExpr="Opportunity No.";
-                Importance=Additional }
+                Importance=Additional;
+                Visible=FALSE }
 
     { 124 ;2   ;Field     ;
                 SourceExpr="Responsibility Center";
-                Importance=Additional }
+                Importance=Additional;
+                Visible=FALSE }
 
     { 241 ;2   ;Field     ;
                 SourceExpr="Assigned User ID";
-                Importance=Additional }
+                Importance=Additional;
+                Visible=FALSE }
 
     { 9   ;2   ;Field     ;
                 SourceExpr="Job Queue Status";
@@ -891,12 +966,73 @@ OBJECT Page 42 Sales Order
                 Importance=Promoted;
                 QuickEntry=FALSE }
 
+    { 1180250002;2;Field  ;
+                SourceExpr="Dim. Shipping Method Code" }
+
+    { 1180250003;2;Field  ;
+                SourceExpr="Order Reference Customer" }
+
+    { 1180250011;2;Field  ;
+                SourceExpr="Your Reference" }
+
+    { 1000000008;2;Field  ;
+                SourceExpr="Order Type" }
+
+    { 1000000010;2;Field  ;
+                SourceExpr="Micro Order No." }
+
+    { 1000000011;2;Field  ;
+                SourceExpr="Order Source Type" }
+
+    { 1000000012;2;Field  ;
+                SourceExpr="Skip From Data Flow" }
+
     { 58  ;1   ;Part      ;
                 Name=SalesLines;
                 SubPageLink=Document No.=FIELD(No.);
                 PagePartID=Page46;
                 Editable=DynamicEditable;
                 UpdatePropagation=Both }
+
+    { 1000000016;1;Group  ;
+                CaptionML=[ENU=EDI Additional Informations;
+                           FRA=EDI Informations compl‚mentaires];
+                GroupType=Group }
+
+    { 1000000017;2;Field  ;
+                CaptionML=[ENU=NUM_SUBSEQUENT;
+                           FRA=Nø du march‚ subs‚quent];
+                SourceExpr="EDI Add. Info. 1" }
+
+    { 1000000018;2;Field  ;
+                CaptionML=[ENU=REF_ENGAGEMENT;
+                           FRA=R‚f‚rence engagement];
+                SourceExpr="EDI Add. Info. 2" }
+
+    { 1000000019;2;Field  ;
+                CaptionML=[ENU=NUM_EJ;
+                           FRA=Nø d'engagement juridique];
+                SourceExpr="EDI Add. Info. 3" }
+
+    { 1000000020;2;Field  ;
+                CaptionML=[ENU=NUM_EJ;
+                           FRA=Nø de transaction];
+                SourceExpr="EDI Add. Info. 4" }
+
+    { 1000000021;2;Field  ;
+                CaptionML=[ENU=TRS_ID_AUTORISATION;
+                           FRA=Nø de paiement INGENICO];
+                SourceExpr=TRS_ID_AUTORISATION }
+
+    { 1000000022;2;Field  ;
+                CaptionML=[ENU=CODE_WCP;
+                           FRA=Nø Client g‚n‚r‚ par le site];
+                SourceExpr="EDI Add. Info. 5" }
+
+    { 1000000023;2;Field  ;
+                CaptionML=[ENU=Market Nø;
+                           FRA=Code march‚];
+                SourceExpr="EDI Add. Info. 6" }
 
     { 1905885101;1;Group  ;
                 CaptionML=[ENU=Invoicing;
@@ -917,6 +1053,9 @@ OBJECT Page 42 Sales Order
     { 18  ;2   ;Field     ;
                 SourceExpr="Bill-to Name" }
 
+    { 1180250012;2;Field  ;
+                SourceExpr="Bill-to Name 2" }
+
     { 20  ;2   ;Field     ;
                 SourceExpr="Bill-to Address";
                 Importance=Additional }
@@ -924,6 +1063,9 @@ OBJECT Page 42 Sales Order
     { 22  ;2   ;Field     ;
                 SourceExpr="Bill-to Address 2";
                 Importance=Additional }
+
+    { 1000000013;2;Field  ;
+                SourceExpr="Bill-to County" }
 
     { 89  ;2   ;Field     ;
                 SourceExpr="Bill-to Post Code";
@@ -935,6 +1077,12 @@ OBJECT Page 42 Sales Order
     { 26  ;2   ;Field     ;
                 SourceExpr="Bill-to Contact";
                 Importance=Additional }
+
+    { 1000000024;2;Field  ;
+                SourceExpr="Registration No." }
+
+    { 1000000026;2;Field  ;
+                SourceExpr="Executing Service Code" }
 
     { 84  ;2   ;Field     ;
                 SourceExpr="Shortcut Dimension 1 Code";
@@ -950,6 +1098,9 @@ OBJECT Page 42 Sales Order
                            END;
                             }
 
+    { 1180250016;2;Field  ;
+                SourceExpr="Country Dimension Code" }
+
     { 28  ;2   ;Field     ;
                 SourceExpr="Payment Terms Code";
                 Importance=Promoted }
@@ -959,10 +1110,12 @@ OBJECT Page 42 Sales Order
                 Importance=Promoted }
 
     { 32  ;2   ;Field     ;
-                SourceExpr="Payment Discount %" }
+                SourceExpr="Payment Discount %";
+                Visible=FALSE }
 
     { 34  ;2   ;Field     ;
-                SourceExpr="Pmt. Discount Date" }
+                SourceExpr="Pmt. Discount Date";
+                Visible=FALSE }
 
     { 105 ;2   ;Field     ;
                 SourceExpr="Payment Method Code" }
@@ -986,7 +1139,14 @@ OBJECT Page 42 Sales Order
     { 253 ;2   ;Field     ;
                 CaptionML=[ENU=Cr. Card Number (Last 4 Digits);
                            FRA=Num‚ro de carte de cr‚dit (4ÿderniers chiffres)];
-                SourceExpr=GetCreditcardNumber }
+                SourceExpr=GetCreditcardNumber;
+                Visible=FALSE }
+
+    { 1180250017;2;Field  ;
+                SourceExpr="Validated by" }
+
+    { 1000000027;2;Field  ;
+                SourceExpr="Data Flow Code" }
 
     { 1906801201;1;Group  ;
                 CaptionML=[ENU=Shipping;
@@ -1007,12 +1167,25 @@ OBJECT Page 42 Sales Order
                 SourceExpr="Ship-to Address 2";
                 Importance=Additional }
 
+    { 1000000014;2;Field  ;
+                SourceExpr="Ship-to County" }
+
     { 97  ;2   ;Field     ;
                 SourceExpr="Ship-to Post Code";
                 Importance=Promoted }
 
     { 44  ;2   ;Field     ;
                 SourceExpr="Ship-to City" }
+
+    { 1180250004;2;Field  ;
+                CaptionML=[ENU=Sell-to Phone No.;
+                           FRA=Nø t‚l‚phone destinataire];
+                SourceExpr="Sell-to Phone No." }
+
+    { 1180250006;2;Field  ;
+                CaptionML=[ENU=Sell-to E-Mail;
+                           FRA=E-mail destinataire];
+                SourceExpr="Sell-to E-Mail" }
 
     { 46  ;2   ;Field     ;
                 SourceExpr="Ship-to Contact";
@@ -1023,7 +1196,8 @@ OBJECT Page 42 Sales Order
 
     { 141 ;2   ;Field     ;
                 SourceExpr="Outbound Whse. Handling Time";
-                Importance=Additional }
+                Importance=Additional;
+                Visible=FALSE }
 
     { 48  ;2   ;Field     ;
                 SourceExpr="Shipment Method Code" }
@@ -1037,15 +1211,18 @@ OBJECT Page 42 Sales Order
                 Importance=Additional }
 
     { 143 ;2   ;Field     ;
-                SourceExpr="Shipping Time" }
+                SourceExpr="Shipping Time";
+                Visible=FALSE }
 
     { 145 ;2   ;Field     ;
                 SourceExpr="Late Order Shipping";
-                Importance=Additional }
+                Importance=Additional;
+                Visible=FALSE }
 
     { 109 ;2   ;Field     ;
                 SourceExpr="Package Tracking No.";
-                Importance=Additional }
+                Importance=Additional;
+                Visible=FALSE }
 
     { 50  ;2   ;Field     ;
                 SourceExpr="Shipment Date";
@@ -1054,6 +1231,7 @@ OBJECT Page 42 Sales Order
     { 119 ;2   ;Field     ;
                 SourceExpr="Shipping Advice";
                 Importance=Promoted;
+                Visible=FALSE;
                 OnValidate=BEGIN
                              IF "Shipping Advice" <> xRec."Shipping Advice" THEN
                                IF NOT CONFIRM(Text001,FALSE,FIELDCAPTION("Shipping Advice")) THEN
@@ -1061,13 +1239,48 @@ OBJECT Page 42 Sales Order
                            END;
                             }
 
+    { 1180250007;2;Field  ;
+                SourceExpr="Ship. Agent Instruction Line" }
+
+    { 1180250008;2;Field  ;
+                SourceExpr="Ship. Agent Instruction Line 2" }
+
+    { 1180250001;2;Field  ;
+                SourceExpr="Vendor Shipment No." }
+
+    { 1000000001;2;Field  ;
+                SourceExpr="Gross Weight" }
+
+    { 1000000002;2;Field  ;
+                SourceExpr="Net Weight" }
+
+    { 1000000003;2;Field  ;
+                SourceExpr=Volume }
+
+    { 1000000004;2;Field  ;
+                SourceExpr="Nbr. of Pallet" }
+
+    { 1000000005;2;Field  ;
+                SourceExpr="Nbr. of Package per Pallet" }
+
+    { 1000000015;2;Field  ;
+                SourceExpr="Nbr. of Package" }
+
+    { 1180250018;2;Field  ;
+                SourceExpr="Grouping Code" }
+
+    { 1000000025;2;Field  ;
+                SourceExpr="Use Shipment Address" }
+
     { 1907468901;1;Group  ;
                 CaptionML=[ENU=Foreign Trade;
-                           FRA=International] }
+                           FRA=International];
+                Visible=FALSE }
 
     { 111 ;2   ;Field     ;
                 SourceExpr="Currency Code";
                 Importance=Promoted;
+                Visible=FALSE;
                 OnValidate=BEGIN
                              CurrPage.UPDATE;
                              SalesCalcDiscountByType.ApplyDefaultInvoiceDiscount(0,Rec);
@@ -1088,13 +1301,16 @@ OBJECT Page 42 Sales Order
                               }
 
     { 52  ;2   ;Field     ;
-                SourceExpr="EU 3-Party Trade" }
+                SourceExpr="EU 3-Party Trade";
+                Visible=FALSE }
 
     { 54  ;2   ;Field     ;
-                SourceExpr="Transaction Type" }
+                SourceExpr="Transaction Type";
+                Visible=FALSE }
 
     { 103 ;2   ;Field     ;
-                SourceExpr="Transaction Specification" }
+                SourceExpr="Transaction Specification";
+                Visible=FALSE }
 
     { 56  ;2   ;Field     ;
                 SourceExpr="Transport Method" }
@@ -1105,9 +1321,14 @@ OBJECT Page 42 Sales Order
     { 101 ;2   ;Field     ;
                 SourceExpr=Area }
 
+    { 1180250013;2;Field  ;
+                SourceExpr="VAT Registration No.";
+                Editable=FALSE }
+
     { 1900201301;1;Group  ;
                 CaptionML=[ENU=Prepayment;
-                           FRA=Acompte] }
+                           FRA=Acompte];
+                Visible=FALSE }
 
     { 228 ;2   ;Field     ;
                 SourceExpr="Prepayment %";
@@ -1276,6 +1497,7 @@ OBJECT Page 42 Sales Order
 
     LOCAL PROCEDURE SelltoCustomerNoOnAfterValidat@19034782();
     BEGIN
+      CurrPage.UPDATE;
       IF GETFILTER("Sell-to Customer No.") = xRec."Sell-to Customer No." THEN
         IF "Sell-to Customer No." <> xRec."Sell-to Customer No." THEN
           SETRANGE("Sell-to Customer No.");
@@ -1310,6 +1532,17 @@ OBJECT Page 42 Sales Order
     LOCAL PROCEDURE Prepayment37OnAfterValidate@19040510();
     BEGIN
       CurrPage.UPDATE;
+    END;
+
+    PROCEDURE VendorPurchOrderOnPush@1180250001();
+    VAR
+      SalesHeader@1180250001 : Record 36;
+    BEGIN
+      //AC1.00
+      SalesHeader.COPY(Rec);
+      CurrPage.SETSELECTIONFILTER(SalesHeader);
+
+      SalesHeader.ShowPurchOrder();
     END;
 
     LOCAL PROCEDURE SetDocNoVisible@2();
@@ -1348,6 +1581,9 @@ OBJECT Page 42 Sales Order
     END;
 
     BEGIN
+    {
+      AC1.00 Ajout Field "Shipping Method Code" "Order Reference Customer" "Direct Inv. Posted"
+    }
     END.
   }
 }

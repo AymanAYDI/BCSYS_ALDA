@@ -1,0 +1,180 @@
+OBJECT Report 50039 Batch Create EDI Sales CHANEL
+{
+  OBJECT-PROPERTIES
+  {
+    Date=22/04/16;
+    Time=11:28:34;
+    Modified=Yes;
+    Version List=AC1.00,2016;
+  }
+  PROPERTIES
+  {
+    CaptionML=[ENU=Batch Create EDI Sales for CHANEL;
+               FRA=TPL cr‚er vente EDI pour CHANEL];
+    ShowPrintStatus=No;
+    ProcessingOnly=Yes;
+    OnPreReport=BEGIN
+                  IF GUIALLOWED THEN
+                    Window.OPEN(Text000);
+                END;
+
+    OnPostReport=BEGIN
+                   IF GUIALLOWED THEN
+                     Window.CLOSE;
+                 END;
+
+  }
+  DATASET
+  {
+    { 5290;    ;DataItem;                    ;
+               DataItemTable=Table50001;
+               OnAfterGetRecord=BEGIN
+                                  EDISetup.GET("E.D.I. Log"."EDI Code");
+
+                                  EDIEntry.RESET;
+                                  IF EDIEntry.FINDLAST THEN
+                                    EntryNo := EDIEntry."Entry No."
+                                  ELSE
+                                    EntryNo := 1;
+                                END;
+                                 }
+
+    { 5291;    ;DataItem;                    ;
+               DataItemTable=Table18;
+               DataItemTableView=SORTING(No.)
+                                 WHERE(Dim. Cust. Grp. Code=CONST(CHANEL));
+               OnPreDataItem=BEGIN
+                               CLEAR(ColValue);
+                               ColValue[1] := "Sales Invoice Header".FIELDCAPTION("Sell-to Customer No.");
+                               ColValue[2] := "Sales Invoice Header".FIELDCAPTION("Sell-to Customer Name");
+                               ColValue[3] := "Sales Invoice Header".FIELDCAPTION("No.");
+                               ColValue[4] := "Sales Invoice Header".FIELDCAPTION("Posting Date");
+                               ColValue[5] := "Sales Invoice Header".FIELDCAPTION("Cost Center Code");
+                               ColValue[6] := "Sales Invoice Header".FIELDCAPTION(Amount);
+                               ColValue[7] := "Sales Invoice Header".FIELDCAPTION("Amount Including VAT");
+                               ColValue[8] := Text003;
+                               ColValue[9] := Text004;
+                               ColValue[10] := "Sales Invoice Header".FIELDCAPTION("Validated by");
+
+                               CreateEDIEntry('');
+                             END;
+
+               ReqFilterFields=No.;
+               CalcFields=Dim. Cust. Grp. Code }
+
+    { 5292;1   ;DataItem;                    ;
+               DataItemTable=Table112;
+               DataItemTableView=SORTING(Sell-to Customer No.,No.)
+                                 WHERE(Exported=CONST(No));
+               OnPreDataItem=BEGIN
+                               IF NOT EDISetup."Sales Invoice" THEN
+                                 CurrReport.BREAK;
+                             END;
+
+               OnAfterGetRecord=BEGIN
+                                  CLEAR(ColValue);
+                                  ColValue[1] := FORMAT("Sell-to Customer No.");
+                                  ColValue[2] := "Sell-to Customer Name";
+                                  ColValue[3] := FORMAT("No.");
+                                  ColValue[4] := FORMAT("Posting Date");
+                                  ColValue[5] := FORMAT("Cost Center Code");
+                                  ColValue[6] := FORMAT(Amount);
+                                  ColValue[7] := FORMAT("Amount Including VAT");
+                                  ColValue[8] := '20';
+                                  ColValue[9] := Text001;
+                                  ColValue[10] := "Validated by";
+
+                                  CreateEDIEntry('');
+                                END;
+
+               CalcFields=Amount,Amount Including VAT;
+               DataItemLink=Sell-to Customer No.=FIELD(No.) }
+
+    { 5293;1   ;DataItem;                    ;
+               DataItemTable=Table114;
+               DataItemTableView=SORTING(Sell-to Customer No.,No.)
+                                 WHERE(Exported=CONST(No));
+               OnPreDataItem=BEGIN
+                               IF NOT EDISetup."Sales Cr. Memo" THEN
+                                 CurrReport.BREAK;
+                             END;
+
+               OnAfterGetRecord=BEGIN
+                                  CLEAR(ColValue);
+                                  ColValue[1] := FORMAT("Sell-to Customer No.");
+                                  ColValue[2] :="Sell-to Customer Name";
+                                  ColValue[3] := FORMAT("No.");
+                                  ColValue[4] := FORMAT("Posting Date");
+                                  ColValue[5] := FORMAT("Cost Center Code");
+                                  ColValue[6] := FORMAT(Amount);
+                                  ColValue[7] := FORMAT("Amount Including VAT");
+                                  ColValue[8] := '20';
+                                  ColValue[9] := Text002;
+                                  ColValue[10] := "Validated by";
+
+                                  CreateEDIEntry('');
+                                END;
+
+               CalcFields=Amount,Amount Including VAT;
+               DataItemLink=Sell-to Customer No.=FIELD(No.) }
+
+  }
+  REQUESTPAGE
+  {
+    PROPERTIES
+    {
+    }
+    CONTROLS
+    {
+    }
+  }
+  LABELS
+  {
+  }
+  CODE
+  {
+    VAR
+      Text000@1180250009 : TextConst 'ENU=Counting records...;FRA=Comptage des enregistrements...';
+      Text001@1180250004 : TextConst 'FRA=Facture';
+      Text002@1180250005 : TextConst 'FRA=Avoir';
+      EDISetup@1180250010 : Record 50000;
+      EDIEntry@1180250007 : Record 50002;
+      Window@1180250006 : Dialog;
+      ColValue@1180250008 : ARRAY [10] OF Text[250];
+      Text003@1180250001 : TextConst 'FRA=TVA';
+      Text004@1180250002 : TextConst 'FRA=Facture/Avoir';
+      EntryNo@1180250003 : Integer;
+
+    PROCEDURE CreateEDIEntry@1180250008(LabelCode@1180250001 : Code[10]);
+    BEGIN
+      EntryNo += 1;
+      EDIEntry.INIT;
+      EDIEntry."Entry No." := EntryNo;
+      EDIEntry."User ID" := USERID;
+      EDIEntry."Imp./Exp. Date" := "E.D.I. Log"."Treatment Date";
+      EDIEntry."EDI Code" := "E.D.I. Log"."EDI Code";
+      EDIEntry.Error := TRUE;
+      EDIEntry.Handled := FALSE;
+      EDIEntry.INSERT;
+
+      EDIEntry."Field 1" := ColValue[1];
+      EDIEntry."Field 2" := ColValue[2];
+      EDIEntry."Field 3" := ColValue[3];
+      EDIEntry."Field 4" := ColValue[4];
+      EDIEntry."Field 5" := ColValue[5];
+      EDIEntry."Field 6" := ColValue[6];
+      EDIEntry."Field 7" := ColValue[7];
+      EDIEntry."Field 8" := ColValue[8];
+      EDIEntry."Field 9" := ColValue[9];
+      EDIEntry."Field 10" := ColValue[10];
+      EDIEntry.MODIFY;
+    END;
+
+    BEGIN
+    END.
+  }
+  RDLDATA
+  {
+  }
+}
+

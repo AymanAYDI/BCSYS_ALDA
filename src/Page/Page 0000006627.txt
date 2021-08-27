@@ -2,8 +2,9 @@ OBJECT Page 6627 Sales Return Order Archive
 {
   OBJECT-PROPERTIES
   {
-    Date=09/09/14;
-    Time=12:00:00;
+    Date=14/04/17;
+    Time=15:44:16;
+    Modified=Yes;
     Version List=NAVW18.00;
   }
   PROPERTIES
@@ -102,6 +103,9 @@ OBJECT Page 6627 Sales Return Order Archive
     { 10  ;2   ;Field     ;
                 SourceExpr="Sell-to Address 2" }
 
+    { 1000000000;2;Field  ;
+                SourceExpr="Sell-to County" }
+
     { 12  ;2   ;Field     ;
                 CaptionML=[ENU=Sell-to Post Code/City;
                            FRA=CP/Ville donneur d'ordre];
@@ -146,6 +150,53 @@ OBJECT Page 6627 Sales Return Order Archive
                             Doc. No. Occurrence=FIELD(Doc. No. Occurrence),
                             Version No.=FIELD(Version No.);
                 PagePartID=Page6628 }
+
+    { 1000000006;1;Group  ;
+                CaptionML=[ENU=Defence Office;
+                           FRA=D‚fense Bureau];
+                GroupType=Group }
+
+    { 1000000005;2;Field  ;
+                CaptionML=[ENU=NUM_SUBSEQUENT;
+                           FRA=Nø du march‚ subs‚quent];
+                SourceExpr=NUM_SUBSEQUENT;
+                Editable=false }
+
+    { 1000000004;2;Field  ;
+                CaptionML=[ENU=REF_ENGAGEMENT;
+                           FRA=R‚f‚rence engagement];
+                SourceExpr=REF_ENGAGEMENT;
+                Editable=false }
+
+    { 1000000003;2;Field  ;
+                CaptionML=[ENU=NUM_EJ;
+                           FRA=Nø d'engagement juridique];
+                SourceExpr=NUM_EJ;
+                Editable=false }
+
+    { 1000000002;2;Field  ;
+                CaptionML=[ENU=NUM_EJ;
+                           FRA=Nø de transaction];
+                SourceExpr=TRS_ID;
+                Editable=false }
+
+    { 1000000001;2;Field  ;
+                CaptionML=[ENU=TRS_ID_AUTORISATION;
+                           FRA=Nø de paiement INGENICO];
+                SourceExpr=TRS_ID_AUTORISATION;
+                Editable=false }
+
+    { 1000000007;2;Field  ;
+                CaptionML=[ENU=CODE_WCP;
+                           FRA=Nø Client g‚n‚r‚ par le site];
+                SourceExpr=CODE_WCP;
+                Editable=false }
+
+    { 1000000008;2;Field  ;
+                CaptionML=[ENU=Market Nø;
+                           FRA=Code march‚];
+                SourceExpr=NUM_MARKET;
+                Editable=false }
 
     { 1905885101;1;Group  ;
                 CaptionML=[ENU=Invoicing;

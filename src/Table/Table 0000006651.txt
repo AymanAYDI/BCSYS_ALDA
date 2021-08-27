@@ -4,6 +4,7 @@ OBJECT Table 6651 Return Shipment Line
   {
     Date=22/12/15;
     Time=12:00:00;
+    Modified=Yes;
     Version List=NAVW19.00.00.44365;
   }
   PROPERTIES
@@ -317,6 +318,20 @@ OBJECT Table 6651 Return Shipment Line
     { 6608;   ;Return Reason Code  ;Code10        ;TableRelation="Return Reason";
                                                    CaptionML=[ENU=Return Reason Code;
                                                               FRA=Code motif retour] }
+    { 50005;  ;Cross-Reference No. of Vendor;Code20;
+                                                   OnValidate=VAR
+                                                                ReturnedCrossRef@1000 : Record 5717;
+                                                              BEGIN
+                                                              END;
+
+                                                   CaptionML=[ENU=Cross-Reference No. of Vendor;
+                                                              FRA=R‚f. ext. du fournisseur pour l'EDI];
+                                                   Description=AC1.00;
+                                                   Editable=No }
+    { 50006;  ;Order Reference Customer;Text35    ;CaptionML=[ENU=Order Reference Customer;
+                                                              FRA=R‚f‚rence commande client];
+                                                   Description=AC1.00;
+                                                   Editable=No }
   }
   KEYS
   {

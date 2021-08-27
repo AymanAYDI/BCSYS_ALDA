@@ -1,0 +1,159 @@
+OBJECT Page 50083 Access Control By Entity
+{
+  OBJECT-PROPERTIES
+  {
+    Date=23/03/16;
+    Time=18:51:24;
+    Modified=Yes;
+    Version List=;
+  }
+  PROPERTIES
+  {
+    SourceTable=Table50015;
+    DelayedInsert=Yes;
+    PageType=List;
+    SourceTableTemporary=Yes;
+    OnOpenPage=BEGIN
+                 UpdateControls
+               END;
+
+    OnNewRecord=BEGIN
+                  "Dimension Code Filter" := DefaultDimCode;
+                END;
+
+  }
+  CONTROLS
+  {
+    { 1000000000;0;Container;
+                ContainerType=ContentArea }
+
+    { 1000000001;1;Group  ;
+                Name=Group;
+                GroupType=Repeater }
+
+    { 1000000002;2;Field  ;
+                SourceExpr="Role ID";
+                Visible=IsVisibleRole;
+                Enabled=IsVisibleRole;
+                Editable=IsVisibleRole }
+
+    { 1000000003;2;Field  ;
+                SourceExpr="Company Name";
+                Visible=IsVisibleCompany;
+                Enabled=IsVisibleCompany;
+                Editable=IsVisibleCompany }
+
+    { 1000000005;2;Field  ;
+                SourceExpr="Role Name";
+                Visible=IsVisibleRole;
+                Enabled=IsVisibleRole;
+                Editable=IsVisibleRole }
+
+    { 1000000006;2;Field  ;
+                SourceExpr="Entity Code";
+                Visible=IsVisibleEntity;
+                Enabled=IsVisibleEntity;
+                Editable=IsVisibleEntity }
+
+  }
+  CODE
+  {
+    VAR
+      ViewMode@1000000000 : 'AccessControl,Company,Entity,Role';
+      IsVisibleCompany@1000000001 : Boolean INDATASET;
+      IsVisibleRole@1000000002 : Boolean INDATASET;
+      IsVisibleEntity@1000000003 : Boolean INDATASET;
+      DefaultDimCode@1000000004 : Code[20];
+
+    LOCAL PROCEDURE UpdateControls@1000000002();
+    BEGIN
+      CASE ViewMode OF
+        ViewMode::AccessControl:
+        BEGIN
+          IsVisibleCompany := TRUE;
+          IsVisibleRole := TRUE;
+          IsVisibleEntity := TRUE;
+        END;
+
+        ViewMode::Role:
+        BEGIN
+          IsVisibleCompany := FALSE;
+          IsVisibleRole := TRUE;
+          IsVisibleEntity := FALSE;
+        END;
+
+        ViewMode::Entity:
+        BEGIN
+          IsVisibleCompany := FALSE;
+          IsVisibleRole := FALSE;
+          IsVisibleEntity := TRUE;
+        END;
+
+        ViewMode::Company:
+        BEGIN
+          IsVisibleCompany := TRUE;
+          IsVisibleRole := FALSE;
+          IsVisibleEntity := FALSE;
+        END;
+      END;
+    END;
+
+    PROCEDURE GetCaption@1000000004() : Text;
+    BEGIN
+      CALCFIELDS("User Name");
+
+      CASE ViewMode OF
+        ViewMode::AccessControl:
+          EXIT("User Name");
+
+        ViewMode::Role:
+          EXIT(STRSUBSTNO('%1 - %2', "User Name", FIELDCAPTION("Role ID")));
+
+        ViewMode::Entity:
+          EXIT(STRSUBSTNO('%1 - %2', "User Name", FIELDCAPTION("Entity Code")));
+
+        ViewMode::Company:
+          EXIT(STRSUBSTNO('%1 - %2', "User Name", FIELDCAPTION("Company Name")));
+
+      END;
+    END;
+
+    PROCEDURE SetMode@1000000000(_mode@1000000000 : 'AccessControl,Company,Entity,Role');
+    BEGIN
+      ViewMode := _mode;
+    END;
+
+    PROCEDURE SetBuffer@1000000001(VAR Buffer@1000000000 : Record 50015);
+    BEGIN
+      RESET;
+      DELETEALL;
+      IF Buffer.FIND('-') THEN
+      REPEAT
+        Rec := Buffer;
+        INSERT;
+      UNTIL Buffer.NEXT = 0;
+    END;
+
+    PROCEDURE GetBuffer@1000000003(VAR Buffer@1000000000 : Record 50015);
+    BEGIN
+      WITH Buffer DO BEGIN
+        RESET;
+        DELETEALL;
+        IF Rec.FIND('-') THEN
+        REPEAT
+          Buffer := Rec;
+          INSERT;
+        UNTIL Rec.NEXT = 0;
+      END;
+    END;
+
+    PROCEDURE SetDefaultDimCode@1000000005(_DimCode@1000000000 : Code[20]);
+    BEGIN
+      DefaultDimCode := _DimCode;
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

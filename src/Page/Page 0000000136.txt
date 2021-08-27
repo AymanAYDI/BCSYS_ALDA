@@ -2,8 +2,9 @@ OBJECT Page 136 Posted Purchase Receipt
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
+    Date=26/04/16;
+    Time=16:36:02;
+    Modified=Yes;
     Version List=NAVW19.00;
   }
   PROPERTIES
@@ -180,6 +181,10 @@ OBJECT Page 136 Posted Purchase Receipt
 
     { 80  ;2   ;Field     ;
                 SourceExpr="Responsibility Center";
+                Editable=FALSE }
+
+    { 1000000000;2;Field  ;
+                SourceExpr="Micro Order No.";
                 Editable=FALSE }
 
     { 44  ;1   ;Part      ;

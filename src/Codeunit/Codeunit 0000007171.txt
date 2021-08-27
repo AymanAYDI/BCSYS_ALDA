@@ -4,6 +4,7 @@ OBJECT Codeunit 7171 Sales Info-Pane Management
   {
     Date=15/09/15;
     Time=12:00:00;
+    Modified=Yes;
     Version List=NAVW19.00;
   }
   PROPERTIES
@@ -376,6 +377,33 @@ OBJECT Codeunit 7171 Sales Info-Pane Management
       Item.SETRANGE("Variant Filter",SalesLine."Variant Code");
       Item.SETRANGE("Location Filter",SalesLine."Location Code");
       Item.SETRANGE("Drop Shipment Filter",FALSE);
+    END;
+
+    PROCEDURE CalcInventory@1180250001(SalesLine@1180250001 : Record 37) : Decimal;
+    BEGIN
+      //ACBDU 170413D.Begin
+      IF GetItem(SalesLine) THEN BEGIN
+        Item.CALCFIELDS(Inventory);
+        EXIT(Item.Inventory);
+      END ELSE
+        EXIT(0);
+      //ACBDU 170413D.End
+    END;
+
+    PROCEDURE LookupItemLdgEntry@1180250002(VAR SalesLine@1000 : Record 37);
+    VAR
+      ItemLdgEntry@1180250001 : Record 32;
+    BEGIN
+      //ACBDU 170413D.Begin
+      IF GetItem(SalesLine) THEN BEGIN
+        ItemLdgEntry.RESET;
+        ItemLdgEntry.FILTERGROUP(2);
+        ItemLdgEntry.SETCURRENTKEY("Item No.");
+        ItemLdgEntry.SETRANGE("Item No.",SalesLine."No.");
+        ItemLdgEntry.FILTERGROUP(1);
+        PAGE.RUNMODAL(PAGE::"Item Ledger Entries",ItemLdgEntry);
+      END;
+      //ACBDU 170413D.End
     END;
 
     BEGIN

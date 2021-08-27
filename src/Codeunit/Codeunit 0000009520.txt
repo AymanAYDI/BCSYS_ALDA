@@ -2,9 +2,10 @@ OBJECT Codeunit 9520 Mail Management
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
-    Version List=NAVW19.00;
+    Date=11/05/16;
+    Time=16:03:46;
+    Modified=Yes;
+    Version List=NAVW19.00,BC6AUTOINV;
   }
   PROPERTIES
   {
@@ -58,6 +59,9 @@ OBJECT Codeunit 9520 Mail Management
       WITH TempEmailItem DO BEGIN
         SMTPMail.CreateMessage("From Name","From Address","Send to",Subject,GetBodyText,NOT "Plaintext Formatted");
         SMTPMail.AddAttachment("Attachment File Path","Attachment Name");
+        //BC6>>
+        SMTPMail.AddAttachment("Attachment2 File Path","Attachment2 Name");
+        //BC6<<
         IF "Send CC" <> '' THEN
           SMTPMail.AddCC("Send CC");
         IF "Send BCC" <> '' THEN
@@ -279,6 +283,19 @@ OBJECT Codeunit 9520 Mail Management
       WITH TempEmailItem DO
         IF "Attachment File Path" <> '' THEN
           FileManagement.DownloadHandler("Attachment File Path",SaveFileDialogTitleMsg,'',SaveFileDialogFilterMsg,"Attachment Name");
+    END;
+
+    PROCEDURE SendMailOrExit@1000000000(TempEmailItem@1002 : TEMPORARY Record 9500;HideMailDialog@1000 : Boolean) : Boolean;
+    VAR
+      MailManagement@1001 : Codeunit 9520;
+    BEGIN
+      //BC6>>
+      MailManagement.InitializeFrom(HideMailDialog,TRUE);
+      IF MailManagement.IsEnabled THEN BEGIN
+        IF MailManagement.Send(TempEmailItem) THEN
+          EXIT(TRUE);
+      END;
+      EXIT(FALSE);
     END;
 
     BEGIN

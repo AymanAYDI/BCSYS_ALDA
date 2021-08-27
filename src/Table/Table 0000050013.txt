@@ -1,0 +1,133 @@
+OBJECT Table 50013 IMPORT Purchase Line Allowance
+{
+  OBJECT-PROPERTIES
+  {
+    Date=28/01/16;
+    Time=10:30:45;
+    Modified=Yes;
+    Version List=GIM;
+  }
+  PROPERTIES
+  {
+    OnInsert=BEGIN
+
+               CASE "GIM Document Type" OF
+                 '380' : "Document Type" := "Document Type"::Invoice;
+                 '381' : "Document Type" := "Document Type"::"Credit Memo";
+               END;
+
+               "Entry No." := 0;
+             END;
+
+    OnDelete=VAR
+               PurchCommentLine@1001 : Record 43;
+             BEGIN
+             END;
+
+    CaptionML=[ENU=Allowance Purchase Line;
+               FRA=Charge ligne achat];
+    PasteIsValid=No;
+    LookupPageID=Page518;
+    DrillDownPageID=Page518;
+  }
+  FIELDS
+  {
+    { 1   ;   ;Document Type       ;Option        ;CaptionML=[ENU=Document Type;
+                                                              FRA=Type document];
+                                                   OptionCaptionML=[ENU=Quote,Order,Invoice,Credit Memo,Blanket Order,Return Order;
+                                                                    FRA=Devis,Commande,Facture,Avoir,Commande ouverte,Retour];
+                                                   OptionString=Quote,Order,Invoice,Credit Memo,Blanket Order,Return Order }
+    { 3   ;   ;Document No.        ;Code20        ;TableRelation="IMPORT Purchase Line"."Document No.";
+                                                   CaptionML=[ENU=Document No.;
+                                                              FRA=Nø document] }
+    { 4   ;   ;Line No.            ;Integer       ;TableRelation="IMPORT Purchase Line"."Line No.";
+                                                   CaptionML=[ENU=Line No.;
+                                                              FRA=Nø ligne] }
+    { 5   ;   ;Entry No.           ;Integer       ;AutoIncrement=Yes }
+    { 6   ;   ;Type                ;Option        ;CaptionML=[ENU=Type;
+                                                              FRA=Type];
+                                                   OptionCaptionML=[ENU=" ,G/L Account,Item,,Fixed Asset,Charge (Item)";
+                                                                    FRA=" ,Compte g‚n‚ral,Article,,Immobilisation,Frais annexes"];
+                                                   OptionString=[ ,G/L Account,Item,,Fixed Asset,Charge (Item)] }
+    { 7   ;   ;No.                 ;Code20        ;TableRelation=IF (Type=CONST(" ")) "Standard Text"
+                                                                 ELSE IF (Type=CONST(G/L Account)) "G/L Account"
+                                                                 ELSE IF (Type=CONST(Item)) Item
+                                                                 ELSE IF (Type=CONST(3)) Resource
+                                                                 ELSE IF (Type=CONST(Fixed Asset)) "Fixed Asset"
+                                                                 ELSE IF (Type=CONST("Charge (Item)")) "Item Charge";
+                                                   OnValidate=VAR
+                                                                ICPartner@1000 : Record 413;
+                                                                ItemCrossReference@1001 : Record 5717;
+                                                                PrepmtMgt@1002 : Codeunit 441;
+                                                              BEGIN
+                                                              END;
+
+                                                   CaptionML=[ENU=No.;
+                                                              FRA=Nø] }
+    { 8   ;   ;Amount              ;Decimal        }
+    { 65002;  ;GIM Document Type   ;Code10        ;TableRelation="IMPORT Purchase Line"."GIM Document Type" }
+    { 65003;  ;ID Line             ;Integer       ;TableRelation="IMPORT Purchase Line"."ID Line";
+                                                   ValidateTableRelation=No;
+                                                   TestTableRelation=No;
+                                                   CaptionML=[ENU=ID from file;
+                                                              FRA=ID du fichier] }
+  }
+  KEYS
+  {
+    {    ;GIM Document Type,Document No.,Line No.,ID Line,Entry No.;
+                                                   MaintainSIFTIndex=No;
+                                                   Clustered=Yes }
+    {    ;Document Type,Document No.,Line No.,ID Line,No.;
+                                                   SumIndexFields=Amount }
+  }
+  FIELDGROUPS
+  {
+  }
+  CODE
+  {
+    VAR
+      Text000@1000 : TextConst 'ENU=You cannot rename a %1.;FRA=Vous ne pouvez pas renommer %1.';
+      Text001@1001 : TextConst 'ENU=You cannot change %1 because the order line is associated with sales order %2.;FRA=Vous ne pouvez pas modifier %1 car la commande est associ‚e … la commande vente %2.';
+      Text002@1002 : TextConst 'ENU=Prices including VAT cannot be calculated when %1 is %2.;FRA=Les prix TTC ne peuvent pas ˆtre calcul‚s quand %1 est identique … %2.';
+      Text003@1003 : TextConst 'ENU=You cannot purchase resources.;FRA=Vous ne pouvez pas acheter de ressources.';
+      Text004@1004 : TextConst 'ENU=must not be less than %1;FRA=ne doit pas ˆtre inf‚rieur(e) … %1';
+      Text006@1005 : TextConst 'ENU=You cannot invoice more than %1 units.;FRA=Vous ne pouvez pas facturer plus de %1 unit‚(s).';
+      Text007@1006 : TextConst 'ENU=You cannot invoice more than %1 base units.;FRA=Vous ne pouvez pas facturer plus de %1 unit‚(s) de base.';
+      Text008@1007 : TextConst 'ENU=You cannot receive more than %1 units.;FRA=Vous ne pouvez pas recevoir plus de %1 unit‚(s).';
+      Text009@1008 : TextConst 'ENU=You cannot receive more than %1 base units.;FRA=Vous ne pouvez pas recevoir plus de %1 unit‚(s) de base.';
+      Text010@1009 : TextConst 'ENU=You cannot change %1 when %2 is %3.;FRA=Vous ne pouvez pas modifier %1 si %2 est %3.';
+      Text011@1010 : TextConst 'ENU=" must be 0 when %1 is %2";FRA=" doit ˆtre 0 quand %1 est %2"';
+      Text012@1011 : TextConst 'ENU="must not be specified when %1 = %2";FRA="ne doit pas ˆtre sp‚cifi‚(e) quand %1 = %2"';
+      Text014@1012 : TextConst 'ENU=Change %1 from %2 to %3?;FRA=Remplacer %2 par %3 dans le champ %1 ?';
+      Text016@1014 : TextConst 'ENU="%1 is required for %2 = %3.";FRA="%1 requis(e) lorsque %2 = %3."';
+      Text017@1015 : TextConst 'ENU=\The entered information will be disregarded by warehouse operations.;FRA=\Les informations entr‚es seront ignor‚es par les op‚rations de distribution.';
+      Text018@1016 : TextConst 'ENU=%1 %2 is earlier than the work date %3.;FRA=La %1 %2 est ant‚rieure … la date de travail %3.';
+      Text020@1018 : TextConst 'ENU=You cannot return more than %1 units.;FRA=Vous ne pouvez pas retourner plus de %1 unit‚(s).';
+      Text021@1019 : TextConst 'ENU=You cannot return more than %1 base units.;FRA=Vous ne pouvez pas retourner plus de %1 unit‚(s) de base.';
+      Text022@1020 : TextConst 'ENU=You cannot change %1, if item charge is already posted.;FRA=Vous ne pouvez pas modifier %1 si les frais annexes ont ‚t‚ valid‚s.';
+      Text023@1072 : TextConst 'ENU=You cannot change the %1 when the %2 has been filled in.;FRA=Vous ne pouvez pas modifier le champ %1 lorsque le champ %2 a ‚t‚ renseign‚.';
+      Text029@1077 : TextConst 'ENU=must be positive.;FRA=doit ˆtre de signe positif.';
+      Text030@1076 : TextConst 'ENU=must be negative.;FRA=doit ˆtre de signe n‚gatif.';
+      Text031@1056 : TextConst 'ENU=You cannot define item tracking on this line because it is linked to production order %1.;FRA=Vous ne pouvez pas d‚finir de tra‡abilit‚ pour cette ligne car elle est li‚e … l''O.F. %1.';
+      Text032@1017 : TextConst 'ENU=%1 must not be greater than %2.;FRA=%1 ne doit pas ˆtre sup‚rieur(e) … %2.';
+      Text033@1078 : TextConst 'ENU="Warehouse ";FRA="Entrep“t "';
+      Text034@1079 : TextConst 'ENU="Inventory ";FRA="Stocks "';
+      Text035@1048 : TextConst 'ENU=%1 units for %2 %3 have already been returned or transferred. Therefore, only %4 units can be returned.;FRA=%1 unit‚s pour %2 %3 ont d‚j… ‚t‚ renvoy‚es ou transf‚r‚es. Seules %4 unit‚s peuvent donc ˆtre renvoy‚es.';
+      Text036@1081 : TextConst 'ENU=You must cancel the existing approval for this document to be able to change the %1 field.;FRA=Pour pouvoir modifier le champ %1, vous devez annuler l''approbation existante pour ce document.';
+      Text037@1082 : TextConst 'ENU=cannot be %1.;FRA=ne peut pas ˆtre %1.';
+      Text038@1083 : TextConst 'ENU=cannot be less than %1.;FRA=ne peut pas ˆtre inf‚rieur(e) … %1.';
+      Text039@1084 : TextConst 'ENU=cannot be more than %1.;FRA=ne peut pas ˆtre sup‚rieur(e) … %1.';
+      Text99000000@1021 : TextConst 'ENU=You cannot change %1 when the purchase order is associated to a production order.;FRA=Vous ne pouvez pas modifier %1 lorsque la commande achat est associ‚e … un O.F.';
+      Text042@1088 : TextConst 'ENU=You cannot return more than the %1 units that you have received for %2 %3.;FRA=Vous ne pouvez pas retourner plus que les %1 unit‚s que vous avez re‡ues pour %2 %3.';
+      Text043@1089 : TextConst 'ENU=must be positive when %1 is not 0.;FRA=doit ˆtre de signe positif si %1 est diff‚rent de 0.';
+      Text044@1080 : TextConst 'ENU=You cannot change %1 because this purchase order is associated with %2 %3.;FRA=Impossible de modifier %1 car cette commande achat est associ‚e … %2 %3.';
+      Text050@1000000002 : TextConst 'ENU=There is more than one receiving line for item %1.;FRA=Il y a plus d''une ligne de r‚ception pour l''article %1.';
+      Text051@1000000003 : TextConst 'ENU=No receipt was found for this line;FRA=Aucune Ligne r‚ception n''a ‚t‚ trouv‚e pour cette ligne';
+      Text052@1000000004 : TextConst 'ENU=Receipt %1 is already affected.;FRA=La r‚ception %1 est d‚j… affect‚e.';
+      Text053@1180250001 : TextConst 'ENU=No receipt was found for this line;FRA=Aucune Entˆte r‚ception n''a ‚t‚ trouv‚e pour cette ligne';
+
+    BEGIN
+    END.
+  }
+}
+

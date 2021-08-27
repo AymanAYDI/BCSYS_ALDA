@@ -2,12 +2,14 @@ OBJECT Table 5804 Avg. Cost Adjmt. Entry Point
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
+    Date=22/03/16;
+    Time=17:56:44;
+    Modified=Yes;
     Version List=NAVW19.00;
   }
   PROPERTIES
   {
+    Permissions=TableData 50=r;
     OnInsert=BEGIN
                UpdateItem;
              END;
@@ -200,9 +202,9 @@ OBJECT Table 5804 Avg. Cost Adjmt. Entry Point
     BEGIN
       FiscalYearAccPeriod.SETRANGE("New Fiscal Year",TRUE);
       FiscalYearAccPeriod.SETRANGE("Starting Date",0D,ValuationDate);
-      IF NOT FiscalYearAccPeriod.FIND('+') THEN BEGIN
+      IF NOT FiscalYearAccPeriod.FINDLAST THEN BEGIN
         FiscalYearAccPeriod.SETRANGE("Starting Date");
-        FiscalYearAccPeriod.FIND('-');
+        FiscalYearAccPeriod.FINDSET;
       END;
     END;
 

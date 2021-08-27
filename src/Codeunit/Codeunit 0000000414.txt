@@ -3,7 +3,8 @@ OBJECT Codeunit 414 Release Sales Document
   OBJECT-PROPERTIES
   {
     Date=15/09/15;
-    Time=12:00:00;
+    Time=15:46:46;
+    Modified=Yes;
     Version List=NAVW19.00;
   }
   PROPERTIES
@@ -48,6 +49,12 @@ OBJECT Codeunit 414 Release Sales Document
                 UNTIL SalesLine.NEXT = 0;
               SalesLine.SETFILTER(Type,'>0');
             END;
+            // ACBDU 100314D.Begin
+            ToPicking := FALSE;
+            IF ("Document Type" = "Document Type"::Order) AND
+               ("Order Type" = "Order Type"::DD) THEN
+              CheckAvailability(SalesLine);
+            // ACBDU 100314D.End
             SalesLine.SETRANGE("Drop Shipment",FALSE);
             NotOnlyDropShipment := SalesLine.FINDFIRST;
             SalesLine.RESET;
@@ -69,6 +76,12 @@ OBJECT Codeunit 414 Release Sales Document
               EXIT;
             END
               ;
+              //AC1.00 BEGIN
+              CALCFIELDS(Comment);
+              IF Comment THEN
+                IF NOT CONFIRM(Text50000) THEN
+                  EXIT;
+              //AC1.00 END
             Status := Status::Released;
 
             SalesLine.SetSalesHeader(Rec);
@@ -85,6 +98,11 @@ OBJECT Codeunit 414 Release Sales Document
               IF "Document Type" IN ["Document Type"::Order,"Document Type"::"Return Order"] THEN
                 WhseSalesRelease.Release(Rec);
 
+            // ACBDU 100314D.Begin
+            IF ("Document Type" = "Document Type"::Order) AND
+               ToPicking THEN
+              Send2Mail("No.");
+            // ACBDU 100314D.End
             OnAfterReleaseSalesDoc(Rec);
           END;
 
@@ -100,6 +118,10 @@ OBJECT Codeunit 414 Release Sales Document
       Text003@1003 : TextConst 'ENU=The approval process must be cancelled or completed to reopen this document.;FRA=Le processus d''approbation doit ˆtre annul‚ ou termin‚ pour rouvrir ce document.';
       Text004@1007 : TextConst 'ENU=There are unposted prepayment amounts on the document of type %1 with the number %2.;FRA=Il existe des montants acompte non valid‚s sur le document de type %1 portant le num‚ro %2.';
       Text005@1006 : TextConst 'ENU=There are unpaid prepayment invoices that are related to the document of type %1 with the number %2.;FRA=Il existe des factures d''acompte impay‚es li‚es au document de type %1 portant le num‚ro %2.';
+      Text50000@1180250001 : TextConst 'FRA=Vous ˆtes sur le point de lancer une commande avec des commentaires. Voulez-vous continuer ?';
+      Text50001@1180250002 : TextConst 'FRA=Voulez-vous utiliser le stock pour l''article nø%1 %2?';
+      Text50002@1180250003 : TextConst 'FRA=Commande nø%1 … pr‚parer';
+      ToPicking@1180250004 : Boolean;
 
     PROCEDURE Reopen@1(VAR SalesHeader@1000 : Record 36);
     BEGIN
@@ -202,7 +224,95 @@ OBJECT Codeunit 414 Release Sales Document
     BEGIN
     END;
 
+    PROCEDURE CheckAvailability@1180250001(VAR ForSalesLine@1180250001 : Record 37);
+    VAR
+      Item@1180250004 : Record 27;
+      SalesLine@1180250003 : Record 37;
+      QtyAvailability@1180250002 : Decimal;
     BEGIN
+      // ACBDU 100314D.Begin
+      ForSalesLine.SETRANGE(Type,ForSalesLine.Type::Item);
+      IF ForSalesLine.FINDSET THEN
+        REPEAT
+          Item.GET(ForSalesLine."No.");
+          IF Item."Check Availability on Order" THEN BEGIN
+            QtyAvailability := CalcAvailability(ForSalesLine);
+            IF (QtyAvailability >= ForSalesLine.Quantity) AND
+               (ForSalesLine."Vendor No. for EDI Sending" <> '') THEN
+              IF CONFIRM(STRSUBSTNO(Text50001,ForSalesLine."No.",ForSalesLine.Description)) THEN BEGIN
+                SalesLine := ForSalesLine;
+                SalesLine."Vendor No. for EDI Sending" := '';
+                SalesLine.MODIFY;
+                ToPicking := TRUE;
+              END;
+            END;
+        UNTIL ForSalesLine.NEXT = 0;
+      // ACBDU 100314D.End
+    END;
+
+    PROCEDURE CalcAvailability@18(VAR ForTmpSalesLine@1000 : Record 37) : Decimal;
+    VAR
+      Item@1180250002 : Record 27;
+      AvailableToPromise@1001 : Codeunit 5790;
+      GrossRequirement@1002 : Decimal;
+      ScheduledReceipt@1003 : Decimal;
+      PeriodType@1006 : 'Day,Week,Month,Quarter,Year';
+      AvailabilityDate@1004 : Date;
+      LookaheadDateformula@1005 : DateFormula;
+      Found@1180250001 : Boolean;
+    BEGIN
+      // ACBDU 100314D.Begin
+      WITH Item DO BEGIN
+        IF (ForTmpSalesLine.Type <> ForTmpSalesLine.Type::Item) OR (ForTmpSalesLine."No." = '') THEN
+          Found := FALSE;
+        IF ForTmpSalesLine."No." <> "No." THEN
+          Found := GET(ForTmpSalesLine."No.")
+        ELSE
+          Found := FALSE;
+      END;
+
+      IF Found THEN BEGIN
+        IF ForTmpSalesLine."Shipment Date" <> 0D THEN
+          AvailabilityDate := ForTmpSalesLine."Shipment Date"
+        ELSE
+          AvailabilityDate := WORKDATE;
+
+        Item.RESET;
+        Item.SETRANGE("Date Filter",0D,AvailabilityDate);
+        Item.SETRANGE("Variant Filter",ForTmpSalesLine."Variant Code");
+        Item.SETRANGE("Location Filter",ForTmpSalesLine."Location Code");
+        Item.SETRANGE("Drop Shipment Filter",FALSE);
+
+        EXIT(
+          AvailableToPromise.QtyAvailabletoPromise(
+            Item,
+            GrossRequirement,
+            ScheduledReceipt,
+            AvailabilityDate,
+            PeriodType,
+            LookaheadDateformula));
+      END ELSE
+        EXIT(0);
+      // ACBDU 100314D.End
+    END;
+
+    PROCEDURE Send2Mail@1180250002(OrderNo@1180250002 : Code[20]);
+    VAR
+      SMTPMail@1180250001 : Codeunit 400;
+    BEGIN
+      // ACBDU 100314D.Begin
+      CLEAR(SMTPMail);
+      SMTPMail.CreateMessage(COMPANYNAME,'rudy-villain@alda-bureau.com','svce-magasin@alda-bureau.com;marife-desrues@alda-bureau.com',
+        STRSUBSTNO(Text50002,OrderNo),STRSUBSTNO(Text50002,OrderNo),FALSE);
+      SMTPMail.Send();
+      // ACBDU 100314D.End
+    END;
+
+    BEGIN
+    {
+      AC1.00 Ajout C/AL onRun();
+                   Constant Text50000
+    }
     END.
   }
 }

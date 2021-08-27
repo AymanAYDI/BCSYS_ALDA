@@ -2,8 +2,9 @@ OBJECT Codeunit 5810 Change Average Cost Setting
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
+    Date=02/01/19;
+    Time=17:45:58;
+    Modified=Yes;
     Version List=NAVW19.00;
   }
   PROPERTIES

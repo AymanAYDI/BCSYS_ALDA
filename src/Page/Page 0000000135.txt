@@ -2,9 +2,10 @@ OBJECT Page 135 Posted Sales Cr. Memo Subform
 {
   OBJECT-PROPERTIES
   {
-    Date=22/12/15;
-    Time=12:00:00;
-    Version List=NAVW19.00.00.44365;
+    Date=20/10/16;
+    Time=14:30:20;
+    Modified=Yes;
+    Version List=NAVW19.00.00.44365,AB6.TAH,001,ALDA;
   }
   PROPERTIES
   {
@@ -94,6 +95,12 @@ OBJECT Page 135 Posted Sales Cr. Memo Subform
                 SourceExpr="Cross-Reference No.";
                 Visible=FALSE }
 
+    { 1000000000;2;Field  ;
+                SourceExpr="Cross-Reference No. of Vendor" }
+
+    { 1180250004;2;Field  ;
+                SourceExpr="HS Code" }
+
     { 22  ;2   ;Field     ;
                 SourceExpr="IC Partner Code";
                 Visible=FALSE }
@@ -132,6 +139,12 @@ OBJECT Page 135 Posted Sales Cr. Memo Subform
                 BlankZero=Yes;
                 SourceExpr="Line Amount" }
 
+    { 1180250001;2;Field  ;
+                SourceExpr="Ecotaxe Unitaire" }
+
+    { 1180250002;2;Field  ;
+                SourceExpr="Montant Ecotaxe" }
+
     { 16  ;2   ;Field     ;
                 BlankZero=Yes;
                 SourceExpr="Line Discount %" }
@@ -166,6 +179,12 @@ OBJECT Page 135 Posted Sales Cr. Memo Subform
     { 70  ;2   ;Field     ;
                 SourceExpr="Shortcut Dimension 2 Code";
                 Visible=FALSE }
+
+    { 1180250005;2;Field  ;
+                SourceExpr="Country Dimension Code" }
+
+    { 1180250003;2;Field  ;
+                SourceExpr="External Line No." }
 
     { 29  ;1   ;Group     ;
                 GroupType=Group }

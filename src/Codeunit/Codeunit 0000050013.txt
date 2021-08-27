@@ -1,0 +1,569 @@
+OBJECT Codeunit 50013 DataFlowMgt
+{
+  OBJECT-PROPERTIES
+  {
+    Date=19/05/16;
+    Time=17:39:54;
+    Modified=Yes;
+    Version List=BC6AUTOINV;
+  }
+  PROPERTIES
+  {
+    TableNo=50018;
+    OnRun=BEGIN
+            IF "Object ID to Run" <> 0 THEN
+              CASE("Object Type to Run") OF
+                "Object Type to Run"::Codeunit:
+                  IF NOT CODEUNIT.RUN("Object ID to Run", Rec) THEN BEGIN
+                    SetError(GETLASTERRORTEXT);
+                  END;
+
+                "Object Type to Run"::Report:
+                  REPORT.RUN("Object ID to Run", FALSE, FALSE, Rec);
+              END; //CASE
+          END;
+
+  }
+  CODE
+  {
+    VAR
+      GroupMode@1000000002 : 'ByOrders,BySellToCust,ByCustReference,ShipmentCount';
+      GroupSubMode@1000000003 : ' ,ByYourReference';
+      SalesOrder@1000000004 : Record 36;
+      OneShipment@1000000005 : TextConst 'ENU=1 Shipment by Orders;FRA=1 exp‚dition par commande. … ˆ Š';
+      MoreOneShipment@1000000006 : TextConst 'ENU=2 or more Shipments By Orders.;FRA=2 ou plus. exp. par commande.';
+      StateIndicator@1000000007 : TEMPORARY Record 50005;
+      SalesShptHeader@1000000001 : Record 110;
+      SalesShptLine@1000000000 : Record 111;
+      UntilDate@1000000008 : Date;
+
+    PROCEDURE FindSalesShptLines@1102601001(VAR TempSalesShptLine@1000000004 : TEMPORARY Record 111;_BillToCust@1000000000 : Record 18;VAR StateIndicator@1000000003 : Record 50005) : Boolean;
+    VAR
+      SalesOrderLine@1000000006 : Record 37;
+      SalesLine@1000000001 : Record 37;
+      SalesShptLine@1000000005 : Record 111;
+      SalesShptLine2@1000000002 : Record 111;
+      i@1000000007 : Integer;
+      tot@1000000008 : Integer;
+      DataFlow@1000000009 : Record 50014;
+    BEGIN
+      TempSalesShptLine.RESET;
+      TempSalesShptLine.DELETEALL;
+      CLEAR(SalesShptLine);
+      SalesShptLine.SETFILTER("Qty. Shipped Not Invoiced",'<>0');
+      SalesShptLine.SETRANGE("Bill-to Customer No.", _BillToCust."No.");
+      StateIndicator.Open();
+      i := 0;
+      tot := SalesShptLine.COUNT;
+      IF SalesShptLine.FINDSET THEN
+      REPEAT
+        i := i + 1;
+        StateIndicator.UpdateText(SalesShptLine.TABLECAPTION, tot, ROUND(i/tot*10000L,1));
+        SalesOrderLine.SETRANGE("Document Type", SalesOrderLine."Document Type"::Order);
+        SalesOrderLine.SETRANGE("Document No." , SalesShptLine."Order No.");
+        SalesOrderLine.SETFILTER("Outstanding Quantity", '<>0');
+
+        SalesLine.RESET;
+        SalesLine.SETRANGE("Document Type", SalesLine."Document Type"::Invoice);
+        SalesLine.SETRANGE("Shipment No.", SalesShptLine."Document No.");
+        SalesLine.SETRANGE("Shipment Line No.", SalesShptLine."Line No.");
+
+        TempSalesShptLine := SalesShptLine;
+        GetSalesOrder(TempSalesShptLine."Order No.");
+        GetSalesShiptHdr(TempSalesShptLine."Document No.");
+
+        IF (SalesLine.ISEMPTY) AND (SalesOrderLine.ISEMPTY) AND (SalesShptHeader."Quantit‚ restante … exp‚dier" = 0)  AND NOT(SalesOrder."Skip From Data Flow") AND
+           (SalesOrder."Posting Date" <= GetUntilDate) THEN BEGIN
+          CASE GroupMode OF
+            GroupMode::ByOrders:
+              TempSalesShptLine."Group Code Level 1" := TempSalesShptLine."Order No.";
+            GroupMode::ByCustReference:
+              BEGIN
+                GetSalesShiptHdr(TempSalesShptLine."Document No.");
+                TempSalesShptLine."Group Code Level 1" := SalesShptHeader."External Document No.";
+              END;
+            GroupMode::BySellToCust:
+              TempSalesShptLine."Group Code Level 1" := TempSalesShptLine."Sell-to Customer No.";
+            GroupMode::ShipmentCount:
+              BEGIN
+                SalesShptLine2.SETFILTER("Document No.", '<>%1', TempSalesShptLine."Document No.");
+                SalesShptLine2.SETRANGE("Order No.", TempSalesShptLine."Order No.");
+                IF SalesShptLine2.ISEMPTY THEN
+                  TempSalesShptLine."Group Code Level 1" := COPYSTR(OneShipment, 1, 50)
+                ELSE
+                  TempSalesShptLine."Group Code Level 1" := COPYSTR(MoreOneShipment, 1, 50);
+              END;
+          END;
+
+          CASE GroupSubMode OF
+            GroupSubMode::ByYourReference:
+              BEGIN
+                GetSalesOrder(TempSalesShptLine."Order No.");
+                TempSalesShptLine."Group Code Level 2" := SalesOrder."Your Reference";
+              END;
+            ELSE BEGIN
+              IF (GroupMode = GroupMode::ShipmentCount) AND
+                (TempSalesShptLine."Group Code Level 1" = COPYSTR(MoreOneShipment, 1, 50)) THEN BEGIN
+                  GetSalesShiptHdr(TempSalesShptLine."Document No.");
+                  TempSalesShptLine."Group Code Level 2" := SalesShptHeader."External Document No.";
+                END;
+            END;
+          END;
+          TempSalesShptLine.INSERT;
+
+        END;
+      UNTIL SalesShptLine.NEXT = 0;
+      TempSalesShptLine.SETCURRENTKEY("Bill-to Customer No.", "Group Code Level 1", "Group Code Level 2", "Group Code Level 3");
+      EXIT(NOT TempSalesShptLine.ISEMPTY);
+    END;
+
+    PROCEDURE FindSalesReturnLines@1000000011(VAR TempReturnRcptLine@1000000010 : TEMPORARY Record 6661;_BillToCust@1000000000 : Record 18;VAR StateIndicator@1000000003 : Record 50005) : Boolean;
+    VAR
+      ReturnRcptLine@1000000001 : Record 6661;
+      i@1000000007 : Integer;
+      tot@1000000008 : Integer;
+      SalesLine@1000000002 : Record 37;
+    BEGIN
+      TempReturnRcptLine.RESET;
+      TempReturnRcptLine.DELETEALL;
+      CLEAR(ReturnRcptLine);
+      ReturnRcptLine.SETFILTER("Return Qty. Rcd. Not Invd.",'<>0');
+      ReturnRcptLine.SETRANGE("Bill-to Customer No.", _BillToCust."No.");
+      StateIndicator.Open();
+      i := 0;
+      tot := ReturnRcptLine.COUNT;
+      IF ReturnRcptLine.FINDSET THEN
+      REPEAT
+        i := i + 1;
+        StateIndicator.UpdateText(ReturnRcptLine.TABLECAPTION, tot, ROUND(i/tot*10000L,1));
+
+        SalesLine.RESET;
+        SalesLine.SETRANGE("Document Type", SalesLine."Document Type"::"Credit Memo");
+        SalesLine.SETRANGE("Return Receipt No.", ReturnRcptLine."Document No.");
+        SalesLine.SETRANGE("Return Receipt Line No.", ReturnRcptLine."Line No.");
+        TempReturnRcptLine := ReturnRcptLine;
+        IF SalesLine.ISEMPTY THEN
+          TempReturnRcptLine.INSERT;
+
+      UNTIL ReturnRcptLine.NEXT = 0;
+      EXIT(NOT TempReturnRcptLine.ISEMPTY);
+    END;
+
+    PROCEDURE CreateInvLines@1(VAR SalesShptLine2@1000 : Record 111;VAR SalesLine@1000000001 : Record 37;VAR _SalesHeader@1000000000 : Record 36;VAR StateIndicator@1000000002 : Record 50005);
+    VAR
+      Window@1006 : Dialog;
+      LineCount@1005 : Integer;
+      TransferLine@1001 : Boolean;
+      i@1000000004 : Integer;
+      tot@1000000003 : Integer;
+      SalesShptHeader@1000000005 : Record 110;
+      SalesShptLine@1000000006 : Record 111;
+    BEGIN
+      _SalesHeader.TESTFIELD("Data Flow Code");
+      i := 0;
+      tot := SalesShptLine2.COUNT;
+      StateIndicator.Open();
+      IF SalesShptLine2.FINDFIRST THEN BEGIN
+        _SalesHeader.VALIDATE("Sell-to Customer No.", SalesShptLine2."Sell-to Customer No.");
+        _SalesHeader.VALIDATE("Bill-to Customer No.", SalesShptLine2."Bill-to Customer No.");
+      END;
+      WITH SalesShptLine2 DO BEGIN
+        SETFILTER("Qty. Shipped Not Invoiced",'<>0');
+        i := i + 1;
+        StateIndicator.UpdateText(SalesShptLine.TABLECAPTION, tot, ROUND(i/tot*10000L,1));
+        IF FINDSET THEN BEGIN
+          SalesLine.LOCKTABLE;
+          SalesLine.SETRANGE("Document Type",_SalesHeader."Document Type");
+          SalesLine.SETRANGE("Document No.",_SalesHeader."No.");
+          SalesLine."Document Type" := _SalesHeader."Document Type";
+          SalesLine."Document No." := _SalesHeader."No.";
+          REPEAT
+            LineCount := LineCount + 1;
+            IF SalesShptHeader."No." <> "Document No." THEN BEGIN;
+              SalesShptHeader.GET("Document No.");
+              TransferLine := TRUE;
+              IF SalesShptHeader."Currency Code" <> _SalesHeader."Currency Code" THEN BEGIN
+                TransferLine := FALSE;
+              END;
+              IF SalesShptHeader."Bill-to Customer No." <> _SalesHeader."Bill-to Customer No." THEN BEGIN
+                TransferLine := FALSE;
+              END;
+              IF _SalesHeader."External Document No." = '' THEN
+                _SalesHeader."External Document No." := SalesShptHeader."External Document No.";
+              IF _SalesHeader."External Document No." = '' THEN
+                _SalesHeader."External Document No." := SalesShptHeader."External Document No.";
+              IF _SalesHeader."Your Reference" = '' THEN
+                _SalesHeader."Your Reference" := SalesShptHeader."Your Reference";
+            END;
+            IF TransferLine THEN BEGIN
+              SalesShptLine := SalesShptLine2;
+              SalesShptLine.TESTFIELD("VAT Bus. Posting Group",_SalesHeader."VAT Bus. Posting Group");
+              SalesShptLine.InsertInvLineFromShptLine(SalesLine);
+              IF Type = Type::"Charge (Item)" THEN
+                GetItemChargeAssgnt(SalesShptLine2,SalesLine."Qty. to Invoice");
+            END;
+          UNTIL NEXT = 0;
+        END;
+      END;
+    END;
+
+    LOCAL PROCEDURE GetItemChargeAssgnt@5800(VAR SalesShptLine@1000 : Record 111;QtyToInv@1003 : Decimal);
+    VAR
+      SalesOrderLine@1001 : Record 37;
+      ItemChargeAssgntSales@1002 : Record 5809;
+    BEGIN
+      WITH SalesShptLine DO
+        IF SalesOrderLine.GET(SalesOrderLine."Document Type"::Order,"Order No.","Order Line No.")
+        THEN BEGIN
+          ItemChargeAssgntSales.LOCKTABLE;
+          ItemChargeAssgntSales.RESET;
+          ItemChargeAssgntSales.SETRANGE("Document Type",SalesOrderLine."Document Type");
+          ItemChargeAssgntSales.SETRANGE("Document No.",SalesOrderLine."Document No.");
+          ItemChargeAssgntSales.SETRANGE("Document Line No.",SalesOrderLine."Line No.");
+          IF ItemChargeAssgntSales.FINDFIRST THEN BEGIN
+            ItemChargeAssgntSales.CALCSUMS("Qty. to Assign");
+            IF ItemChargeAssgntSales."Qty. to Assign" <> 0 THEN
+              CopyItemChargeAssgnt(
+                SalesOrderLine,SalesShptLine,ItemChargeAssgntSales."Qty. to Assign",QtyToInv / ItemChargeAssgntSales."Qty. to Assign");
+          END;
+        END;
+    END;
+
+    LOCAL PROCEDURE CopyItemChargeAssgnt@5801(SalesOrderLine@1000 : Record 37;SalesShptLine@1001 : Record 111;QtyToAssign@1002 : Decimal;QtyFactor@1008 : Decimal);
+    VAR
+      SalesShptLine2@1003 : Record 111;
+      SalesLine2@1004 : Record 37;
+      ItemChargeAssgntSales@1005 : Record 5809;
+      ItemChargeAssgntSales2@1006 : Record 5809;
+      InsertChargeAssgnt@1007 : Boolean;
+      LineQtyToAssign@1009 : Decimal;
+    BEGIN
+      WITH SalesOrderLine DO BEGIN
+        ItemChargeAssgntSales.SETRANGE("Document Type","Document Type");
+        ItemChargeAssgntSales.SETRANGE("Document No.","Document No.");
+        ItemChargeAssgntSales.SETRANGE("Document Line No.","Line No.");
+        IF ItemChargeAssgntSales.FINDSET THEN
+          REPEAT
+            IF ItemChargeAssgntSales."Qty. to Assign" <> 0 THEN BEGIN
+              ItemChargeAssgntSales2 := ItemChargeAssgntSales;
+              ItemChargeAssgntSales2."Qty. to Assign" := QtyFactor * ItemChargeAssgntSales2."Qty. to Assign";
+              SalesLine2.SETRANGE("Shipment No.",SalesShptLine."Document No.");
+              SalesLine2.SETRANGE("Shipment Line No.",SalesShptLine."Line No.");
+              IF SalesLine2.FINDSET THEN
+                REPEAT
+                  SalesLine2.CALCFIELDS("Qty. to Assign");
+                  InsertChargeAssgnt := SalesLine2."Qty. to Assign" <> SalesLine2.Quantity;
+                UNTIL (SalesLine2.NEXT = 0) OR InsertChargeAssgnt;
+
+              IF InsertChargeAssgnt THEN BEGIN
+                ItemChargeAssgntSales2."Document Type" := SalesLine2."Document Type";
+                ItemChargeAssgntSales2."Document No." := SalesLine2."Document No.";
+                ItemChargeAssgntSales2."Document Line No." := SalesLine2."Line No.";
+                ItemChargeAssgntSales2."Qty. Assigned" := 0;
+                LineQtyToAssign :=
+                  ItemChargeAssgntSales2."Qty. to Assign" - GetQtyAssignedInNewLine(ItemChargeAssgntSales2);
+                InsertChargeAssgnt := LineQtyToAssign <> 0;
+                IF InsertChargeAssgnt THEN BEGIN
+                  IF ABS(QtyToAssign) < ABS(LineQtyToAssign) THEN
+                    ItemChargeAssgntSales2."Qty. to Assign" := QtyToAssign;
+                  IF ABS(SalesLine2.Quantity - SalesLine2."Qty. to Assign") <
+                     ABS(LineQtyToAssign)
+                  THEN
+                    ItemChargeAssgntSales2."Qty. to Assign" :=
+                      SalesLine2.Quantity - SalesLine2."Qty. to Assign";
+                  ItemChargeAssgntSales2.VALIDATE("Unit Cost");
+
+                  IF ItemChargeAssgntSales2."Applies-to Doc. Type" = "Document Type" THEN BEGIN
+                    ItemChargeAssgntSales2."Applies-to Doc. Type" := SalesLine2."Document Type";
+                    ItemChargeAssgntSales2."Applies-to Doc. No." := SalesLine2."Document No.";
+                    SalesShptLine2.SETCURRENTKEY("Order No.","Order Line No.");
+                    SalesShptLine2.SETRANGE("Order No.",ItemChargeAssgntSales."Applies-to Doc. No.");
+                    SalesShptLine2.SETRANGE("Order Line No.",ItemChargeAssgntSales."Applies-to Doc. Line No.");
+                    SalesShptLine2.SETRANGE("Document No.",SalesShptLine."Document No.");
+                    IF SalesShptLine2.FINDFIRST THEN BEGIN
+                      SalesLine2.SETCURRENTKEY("Document Type","Shipment No.","Shipment Line No.");
+                      SalesLine2.SETRANGE("Document Type","Document Type"::Invoice);
+                      SalesLine2.SETRANGE("Shipment No.",SalesShptLine2."Document No.");
+                      SalesLine2.SETRANGE("Shipment Line No.",SalesShptLine2."Line No.");
+                      IF SalesLine2.FINDFIRST AND (SalesLine2.Quantity <> 0) THEN
+                        ItemChargeAssgntSales2."Applies-to Doc. Line No." := SalesLine2."Line No."
+                      ELSE
+                        InsertChargeAssgnt := FALSE;
+                    END ELSE
+                      InsertChargeAssgnt := FALSE;
+                  END;
+                END;
+              END;
+
+              IF InsertChargeAssgnt AND (ItemChargeAssgntSales2."Qty. to Assign" <> 0) THEN BEGIN
+                ItemChargeAssgntSales2.INSERT;
+                QtyToAssign := QtyToAssign - ItemChargeAssgntSales2."Qty. to Assign";
+              END;
+            END;
+          UNTIL ItemChargeAssgntSales.NEXT = 0;
+      END;
+    END;
+
+    LOCAL PROCEDURE GetQtyAssignedInNewLine@4(ItemChargeAssgntSales@1000 : Record 5809) : Decimal;
+    BEGIN
+      WITH ItemChargeAssgntSales DO BEGIN
+        SETRANGE("Document Type","Document Type");
+        SETRANGE("Document No.","Document No.");
+        SETRANGE("Applies-to Doc. Type","Applies-to Doc. Type");
+        SETRANGE("Applies-to Doc. No.","Applies-to Doc. No.");
+        SETRANGE("Applies-to Doc. Line No.","Applies-to Doc. Line No.");
+        CALCSUMS("Qty. to Assign");
+        EXIT("Qty. to Assign");
+      END;
+    END;
+
+    PROCEDURE ExcuteFromStep@1000000000(VAR _DataFlowStep@1000000000 : Record 50018);
+    VAR
+      DataFlowStep@1000000001 : Record 50018;
+      DataFlow@1000000002 : Record 50014;
+    BEGIN
+      WITH DataFlowStep DO BEGIN
+        SETRANGE("Data Flow Code", _DataFlowStep."Data Flow Code");
+        SETFILTER("No.", '>=%1', _DataFlowStep."No.");
+        SETRANGE(Manual, FALSE);
+        IF FINDSET THEN
+          REPEAT
+            ResetStep;
+            StateIndicator.InsertLogEntry(DataFlowStep);
+            COMMIT;
+            CODEUNIT.RUN(CODEUNIT::DataFlowMgt, DataFlowStep);
+            COMMIT;
+            MODIFY;
+            StateIndicator.UpdateLogEntry(DataFlowStep,'');
+          UNTIL NEXT = 0;
+      END;
+      _DataFlowStep.FIND;
+      DataFlow.GET(_DataFlowStep."Data Flow Code");
+      DataFlow."Last Run" := CURRENTDATETIME;
+      DataFlow.MODIFY;
+    END;
+
+    PROCEDURE ExcuteStepOnly@1000000001(VAR _DataFlowStep@1000000001 : Record 50018);
+    VAR
+      DataFlowStep@1000000000 : Record 50018;
+      DataFlow@1000000002 : Record 50014;
+    BEGIN
+      _DataFlowStep.ResetStep;
+      StateIndicator.InsertLogEntry(_DataFlowStep);
+      COMMIT;
+      CODEUNIT.RUN(CODEUNIT::DataFlowMgt, _DataFlowStep);
+      StateIndicator.UpdateLogEntry(_DataFlowStep,'');
+      COMMIT;
+      DataFlow.GET(_DataFlowStep."Data Flow Code");
+      DataFlow."Last Run" := CURRENTDATETIME;
+      DataFlow.MODIFY;
+    END;
+
+    PROCEDURE SetGroupCode@1000000002(_GroupMode@1000000001 : 'ByOrders,BySellToCust,ByCustReference,ShipmentCount';_GroupSubMode@1000000000 : ' ,ByYourReference');
+    BEGIN
+      GroupMode := _GroupMode;
+      GroupSubMode := _GroupSubMode;
+    END;
+
+    LOCAL PROCEDURE GetSalesOrder@1000000006(_No@1000000000 : Code[20]);
+    BEGIN
+      IF SalesOrder."No." <> _No THEN
+        IF NOT SalesOrder.GET(SalesOrder."Document Type"::Order, _No) THEN
+          CLEAR(SalesOrder);
+    END;
+
+    LOCAL PROCEDURE GetSalesShiptHdr@1000000010(_No@1000000000 : Code[20]);
+    BEGIN
+      IF SalesShptHeader."No." <> _No THEN
+        IF NOT SalesShptHeader.GET(_No) THEN
+          CLEAR(SalesShptHeader)
+        ELSE
+          SalesShptHeader.CALCFIELDS("Quantit‚ restante … exp‚dier");
+    END;
+
+    PROCEDURE CreateCrMemoLines@1000000007(VAR TempReturnRcptLine@1000 : TEMPORARY Record 6661;VAR SalesLine@1000000002 : Record 37;_SalesHeader@1000000001 : Record 36;VAR StateIndicator@1000000000 : Record 50005);
+    VAR
+      DifferentCurrencies@1001 : Boolean;
+      i@1000000003 : Integer;
+      tot@1000000004 : Integer;
+      ReturnRcptHeader@1000000005 : Record 6660;
+      ReturnRcptLine@1000000006 : Record 6661;
+    BEGIN
+      WITH TempReturnRcptLine DO BEGIN
+        SETFILTER("Return Qty. Rcd. Not Invd.",'<>0');
+        IF FIND('-') THEN BEGIN
+          SalesLine.LOCKTABLE;
+          SalesLine.SETRANGE("Document Type",_SalesHeader."Document Type");
+          SalesLine.SETRANGE("Document No.",_SalesHeader."No.");
+          SalesLine."Document Type" := _SalesHeader."Document Type";
+          SalesLine."Document No." := _SalesHeader."No.";
+
+          REPEAT
+            IF ReturnRcptHeader."No." <> "Document No." THEN BEGIN
+              ReturnRcptHeader.GET("Document No.");
+              ReturnRcptHeader.TESTFIELD("Bill-to Customer No.","Bill-to Customer No.");
+              DifferentCurrencies := FALSE;
+              IF ReturnRcptHeader."Currency Code" <> _SalesHeader."Currency Code" THEN BEGIN
+                DifferentCurrencies := TRUE;
+              END;
+            END;
+            IF NOT DifferentCurrencies THEN BEGIN
+              ReturnRcptLine := TempReturnRcptLine;
+              ReturnRcptLine.InsertInvLineFromRetRcptLine(SalesLine);
+              IF Type = Type::"Charge (Item)" THEN
+                GetItemChargeAssgntCr(ReturnRcptLine,SalesLine."Qty. to Invoice");
+            END;
+          UNTIL NEXT = 0;
+        END;
+      END;
+    END;
+
+    PROCEDURE GetItemChargeAssgntCr@1000000004(VAR ReturnRcptLine@1000 : Record 6661;QtyToInv@1003 : Decimal);
+    VAR
+      SalesOrderLine@1001 : Record 37;
+      ItemChargeAssgntSales@1002 : Record 5809;
+    BEGIN
+      WITH ReturnRcptLine DO
+        IF SalesOrderLine.GET(SalesOrderLine."Document Type"::"Return Order","Return Order No.","Return Order Line No.")
+        THEN BEGIN
+          ItemChargeAssgntSales.LOCKTABLE;
+          ItemChargeAssgntSales.RESET;
+          ItemChargeAssgntSales.SETRANGE("Document Type",SalesOrderLine."Document Type");
+          ItemChargeAssgntSales.SETRANGE("Document No.",SalesOrderLine."Document No.");
+          ItemChargeAssgntSales.SETRANGE("Document Line No.",SalesOrderLine."Line No.");
+          IF ItemChargeAssgntSales.FINDFIRST THEN BEGIN
+            ItemChargeAssgntSales.CALCSUMS("Qty. to Assign");
+            IF ItemChargeAssgntSales."Qty. to Assign" <> 0 THEN
+              CopyItemChargeAssgntCr(
+                SalesOrderLine,ReturnRcptLine,ItemChargeAssgntSales."Qty. to Assign",
+                QtyToInv / ItemChargeAssgntSales."Qty. to Assign");
+          END;
+        END;
+    END;
+
+    LOCAL PROCEDURE CopyItemChargeAssgntCr@1000000008(SalesOrderLine@1000 : Record 37;ReturnRcptLine@1001 : Record 6661;QtyToAssign@1002 : Decimal;QtyFactor@1008 : Decimal);
+    VAR
+      ReturnRcptLine2@1003 : Record 6661;
+      SalesLine2@1004 : Record 37;
+      ItemChargeAssgntSales@1005 : Record 5809;
+      ItemChargeAssgntSales2@1006 : Record 5809;
+      InsertChargeAssgnt@1007 : Boolean;
+    BEGIN
+      WITH SalesOrderLine DO BEGIN
+        ItemChargeAssgntSales.SETRANGE("Document Type","Document Type");
+        ItemChargeAssgntSales.SETRANGE("Document No.","Document No.");
+        ItemChargeAssgntSales.SETRANGE("Document Line No.","Line No.");
+        IF ItemChargeAssgntSales.FIND('-') THEN
+          REPEAT
+            IF ItemChargeAssgntSales."Qty. to Assign" <> 0 THEN BEGIN
+              ItemChargeAssgntSales2 := ItemChargeAssgntSales;
+              ItemChargeAssgntSales2."Qty. to Assign" := QtyFactor * ItemChargeAssgntSales2."Qty. to Assign";
+              SalesLine2.SETRANGE("Return Receipt No.",ReturnRcptLine."Document No.");
+              SalesLine2.SETRANGE("Return Receipt Line No.",ReturnRcptLine."Line No.");
+              IF SalesLine2.FIND('-') THEN
+                REPEAT
+                  SalesLine2.CALCFIELDS("Qty. to Assign");
+                  InsertChargeAssgnt := SalesLine2."Qty. to Assign" <> SalesLine2.Quantity;
+                UNTIL (SalesLine2.NEXT = 0) OR InsertChargeAssgnt;
+
+              IF InsertChargeAssgnt THEN BEGIN
+                ItemChargeAssgntSales2."Document Type" := SalesLine2."Document Type";
+                ItemChargeAssgntSales2."Document No." := SalesLine2."Document No.";
+                ItemChargeAssgntSales2."Document Line No." := SalesLine2."Line No.";
+                ItemChargeAssgntSales2."Qty. Assigned" := 0;
+                IF ABS(QtyToAssign) < ABS(ItemChargeAssgntSales2."Qty. to Assign") THEN
+                  ItemChargeAssgntSales2."Qty. to Assign" := QtyToAssign;
+                IF ABS(SalesLine2.Quantity - SalesLine2."Qty. to Assign") <
+                   ABS(ItemChargeAssgntSales2."Qty. to Assign")
+                THEN
+                  ItemChargeAssgntSales2."Qty. to Assign" :=
+                    SalesLine2.Quantity - SalesLine2."Qty. to Assign";
+                ItemChargeAssgntSales2.VALIDATE("Unit Cost");
+
+                IF ItemChargeAssgntSales2."Applies-to Doc. Type" = "Document Type" THEN BEGIN
+                  ItemChargeAssgntSales2."Applies-to Doc. Type" := SalesLine2."Document Type";
+                  ItemChargeAssgntSales2."Applies-to Doc. No." := SalesLine2."Document No.";
+                  ReturnRcptLine2.SETCURRENTKEY("Return Order No.","Return Order Line No.");
+                  ReturnRcptLine2.SETRANGE("Return Order No.",ItemChargeAssgntSales."Applies-to Doc. No.");
+                  ReturnRcptLine2.SETRANGE("Return Order Line No.",ItemChargeAssgntSales."Applies-to Doc. Line No.");
+                  ReturnRcptLine2.SETRANGE("Document No.",ReturnRcptLine."Document No.");
+                  IF ReturnRcptLine2.FINDFIRST THEN BEGIN
+                    SalesLine2.SETCURRENTKEY("Document Type","Shipment No.","Shipment Line No.");
+                    SalesLine2.SETRANGE("Document Type","Document Type"::"Credit Memo");
+                    SalesLine2.SETRANGE("Return Receipt No.",ReturnRcptLine2."Document No.");
+                    SalesLine2.SETRANGE("Return Receipt Line No.",ReturnRcptLine2."Line No.");
+                    IF SalesLine2.FIND('-') AND (SalesLine2.Quantity <> 0) THEN
+                      ItemChargeAssgntSales2."Applies-to Doc. Line No." := SalesLine2."Line No."
+                    ELSE
+                      InsertChargeAssgnt := FALSE;
+                  END ELSE
+                    InsertChargeAssgnt := FALSE;
+                END;
+              END;
+
+              IF InsertChargeAssgnt AND (ItemChargeAssgntSales2."Qty. to Assign" <> 0) THEN BEGIN
+                ItemChargeAssgntSales2.INSERT;
+                QtyToAssign := QtyToAssign - ItemChargeAssgntSales2."Qty. to Assign";
+              END;
+            END;
+          UNTIL ItemChargeAssgntSales.NEXT = 0;
+      END;
+    END;
+
+    PROCEDURE StampSalesHeader@1000000003(VAR _RecToStamp@1000000000 : Record 36;_DataFlowStep@1000000001 : Record 50018);
+    VAR
+      RecVar@1000000002 : Variant;
+    BEGIN
+      RecVar := _RecToStamp;
+      _DataFlowStep.Stamp(RecVar);
+      _RecToStamp := RecVar;
+    END;
+
+    PROCEDURE StampSalesInvHeader@1000000009(VAR _RecToStamp@1000000000 : Record 112;_DataFlowStep@1000000001 : Record 50018);
+    VAR
+      RecVar@1000000002 : Variant;
+    BEGIN
+      RecVar := _RecToStamp;
+      _DataFlowStep.Stamp(RecVar);
+      _RecToStamp := RecVar;
+    END;
+
+    PROCEDURE StampSalesCrHeader@1000000012(VAR _RecToStamp@1000000000 : Record 114;_DataFlowStep@1000000001 : Record 50018);
+    VAR
+      RecVar@1000000002 : Variant;
+    BEGIN
+      RecVar := _RecToStamp;
+      _DataFlowStep.Stamp(RecVar);
+      _RecToStamp := RecVar;
+    END;
+
+    LOCAL PROCEDURE SetDelay@1000000005(_Duration@1000000000 : Duration);
+    VAR
+      MyDate@1000000001 : Date;
+    BEGIN
+      MyDate := CALCDATE(FORMAT(_Duration), WORKDATE);
+      IF MyDate > WORKDATE THEN
+        MyDate := CALCDATE('-'+FORMAT(_Duration),WORKDATE);
+      UntilDate := MyDate;
+    END;
+
+    LOCAL PROCEDURE GetUntilDate@1000000018() : Date;
+    BEGIN
+      IF UntilDate = 0D THEN
+        EXIT(WORKDATE);
+      EXIT(UntilDate);
+    END;
+
+    PROCEDURE SetDataFlowStep@1000000013(_DataFlowStep@1000000000 : Record 50018);
+    VAR
+      DataFlow@1000000001 : Record 50014;
+    BEGIN
+      IF DataFlow.GET(_DataFlowStep."Data Flow Code") THEN
+        SetDelay(DataFlow."Order Posting Date Delay");
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

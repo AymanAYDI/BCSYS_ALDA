@@ -1,0 +1,45 @@
+OBJECT Page 50006 E.D.I. Log Entries
+{
+  OBJECT-PROPERTIES
+  {
+    Date=21/09/15;
+    Time=15:58:25;
+    Modified=Yes;
+    Version List=;
+  }
+  PROPERTIES
+  {
+    CaptionML=ENU=E.D.I. Log Entries;
+    SourceTable=Table50004;
+    PageType=List;
+  }
+  CONTROLS
+  {
+    { 1900000001;0;Container;
+                ContainerType=ContentArea }
+
+    { 1180250001;1;Group  ;
+                Editable=FALSE;
+                GroupType=Repeater }
+
+    { 1180250002;2;Field  ;
+                SourceExpr="Ligne No." }
+
+    { 1180250009;2;Field  ;
+                SourceExpr=Status }
+
+    { 1180250004;2;Field  ;
+                SourceExpr="Error Text" }
+
+    { 1180250011;2;Field  ;
+                SourceExpr="Applied E.D.I. Entry No." }
+
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

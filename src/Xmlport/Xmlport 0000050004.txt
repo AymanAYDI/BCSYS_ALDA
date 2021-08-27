@@ -1,0 +1,120 @@
+OBJECT XMLport 50004 Export EDI Sales Ship. Line
+{
+  OBJECT-PROPERTIES
+  {
+    Date=23/02/16;
+    Time=12:51:50;
+    Modified=Yes;
+    Version List=ALDA1.00;
+  }
+  PROPERTIES
+  {
+    Direction=Export;
+    Format=Fixed Text;
+    UseRequestPage=No;
+  }
+  ELEMENTS
+  {
+    { [{7CD2C48B-C603-44B1-A41D-FA4F4D8E3DE0}];  ;EDIEntries          ;Element ;Text     }
+
+    { [{DFAA4A18-0747-498F-B46B-5880BCFA3ACA}];1 ;EDIEntry            ;Element ;Table   ;
+                                                  SourceTable=Table50002 }
+
+    { [{F6C759E9-DA93-4CF8-848D-DB1D3BBBF181}];2 ;Field3              ;Element ;Field   ;
+                                                  DataType=Text;
+                                                  SourceField=E.D.I. Entry::Field 3;
+                                                  Width=50 }
+
+    { [{D413D831-A019-4A9E-8D7E-A0FDA16CEE37}];2 ;EmptySpace3         ;Element ;Text    ;
+                                                  Width=2 }
+
+    { [{B8B2A7FB-F5A9-4074-A5C0-7AD3801CBAE0}];2 ;Field4              ;Element ;Field   ;
+                                                  DataType=Text;
+                                                  SourceField=E.D.I. Entry::Field 4;
+                                                  Width=50 }
+
+    { [{3984B850-0C79-49A3-9FC7-85834195B318}];2 ;EmptySpace4         ;Element ;Text    ;
+                                                  Width=2 }
+
+    { [{3FE7040D-177C-42BF-A538-B9F5B1726D65}];2 ;Field5              ;Element ;Field   ;
+                                                  DataType=Text;
+                                                  SourceField=E.D.I. Entry::Field 5;
+                                                  Width=50 }
+
+    { [{1CC8C39D-4A2D-42DC-95DB-BC366155A28F}];2 ;EmptySpace5         ;Element ;Text    ;
+                                                  Width=2 }
+
+    { [{A379858D-9D9E-4A73-9D21-9A54E8B88C57}];2 ;Field6              ;Element ;Field   ;
+                                                  DataType=Text;
+                                                  SourceField=E.D.I. Entry::Field 6;
+                                                  Width=50 }
+
+    { [{2A9F3C73-88BC-4CCD-BCAB-BC46AE3A4919}];2 ;EmptySpace6         ;Element ;Text    ;
+                                                  Width=2 }
+
+    { [{AEA8B64E-474A-4C7F-BB31-E69566493DFD}];2 ;Field7              ;Element ;Field   ;
+                                                  DataType=Text;
+                                                  SourceField=E.D.I. Entry::Field 7;
+                                                  Width=50 }
+
+    { [{06FC2918-7333-4C5E-BA3A-71B9F596781C}];2 ;EmptySpace7         ;Element ;Text    ;
+                                                  Width=2 }
+
+    { [{FF0E97EF-9F97-4232-BA69-27B2F9D3565D}];2 ;Field8              ;Element ;Field   ;
+                                                  DataType=Text;
+                                                  SourceField=E.D.I. Entry::Field 8;
+                                                  Width=50 }
+
+    { [{830FC753-36DA-442A-A366-D0D1F8EFB3F5}];2 ;EmptySpace8         ;Element ;Text    ;
+                                                  Width=2 }
+
+    { [{B02B70B9-EC88-46DA-A00B-E14983654D36}];2 ;Field9              ;Element ;Field   ;
+                                                  DataType=Text;
+                                                  SourceField=E.D.I. Entry::Field 9;
+                                                  Width=50 }
+
+    { [{33177486-3EF7-4BC8-A858-6EA41CA4A461}];2 ;EmptySpace9         ;Element ;Text    ;
+                                                  Width=2 }
+
+    { [{6707DFD8-711E-48B7-8227-B1511300669E}];2 ;Field10             ;Element ;Field   ;
+                                                  DataType=Text;
+                                                  SourceField=E.D.I. Entry::Field 10;
+                                                  Width=50 }
+
+    { [{53CBD60C-E692-4F83-A142-30ECCA6673D7}];2 ;EmptySpace10        ;Element ;Text    ;
+                                                  Width=2 }
+
+    { [{FFDACE7A-940A-4EBE-BF84-EE35FD648568}];2 ;Field11             ;Element ;Field   ;
+                                                  DataType=Text;
+                                                  SourceField=E.D.I. Entry::Field 11;
+                                                  Width=50 }
+
+    { [{33543F84-AFCC-4FB7-B9E1-A589C04F5792}];2 ;EmptySpace11        ;Element ;Text    ;
+                                                  Width=2 }
+
+    { [{6866543A-C0F9-41EF-B504-9D629BF4795D}];2 ;Field12             ;Element ;Field   ;
+                                                  DataType=Text;
+                                                  SourceField=E.D.I. Entry::Field 12;
+                                                  Width=50 }
+
+  }
+  EVENTS
+  {
+  }
+  REQUESTPAGE
+  {
+    PROPERTIES
+    {
+    }
+    CONTROLS
+    {
+    }
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

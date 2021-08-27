@@ -4,7 +4,8 @@ OBJECT Page 7012 Purchase Prices
   {
     Date=15/09/15;
     Time=12:00:00;
-    Version List=NAVW19.00;
+    Modified=Yes;
+    Version List=NAVW19.00,AC1.00;
   }
   PROPERTIES
   {
@@ -117,6 +118,9 @@ OBJECT Page 7012 Purchase Prices
     { 14  ;2   ;Field     ;
                 SourceExpr="Ending Date" }
 
+    { 1180250001;2;Field  ;
+                SourceExpr="Allow Discount" }
+
     { 1900000007;0;Container;
                 ContainerType=FactBoxArea }
 
@@ -207,6 +211,9 @@ OBJECT Page 7012 Purchase Prices
     END;
 
     BEGIN
+    {
+      AC1.00 Ajout field "Allow Discount"
+    }
     END.
   }
 }

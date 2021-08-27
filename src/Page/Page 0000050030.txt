@@ -1,0 +1,87 @@
+OBJECT Page 50030 Data Flows
+{
+  OBJECT-PROPERTIES
+  {
+    Date=19/05/16;
+    Time=17:29:17;
+    Modified=Yes;
+    Version List=BC6AUTOINV;
+  }
+  PROPERTIES
+  {
+    SourceTable=Table50014;
+    PageType=List;
+    ActionList=ACTIONS
+    {
+      { 1000000005;  ;ActionContainer;
+                      ActionContainerType=RelatedInformation }
+      { 1000000006;1 ;Action    ;
+                      Name=Status;
+                      CaptionML=[ENU=Status;
+                                 FRA=Statuts];
+                      RunObject=Page 50031;
+                      RunPageLink=Data Flow Code=FIELD(Code);
+                      Promoted=Yes;
+                      PromotedIsBig=Yes;
+                      Image=Status;
+                      PromotedCategory=Report;
+                      RunPageMode=View }
+      { 1000000007;1 ;Action    ;
+                      Name=Steps;
+                      CaptionML=[ENU=Steps;
+                                 FRA=Etapes];
+                      RunObject=Page 50032;
+                      RunPageLink=Data Flow Code=FIELD(Code);
+                      Promoted=Yes;
+                      PromotedIsBig=Yes;
+                      Image=StepInto;
+                      PromotedCategory=Report;
+                      RunPageMode=View }
+      { 1000000008;1 ;Action    ;
+                      Name=LogEntries;
+                      CaptionML=[ENU=Logs;
+                                 FRA=Logs];
+                      RunObject=Page 674;
+                      RunPageLink=ID=FIELD(Job Queue Entry ID);
+                      Promoted=Yes;
+                      PromotedIsBig=Yes;
+                      Image=Log;
+                      PromotedCategory=Report }
+    }
+  }
+  CONTROLS
+  {
+    { 1000000000;0;Container;
+                ContainerType=ContentArea }
+
+    { 1000000001;1;Group  ;
+                Name=Group;
+                GroupType=Repeater }
+
+    { 1000000002;2;Field  ;
+                SourceExpr=Code }
+
+    { 1000000003;2;Field  ;
+                SourceExpr=Name }
+
+    { 1000000004;2;Field  ;
+                SourceExpr="Last Run" }
+
+    { 1000000009;2;Field  ;
+                SourceExpr="Interaction Template Code" }
+
+    { 1000000010;2;Field  ;
+                SourceExpr="Force Send To Email" }
+
+    { 1000000011;2;Field  ;
+                SourceExpr="Order Posting Date Delay" }
+
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

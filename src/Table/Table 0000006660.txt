@@ -2,9 +2,10 @@ OBJECT Table 6660 Return Receipt Header
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
-    Version List=NAVW19.00;
+    Date=04/03/19;
+    Time=17:01:08;
+    Modified=Yes;
+    Version List=NAVW19.00,AC1.00;
   }
   PROPERTIES
   {
@@ -364,6 +365,60 @@ OBJECT Table 6660 Return Receipt Header
                                                               FRA=Souches de nø retour] }
     { 7001;   ;Allow Line Disc.    ;Boolean       ;CaptionML=[ENU=Allow Line Disc.;
                                                               FRA=Autoriser remise ligne] }
+    { 50002;  ;Order Reference Customer;Text35    ;CaptionML=[ENU=Order Reference Customer;
+                                                              FRA=R‚f‚rence commande client];
+                                                   Description=AC1.00;
+                                                   Editable=Yes }
+    { 50024;  ;Cost Center Code    ;Code20        ;CaptionML=[ENU=Cost Center Code;
+                                                              FRA=Code centre de co–t];
+                                                   Description=ACBDU 100314D }
+    { 50025;  ;Area Code           ;Code20        ;TableRelation="Dynamic Field".Code WHERE (Table No.=CONST(18),
+                                                                                             Field No.=CONST(50021));
+                                                   CaptionML=[ENU=Area Code;
+                                                              FRA=Code site];
+                                                   Description=ACBDU 160414D }
+    { 50026;  ;Account No. (DPAM)  ;Code20        ;TableRelation="Dynamic Field".Code WHERE (Table No.=CONST(27),
+                                                                                             Field No.=CONST(50013));
+                                                   CaptionML=[ENU=Account No. (DPAM);
+                                                              FRA=Nø compte (DPAM)];
+                                                   Description=ACBDU 130614D;
+                                                   Editable=No }
+    { 50027;  ;Typology Code (DPAM);Code20        ;TableRelation="Dynamic Field".Code WHERE (Table No.=CONST(27),
+                                                                                             Field No.=CONST(50014));
+                                                   CaptionML=[ENU=Typology Code (DPAM);
+                                                              FRA=Code typologie (DPAM)];
+                                                   Description=ACBDU 130614D;
+                                                   Editable=No }
+    { 50028;  ;Typology Description (DPAM);Text50 ;CaptionML=[ENU=Typology Description (DPAM);
+                                                              FRA=Description typologie (DPAM)];
+                                                   Description=ACBDU 130614D;
+                                                   Editable=No }
+    { 50029;  ;Validated by        ;Text50        ;CaptionML=[ENU=Validated by;
+                                                              FRA=Valid‚ par];
+                                                   Description=ALDA 031114D;
+                                                   Editable=No }
+    { 50035;  ;NUM_SUBSEQUENT      ;Code50        ;CaptionML=[ENU=NUM_SUBSEQUENT;
+                                                              FRA=NUM_SUBSEQUENT];
+                                                   Description=Nø du march‚ subs‚quent }
+    { 50036;  ;REF_ENGAGEMENT      ;Code50        ;CaptionML=[ENU=REF_ENGAGEMENT;
+                                                              FRA=REF_ENGAGEMENT];
+                                                   Description=R‚f‚rence engagement }
+    { 50037;  ;NUM_EJ              ;Code50        ;CaptionML=[ENU=NUM_EJ;
+                                                              FRA=NUM_EJ];
+                                                   Description=Nø d'engagement juridique }
+    { 50038;  ;TRS_ID              ;Code50        ;CaptionML=[ENU=NUM_EJ;
+                                                              FRA=TRS_ID];
+                                                   Description=Nø de transaction unique }
+    { 50039;  ;TRS_ID_AUTORISATION ;Decimal       ;CaptionML=[ENU=TRS_ID_AUTORISATION;
+                                                              FRA=TRS_ID_AUTORISATION];
+                                                   Description=Nø de paiment Ingenico }
+    { 50040;  ;CODE_WCP            ;Code20        ;CaptionML=FRA=CODE_WCP;
+                                                   Description=Nø client g‚n‚r‚ par le site D‚fense Bureau }
+    { 50041;  ;NUM_MARKET          ;Code50        ;CaptionML=[ENU=NUM_MARKET;
+                                                              FRA=NUM_MARKET];
+                                                   Description=Num‚ro de march‚ }
+    { 50060;  ;Executing Service Code;Code100     ;CaptionML=[ENU=Executing Service Code;
+                                                              FRA=Code service ‚xecutant] }
   }
   KEYS
   {

@@ -4,6 +4,7 @@ OBJECT Page 6663 Posted Return Receipt Lines
   {
     Date=09/09/14;
     Time=12:00:00;
+    Modified=Yes;
     Version List=NAVW18.00;
   }
   PROPERTIES
@@ -52,6 +53,9 @@ OBJECT Page 6663 Posted Return Receipt Lines
 
     { 1   ;1   ;Group     ;
                 GroupType=Repeater }
+
+    { 1180250001;2;Field  ;
+                SourceExpr="External Line No." }
 
     { 2   ;2   ;Field     ;
                 SourceExpr="Document No." }

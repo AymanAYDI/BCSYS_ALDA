@@ -4,7 +4,8 @@ OBJECT Table 7112 Analysis Line Template
   {
     Date=07/09/12;
     Time=12:00:00;
-    Version List=NAVW17.00;
+    Modified=Yes;
+    Version List=NAVW17.00,AC1.00;
   }
   PROPERTIES
   {

@@ -2,12 +2,14 @@ OBJECT Table 5802 Value Entry
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
-    Version List=NAVW19.00;
+    Date=22/03/16;
+    Time=18:00:38;
+    Modified=Yes;
+    Version List=NAVW19.00,AB6.TAH.001;
   }
   PROPERTIES
   {
+    Permissions=TableData 50=r;
     OnInsert=VAR
                GenJnlPostPreview@1000 : Codeunit 19;
              BEGIN
@@ -266,6 +268,9 @@ OBJECT Table 5802 Value Entry
     { 6602;   ;Return Reason Code  ;Code10        ;TableRelation="Return Reason";
                                                    CaptionML=[ENU=Return Reason Code;
                                                               FRA=Code motif retour] }
+    { 50011;  ;Montant Ecotaxe     ;Decimal       ;BlankZero=Yes;
+                                                   Description=AB6.TAH.001;
+                                                   AutoFormatType=2 }
   }
   KEYS
   {
@@ -293,6 +298,8 @@ OBJECT Table 5802 Value Entry
     {    ;Item Ledger Entry Type,Posting Date,Item No.,Inventory Posting Group,Dimension Set ID;
                                                    SumIndexFields=Invoiced Quantity,Sales Amount (Actual),Purchase Amount (Actual) }
     {    ;Item Ledger Entry No.,Valuation Date     }
+    {    ;Item No.,Item Ledger Entry Type,Global Dimension 1 Code,Global Dimension 2 Code,Location Code,Drop Shipment,Variant Code,Posting Date;
+                                                   SumIndexFields=Invoiced Quantity,Sales Amount (Actual),Purchase Amount (Actual) }
   }
   FIELDGROUPS
   {
@@ -542,6 +549,10 @@ OBJECT Table 5802 Value Entry
     END;
 
     BEGIN
+    {
+      AB6.TAH.001 05/09/2012
+       -Ajout du champ  50011
+    }
     END.
   }
 }

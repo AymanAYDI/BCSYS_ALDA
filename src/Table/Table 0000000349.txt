@@ -4,7 +4,8 @@ OBJECT Table 349 Dimension Value
   {
     Date=26/11/15;
     Time=12:00:00;
-    Version List=NAVW19.00.00.43897;
+    Modified=Yes;
+    Version List=NAVW19.00.00.43897,AC1.00;
   }
   PROPERTIES
   {
@@ -136,6 +137,19 @@ OBJECT Table 349 Dimension Value
                                                    CaptionML=[ENU=Dimension Value ID;
                                                               FRA=ID section analytique];
                                                    Editable=No }
+    { 50000;  ;Nature Type         ;Option        ;OnValidate=BEGIN
+                                                                //AC1.00 BEGIN
+                                                                CompanyInfo.GET();
+                                                                TESTFIELD("Dimension Code",CompanyInfo."Dim. Selling Point Code");
+                                                                //AC1.00 END
+                                                              END;
+
+                                                   CaptionML=[ENU=Nature Type;
+                                                              FRA=Type nature];
+                                                   OptionCaptionML=[ENU=" ,Ofiice,School";
+                                                                    FRA=" ,Bureau,Scolaire"];
+                                                   OptionString=[ ,Ofiice,School];
+                                                   Description=AC1.00 }
   }
   KEYS
   {
@@ -163,6 +177,7 @@ OBJECT Table 349 Dimension Value
       CostAccSetup@1008 : Record 1108;
       CostAccMgt@1007 : Codeunit 1100;
       Text006@1006 : TextConst 'ENU=You cannot change the value of %1.;FRA=Vous ne pouvez pas modifier la valeur de %1.';
+      CompanyInfo@1180250001 : Record 79;
 
     PROCEDURE CheckIfDimValueUsed@1() : Boolean;
     BEGIN
@@ -521,6 +536,10 @@ OBJECT Table 349 Dimension Value
     END;
 
     BEGIN
+    {
+      Ajout Field "Nature Type"
+                  C/AL Nature Type - OnValidate()
+    }
     END.
   }
 }

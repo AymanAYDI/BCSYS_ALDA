@@ -1,0 +1,245 @@
+OBJECT Codeunit 50023 GenPurchInvoice
+{
+  OBJECT-PROPERTIES
+  {
+    Date=15/03/16;
+    Time=12:31:10;
+    Modified=Yes;
+    Version List=GIM;
+  }
+  PROPERTIES
+  {
+    TableNo=50008;
+    OnRun=BEGIN
+            ProgressWindow.OPEN(TextWind);
+
+            //Create Purchase Header
+            CreatePurchHeader(Rec);
+
+            //GetReceipt for each imported line
+            GIMPurchLine.SETRANGE("GIM Document Type","GIM Document Type");
+            GIMPurchLine.SETRANGE("Document No.","No.");
+            GIMPurchLine.SETCURRENTKEY("Document Type","Receipt No.","Receipt Line No.");
+            GIMPurchLine.SETFILTER("Receipt No.",'<>%1','');
+
+            NbRecs := GIMPurchLine.COUNT;
+
+            IF GIMPurchLine.FINDFIRST THEN
+            BEGIN
+              REPEAT
+                NoRec += 1;
+                ProgressWindow.UPDATE(1, NoRec / NbRecs * 10000 DIV 1);
+
+                PurchGetReceipt();
+                CurrentReceiptNo := GIMPurchLine."Receipt No.";
+              UNTIL GIMPurchLine.NEXT = 0;
+            END;
+
+            //Insert receipts founded
+            UpdatePurchHeader;
+            PurchLine.FIND('+');
+            NextNo := PurchLine."Line No." + 10000;
+
+            PurchLine.INIT;
+            PurchLine.SetPurchHeader(PurchHeader);
+            PurchLine."Document Type" := PurchHeader."Document Type";
+            PurchLine."Document No." := PurchHeader."No.";
+            PurchLine."Line No." := NextNo;
+            PurchLine."Buy-from Vendor No." := PurchHeader."Buy-from Vendor No.";
+            PurchLine."Pay-to Vendor No." := PurchHeader."Pay-to Vendor No.";
+            PurchLine.Type := PurchLine.Type::Item;
+            PurchLine.VALIDATE("No.",'A-FRAIS-CDE');
+            PurchLine.VALIDATE(Quantity,1);
+            CALCFIELDS("Total Amt Exc VAT Line");
+
+            PurchLine.VALIDATE("Direct Unit Cost","Total Amt Exc VAT" - TotalLineAmount);
+            PurchLine.INSERT(TRUE);
+
+            //Calc statistics
+            CalcStatVAT(PurchHeader,"Total VAT Amount");
+            ProgressWindow.CLOSE;
+          END;
+
+  }
+  CODE
+  {
+    VAR
+      GIMPurchLine@1000000001 : Record 50009;
+      PurchHeader@1000000002 : Record 38;
+      PurchLine@1000000003 : Record 39;
+      PurchRcptHeader@1000000010 : Record 120;
+      PurchRcptLine@1000000007 : Record 121;
+      PurchSetup@1000000015 : Record 312;
+      PurchPost@1000000016 : Codeunit 90;
+      GetReceipts@1000000004 : Codeunit 74;
+      Text000@1000000008 : TextConst 'FRA=" "';
+      TextWind@1000000005 : TextConst 'ENU=In progress  #1############;FRA=Traitement en cours\@1@@@@@@@@@@@@@@@@@@';
+      DimMgt@1000000009 : Codeunit 408;
+      ProgressWindow@1000000006 : Dialog;
+      NextNo@1000000012 : Integer;
+      CurrentReceiptNo@1000000011 : Code[20];
+      NbRecs@1000000013 : Integer;
+      NoRec@1000000014 : Integer;
+      VATAmount@1000000017 : Decimal;
+      VatAmount2@1000000022 : Decimal;
+      Xrec_VATDifference@1000000018 : Decimal;
+      Currency@1000000019 : Record 4;
+      Text001@1000000020 : TextConst 'ENU="The total %1 for a document must not exceed %2 = %3.";FRA="Le total %1 pour un document ne doit pas d‚passer %2=%3."';
+      MyVATDifference@1000000021 : Decimal;
+      TotalLineAmount@1180250001 : Decimal;
+      DimSetEntry@1000000023 : Record 480;
+
+    LOCAL PROCEDURE CreatePurchHeader@1000000001(_GIMPurchHeader@1000000000 : Record 50008);
+    BEGIN
+      PurchHeader.INIT;
+      PurchHeader."Document Type" := _GIMPurchHeader."Document Type";
+      PurchHeader.INSERT(TRUE);
+      PurchHeader.VALIDATE("Buy-from Vendor No." , _GIMPurchHeader."Buy-from Vendor No.");
+      PurchHeader."Vendor Invoice No." := _GIMPurchHeader."No.";
+
+      PurchHeader.MODIFY();
+    END;
+
+    LOCAL PROCEDURE PurchGetReceipt@1000000000();
+    VAR
+      TransferLine@1000000003 : Boolean;
+    BEGIN
+      PurchRcptLine.RESET;
+      PurchRcptLine.SETRANGE("Document No.",GIMPurchLine."Receipt No.");
+      PurchRcptLine.SETRANGE("Line No.",GIMPurchLine."Receipt Line No.");
+      WITH PurchRcptLine DO BEGIN
+      //  SETFILTER("Qty. Rcd. Not Invoiced",'<>0');
+        IF FIND('-') THEN BEGIN
+          PurchLine.LOCKTABLE;
+          PurchLine.SETRANGE("Document Type",PurchHeader."Document Type");
+          PurchLine.SETRANGE("Document No.",PurchHeader."No.");
+          PurchLine."Document Type" := PurchHeader."Document Type";
+          PurchLine."Document No." := PurchHeader."No.";
+
+          REPEAT
+            //IF PurchRcptHeader."No." <> "Document No." THEN BEGIN
+              PurchRcptHeader.GET("Document No.");
+              TransferLine := TRUE;
+              IF PurchRcptHeader."Currency Code" <> PurchHeader."Currency Code" THEN BEGIN
+                MESSAGE(
+                  Text000,
+                  PurchHeader.FIELDCAPTION("Currency Code"),
+                  PurchHeader.TABLECAPTION, PurchHeader."No.",
+                  PurchRcptHeader.TABLECAPTION,PurchRcptHeader."No.");
+               // TransferLine := FALSE;
+              END;
+              IF PurchRcptHeader."Pay-to Vendor No." <> PurchHeader."Pay-to Vendor No." THEN BEGIN
+                MESSAGE(
+                  Text000,
+                  PurchHeader.FIELDCAPTION("Pay-to Vendor No."),
+                  PurchHeader.TABLECAPTION, PurchHeader."No.",
+                  PurchRcptHeader.TABLECAPTION,PurchRcptHeader."No.");
+               // TransferLine := FALSE;
+              END;
+            //END;
+            IF TransferLine THEN BEGIN
+      //        PurchRcptLine := PurchRcptLine2;
+              PurchRcptLine.InsertInvLineFromRcptLine(PurchLine);
+              GIMPurchLine.SETRANGE("Allowance Charge Reason Filter", 'ECOTAXE');
+              GIMPurchLine.CALCFIELDS("Allowance Amount");
+              PurchLine.VALIDATE("Direct Unit Cost",
+                (GIMPurchLine.Amount + GIMPurchLine."Allowance Amount")/GIMPurchLine.Quantity);
+              PurchLine.MODIFY;
+              TotalLineAmount := TotalLineAmount + PurchLine."Line Amount";
+              //DimMgt.MoveTempFromDimToTempToDim(TempFromLineDim,TempToLineDim);
+            END;
+          UNTIL NEXT = 0;
+        END;
+      END;
+    END;
+
+    PROCEDURE GetPurchHeader@1000000003(VAR _PurchHeader@1000000000 : Record 38);
+    BEGIN
+      _PurchHeader.GET(PurchHeader."Document Type",PurchHeader."No.");
+    END;
+
+    PROCEDURE UpdatePurchHeader@1000000002();
+    BEGIN
+      GetReceipts.GetItemChargeAssgnt(PurchRcptLine, PurchRcptLine."Qty. Rcd. Not Invoiced");
+      //DimMgt.TransferTempToDimToDocDim(TempToLineDim);
+    END;
+
+    PROCEDURE CalcStatVAT@1000000004(_PurchHeader@1000000005 : Record 38;TotalVATAmt@1000000007 : Decimal);
+    VAR
+      TempPurchLine@1000000000 : TEMPORARY Record 39;
+      TempVATAmountLine@1000000001 : TEMPORARY Record 290;
+      TotalPurchLine@1000000002 : Record 39;
+      VATAmountLine2@1000000014 : Record 290;
+      TotalVATDifference@1000000013 : Decimal;
+      TotalPurchLineLCY@1000000003 : Record 39;
+      VATAmountText@1000000004 : Text[30];
+      VatAmtLineKey@1000000006 : Text[250];
+      VatIdentifier@1000000008 : Code[10];
+      VatCalcType@1000000009 : Option;
+      TaxGroupCode@1000000010 : Code[10];
+      UseTax@1000000011 : Boolean;
+      Pos@1000000012 : Boolean;
+    BEGIN
+      _PurchHeader.CalcInvDiscForHeader;
+      PurchSetup.GET;
+      PurchPost.GetPurchLines(_PurchHeader,TempPurchLine,0);
+      CLEAR(PurchPost);
+      PurchPost.SumPurchLinesTemp(
+        _PurchHeader,TempPurchLine,0,TotalPurchLine,TotalPurchLineLCY,VATAmount,VATAmountText);
+
+      MyVATDifference := TotalVATAmt - VATAmount;
+
+      PurchLine.CalcVATAmountLines(0,_PurchHeader,TempPurchLine,TempVATAmountLine);
+      TempVATAmountLine.MODIFYALL(Modified,FALSE);
+      TempVATAmountLine.FINDFIRST;
+      VatAmount2 := 0;
+      REPEAT
+        IF TempVATAmountLine."VAT Amount" > VatAmount2 THEN
+        BEGIN
+          VatAmount2 := TempVATAmountLine."VAT Amount";
+
+          //Store key
+          VatIdentifier := TempVATAmountLine."VAT Identifier";
+          VatCalcType   := TempVATAmountLine."VAT Calculation Type";
+          TaxGroupCode  := TempVATAmountLine."Tax Group Code";
+          UseTax        := TempVATAmountLine."Use Tax";
+          Pos           := TempVATAmountLine.Positive;
+        END;
+      UNTIL TempVATAmountLine.NEXT =0;
+      TempVATAmountLine.GET(VatIdentifier,VatCalcType,TaxGroupCode,UseTax,Pos);
+
+      Xrec_VATDifference := TempVATAmountLine."VAT Difference";
+
+      TempVATAmountLine.VALIDATE("VAT Amount",TempVATAmountLine."VAT Amount" + MyVATDifference);
+
+      TempVATAmountLine.CheckVATDifference(_PurchHeader."Currency Code",TRUE,FALSE);
+
+      VATAmountLine2 := TempVATAmountLine;
+      TotalVATDifference := ABS(TempVATAmountLine."VAT Difference") - ABS(Xrec_VATDifference);
+      IF TempVATAmountLine.FIND('-') THEN
+        REPEAT
+          TotalVATDifference := TotalVATDifference + ABS(TempVATAmountLine."VAT Difference");
+        UNTIL TempVATAmountLine.NEXT = 0;
+      TempVATAmountLine := VATAmountLine2;
+      IF Currency.GET(_PurchHeader."Currency Code") THEN
+        IF TotalVATDifference > Currency."Max. VAT Difference Allowed" THEN
+          ERROR(
+          Text001,TempVATAmountLine.FIELDCAPTION("VAT Difference"),
+          Currency.FIELDCAPTION("Max. VAT Difference Allowed"),Currency."Max. VAT Difference Allowed");
+
+
+      //TempVATAmountLine := Rec;
+      TempVATAmountLine.Modified := TRUE;
+      TempVATAmountLine.MODIFY;
+
+      IF TempVATAmountLine.GetAnyLineModified THEN BEGIN
+        PurchLine.UpdateVATOnLines(0,_PurchHeader,PurchLine,TempVATAmountLine);
+        PurchLine.UpdateVATOnLines(1,_PurchHeader,PurchLine,TempVATAmountLine);
+      END;
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

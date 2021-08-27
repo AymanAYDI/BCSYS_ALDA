@@ -1,0 +1,118 @@
+OBJECT XMLport 50002 Import Deskom
+{
+  OBJECT-PROPERTIES
+  {
+    Date=03/05/16;
+    Time=15:42:44;
+    Modified=Yes;
+    Version List=AC1.00;
+  }
+  PROPERTIES
+  {
+    Direction=Import;
+    OnInitXMLport=BEGIN
+                    IF MyFileName <> '' THEN
+                       currXMLport.IMPORTFILE := TRUE;
+                  END;
+
+    OnPreXMLport=BEGIN
+                   IF EDIEntry.FINDLAST THEN
+                     NextEntryNo := EDIEntry."Entry No.";
+                 END;
+
+    Format=Variable Text;
+    FieldDelimiter=<None>;
+    FieldSeparator=[;];
+    RecordSeparator=<LF>;
+    UseRequestPage=No;
+  }
+  ELEMENTS
+  {
+    { [{428EA612-8EFB-4EC7-8F57-0464FDBE8390}];  ;EDIEntries          ;Element ;Text     }
+
+    { [{C5969888-2542-47D5-A204-7CD6785BBB64}];1 ;EDIEntry            ;Element ;Table   ;
+                                                  SourceTable=Table50002;
+                                                  Import::OnBeforeInsertRecord=BEGIN
+
+                                                                                 NextEntryNo += 1;
+
+                                                                                 WITH "E.D.I. Entry" DO BEGIN
+                                                                                   "Entry No." := NextEntryNo;
+                                                                                   "User ID" := USERID;
+                                                                                   "Imp./Exp. Date" := CURRENTDATETIME;
+                                                                                   "EDI Code" := 'DESKOM';
+                                                                                   Error := TRUE;
+                                                                                 END;
+                                                                               END;
+                                                                                }
+
+    { [{3ACB9FF4-0010-4A3E-B7F8-1DE11D3ACBE8}];2 ;Field1              ;Element ;Field   ;
+                                                  DataType=Text;
+                                                  SourceField=E.D.I. Entry::Field 1 }
+
+    { [{9BA89EB2-2A9D-4400-9BF3-8EA70D3A0B5E}];2 ;Field2              ;Element ;Field   ;
+                                                  DataType=Text;
+                                                  SourceField=E.D.I. Entry::Field 2 }
+
+    { [{63C1EAA2-32EB-4E10-854D-874B3E81D027}];2 ;Field3              ;Element ;Field   ;
+                                                  DataType=Text;
+                                                  SourceField=E.D.I. Entry::Field 3 }
+
+    { [{1522233F-B68E-457C-BF16-52F4AF5126F6}];2 ;Field4              ;Element ;Field   ;
+                                                  DataType=Text;
+                                                  SourceField=E.D.I. Entry::Field 4 }
+
+    { [{3877673C-5B3D-4016-87BC-654653EA26CF}];2 ;Field5              ;Element ;Field   ;
+                                                  DataType=Text;
+                                                  SourceField=E.D.I. Entry::Field 5 }
+
+    { [{A851E32D-46D8-4BC9-8A21-0B7E38AFEE03}];2 ;Field6              ;Element ;Field   ;
+                                                  DataType=Text;
+                                                  SourceField=E.D.I. Entry::Field 6 }
+
+    { [{8E627AC7-5FDA-405B-AFFA-6C05BA5B273E}];2 ;Field7              ;Element ;Field   ;
+                                                  DataType=Text;
+                                                  SourceField=E.D.I. Entry::Field 7 }
+
+    { [{CF93326B-F3BA-4E17-B7A1-8C96BCB3DF77}];2 ;Field8              ;Element ;Field   ;
+                                                  DataType=Text;
+                                                  SourceField=E.D.I. Entry::Field 8 }
+
+    { [{51B8118C-707F-4067-B6EE-7CF62B3BA302}];2 ;Field9              ;Element ;Field   ;
+                                                  DataType=Text;
+                                                  SourceField=E.D.I. Entry::Field 9 }
+
+    { [{F0B2D0B2-1466-4DD3-8B49-A128CB906770}];2 ;Field10             ;Element ;Field   ;
+                                                  DataType=Text;
+                                                  SourceField=E.D.I. Entry::Field 10 }
+
+  }
+  EVENTS
+  {
+  }
+  REQUESTPAGE
+  {
+    PROPERTIES
+    {
+    }
+    CONTROLS
+    {
+    }
+  }
+  CODE
+  {
+    VAR
+      EDIEntry@1000000001 : Record 50002;
+      NextEntryNo@1000000000 : Integer;
+      MyFileName@1000000002 : Text;
+
+    PROCEDURE SetFilename@1000000001(_Filename@1000000000 : Text);
+    BEGIN
+      MyFileName := _Filename;
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

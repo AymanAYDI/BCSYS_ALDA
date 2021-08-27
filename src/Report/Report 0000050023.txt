@@ -1,0 +1,520 @@
+OBJECT Report 50023 E.D.I. Log List
+{
+  OBJECT-PROPERTIES
+  {
+    Date=22/04/16;
+    Time=11:24:24;
+    Modified=Yes;
+    Version List=ALDA1.00;
+  }
+  PROPERTIES
+  {
+    CaptionML=[ENU=Electronic Data Interchange Log List;
+               FRA=Liste trace d'Çchange de DonnÇes InformatisÇes];
+    ShowPrintStatus=No;
+    TopMargin=1000;
+    BottomMargin=0;
+    LeftMargin=1000;
+    ProcessingOnly=Yes;
+    OnInitReport=BEGIN
+                   NbrOfCol := 5;
+                   RequestOptionsVisible := FALSE;
+
+                   SMTPMailSetup.GET();
+                 END;
+
+    OnPreReport=BEGIN
+                  IF GUIALLOWED THEN
+                    Window.OPEN(Text50000);
+
+
+
+
+                  CASE TRUE OF
+                      Print2XLS:
+                      BEGIN
+                        //FileName := FileMgt.ServerTempFileName('xlsx');
+                        ServerFileName := '';
+                        ClientFileName :=  'NAV' + FORMAT(TODAY,0,'<Year><Month,2><Day,2>'+ '.xlsx');
+                      END;
+
+                      Print2CSV:
+                      BEGIN
+                        ServerFileName := FileMgt.ServerTempFileName('csv');
+                        ClientFileName :=  'NAV' + FORMAT(TODAY,0,'<Year><Month,2><Day,2>'+ '.csv');
+                      END;
+                  END;
+                  TempExcelBuf.RESET;
+                  TempExcelBuf.DELETEALL;
+                END;
+
+    OnPostReport=BEGIN
+                   IF Print2CSV THEN
+                     IF EXISTS(ServerFileName) THEN BEGIN
+                       FileMgt.DownloadHandler(ServerFileName,'','','',ClientFileName);
+                       ERASE(ServerFileName);
+                     END;
+                 END;
+
+  }
+  DATASET
+  {
+    { 5290;    ;DataItem;                    ;
+               DataItemTable=Table472;
+               DataItemTableView=SORTING(ID);
+               MaxIteration=1;
+               OnAfterGetRecord=BEGIN
+                                  IF NOT RequestOptionsVisible THEN BEGIN
+                                    DeleteEDILogEntry := FALSE;
+                                    EDIDT := CREATEDATETIME(CALCDATE('<-1D>',TODAY),0T);
+                                    ServerFileName := "Job Queue Entry"."Parameter String" + 'NAV' + FORMAT(TODAY,0,'<Year><Month,2><Day,2>') + '.csv';
+                                    Print2XLS := FALSE;
+                                    Print2CSV := TRUE;
+                                    Send2Mail := TRUE;
+                                  END;
+                                END;
+                                 }
+
+    { 5291;    ;DataItem;                    ;
+               DataItemTable=Table50000;
+               DataItemTableView=SORTING(Code);
+               PrintOnlyIfDetail=Yes;
+               ReqFilterHeadingML=[ENU=E.D.I.;
+                                   FRA=Traces];
+               OnAfterGetRecord=BEGIN
+                                  SETRANGE(Code, Code);
+                                END;
+
+               ReqFilterFields=Code }
+
+    { 5292;1   ;DataItem;CopyLoop            ;
+               DataItemTable=Table2000000026;
+               DataItemTableView=SORTING(Number);
+               OnPreDataItem=BEGIN
+                               NoOfLoops := ABS(NoOfCopies) + 1;
+                               IF NoOfLoops <= 0 THEN
+                                 NoOfLoops := 1;
+                               SETRANGE(Number,1,NoOfLoops);
+
+                               CLEAR(ColValue);
+                               ColValue[1] := "E.D.I. Log".FIELDCAPTION("EDI Code");
+                               ColValue[2] := "E.D.I. Log".FIELDCAPTION("Treatment Date");
+                               ColValue[3] := "E.D.I. Log".FIELDCAPTION(Filename);
+                               ColValue[4] := "E.D.I. Log Entry".FIELDCAPTION(Status);
+                               ColValue[5] := "E.D.I. Log Entry".FIELDCAPTION("Error Text");
+                             END;
+
+               OnAfterGetRecord=BEGIN
+                                  IF (Print2XLS OR Print2CSV) AND
+                                     (Number = 1) THEN BEGIN
+                                    CASE TRUE OF
+                                      Print2XLS:BEGIN
+                                        RowNo := 1;
+                                        FOR i := 1 TO NbrOfCol DO
+                                          EnterCell(RowNo,i,ConvAnsi2Ascii(ConvChar160To32(ColValue[i])),TRUE,TRUE,'@');
+                                      END;
+                                      Print2CSV:BEGIN
+                                        CurrFile.CREATE(ServerFileName);
+                                        CurrFile.CREATEOUTSTREAM(CurrFileOutStream);
+                                        CLEAR(LineFile);
+                                        FOR i := 1 TO NbrOfCol DO
+                                          IF i = NbrOfCol THEN
+                                            LineFile += ConvAscii2Ansi(ConvChar160To32(ColValue[i]))
+                                          ELSE
+                                            LineFile += ConvAscii2Ansi(ConvChar160To32(ColValue[i])) + ';';
+                                        CurrFileOutStream.WRITETEXT(LineFile);// + FORMAT(CarriageReturn) + FORMAT(LineFeed));
+                                        CurrFileOutStream.WRITETEXT();
+                                      END;
+                                    END;//CASE
+                                  END;
+                                END;
+                                 }
+
+    { 5293;2   ;DataItem;PageLoop            ;
+               DataItemTable=Table2000000026;
+               DataItemTableView=SORTING(Number)
+                                 WHERE(Number=CONST(1)) }
+
+    { 5294;2   ;DataItem;                    ;
+               DataItemTable=Table50001;
+               DataItemTableView=SORTING(EDI Code,Direction,Filename,Treatment Date)
+                                 WHERE(Status=FILTER(Error|' '));
+               PrintOnlyIfDetail=Yes;
+               OnPreDataItem=BEGIN
+                               IF EDIDT <> 0DT THEN
+                                 SETFILTER("Treatment Date",'..%1',EDIDT);
+                             END;
+
+               OnAfterGetRecord=BEGIN
+                                  CLEAR(ColValue);
+                                  ColValue[1] := "E.D.I. Log"."EDI Code";
+                                  ColValue[2] := FORMAT("E.D.I. Log"."Treatment Date");
+                                  ColValue[3] := '';
+                                  ColValue[4] := FORMAT(Status);
+                                  ColValue[5] := "Error Text";
+
+                                  IF (Print2XLS OR Print2CSV) AND
+                                     (CopyLoop.Number = 1) THEN BEGIN
+                                    CASE TRUE OF
+                                      Print2XLS:BEGIN
+                                        RowNo += 1;
+                                        FOR i := 1 TO NbrOfCol DO
+                                          EnterCell(RowNo,i,ConvAnsi2Ascii(ConvChar160To32(ColValue[i])),TRUE,FALSE,'@');
+                                      END;
+                                      Print2CSV:BEGIN
+                                        CLEAR(LineFile);
+                                        FOR i := 1 TO NbrOfCol DO
+                                          IF i = NbrOfCol THEN
+                                            LineFile += ConvAscii2Ansi(ConvChar160To32(ColValue[i]))
+                                          ELSE
+                                            LineFile += ConvAscii2Ansi(ConvChar160To32(ColValue[i])) + ';';
+                                        CurrFileOutStream.WRITETEXT(LineFile);;
+                                        CurrFileOutStream.WRITETEXT();
+                                      END;
+                                    END;//CASE
+                                  END;
+                                END;
+
+               DataItemLinkReference=E.D.I. Setup;
+               DataItemLink=EDI Code=FIELD(Code) }
+
+    { 5295;3   ;DataItem;                    ;
+               DataItemTable=Table50004;
+               DataItemTableView=SORTING(EDI Code,Treatment Date,Ligne No.)
+                                 WHERE(Status=FILTER(Error|' '));
+               OnAfterGetRecord=BEGIN
+                                  CLEAR(ColValue);
+                                  ColValue[1] := "E.D.I. Log"."EDI Code";
+                                  ColValue[2] := FORMAT("E.D.I. Log"."Treatment Date");
+                                  ColValue[3] := "E.D.I. Log".Filename;
+                                  ColValue[4] := FORMAT(Status);
+                                  ColValue[5] := "Error Text";
+
+                                  IF (Print2XLS OR Print2CSV) AND
+                                     (CopyLoop.Number = 1) THEN BEGIN
+                                    CASE TRUE OF
+                                      Print2XLS:BEGIN
+                                        RowNo += 1;
+                                        FOR i := 1 TO NbrOfCol DO
+                                          EnterCell(RowNo,i,ConvAnsi2Ascii(ConvChar160To32(ColValue[i])),FALSE,FALSE,'@');
+                                      END;
+                                      Print2CSV:BEGIN
+                                        CLEAR(LineFile);
+                                        FOR i := 1 TO NbrOfCol DO
+                                          IF i = NbrOfCol THEN
+                                            LineFile += ConvAscii2Ansi(ConvChar160To32(ColValue[i]))
+                                          ELSE
+                                            LineFile += ConvAscii2Ansi(ConvChar160To32(ColValue[i])) + ';';
+                                        CurrFileOutStream.WRITETEXT(LineFile);
+                                        CurrFileOutStream.WRITETEXT();
+                                      END;
+                                    END;//CASE
+                                  END;
+                                END;
+
+               DataItemLink=EDI Code=FIELD(EDI Code),
+                            Treatment Date=FIELD(Treatment Date) }
+
+    { 5296;    ;DataItem;                    ;
+               DataItemTable=Table2000000026;
+               DataItemTableView=SORTING(Number)
+                                 WHERE(Number=CONST(1));
+               MaxIteration=1;
+               OnAfterGetRecord=BEGIN
+                                  IF Print2XLS OR Print2CSV THEN BEGIN
+                                    IF Print2XLS THEN BEGIN
+                                      Window.CLOSE;
+                                      ServerFileName := FileMgt.ServerTempFileName('xlsx');
+                                      TempExcelBuf.CreateBookAndOpenExcel(ServerFileName, 'NAV','',COMPANYNAME, USERID);
+                                      //TempExcelBuf.CreateRangeName(TempExcelBuf.GetExcelReference(8),1,1);
+                                      //TempExcelBuf.OpenExcel();
+                                    END;
+                                    IF Print2CSV THEN BEGIN
+                                      CurrFile.CLOSE;
+                                      FILE.EXISTS(ServerFileName);
+                                    END;
+                                  END;
+                                END;
+                                 }
+
+    { 5297;    ;DataItem;SendMail            ;
+               DataItemTable=Table2000000026;
+               DataItemTableView=SORTING(Number)
+                                 WHERE(Number=CONST(1));
+               MaxIteration=1;
+               OnAfterGetRecord=BEGIN
+                                  IF Send2Mail THEN
+                                    SendDocument(COMPANYNAME,SMTPMailSetup."User ID",'',"E.D.I. Setup".TABLECAPTION,STRSUBSTNO(Text50002,
+                                      "E.D.I. Log Entry".TABLECAPTION,FORMAT(EDIDT)),ServerFileName);
+                                  IF EXISTS(ServerFileName) THEN
+                                    ERASE(ServerFileName);
+                                END;
+                                 }
+
+    { 5298;    ;DataItem;DeleteLog           ;
+               DataItemTable=Table2000000026;
+               DataItemTableView=SORTING(Number)
+                                 WHERE(Number=CONST(1));
+               MaxIteration=1;
+               OnAfterGetRecord=BEGIN
+                                  IF DeleteEDILogEntry THEN BEGIN
+                                    EDILog.RESET;
+                                    IF "E.D.I. Setup".GETFILTER(Code) <> '' THEN
+                                      EDILog.SETFILTER("EDI Code","E.D.I. Setup".GETFILTER(Code));
+                                    IF EDIDT <> 0DT THEN
+                                      EDILog.SETFILTER("Treatment Date",'..%1',CREATEDATETIME(CALCDATE('<-30D>',DT2DATE(EDIDT)),DT2TIME(EDIDT)));
+                                    IF EDILog.FINDSET(TRUE,TRUE) THEN
+                                      EDILog.DELETEALL(TRUE);
+                                  END;
+                                END;
+                                 }
+
+  }
+  REQUESTPAGE
+  {
+    PROPERTIES
+    {
+      OnOpenPage=BEGIN
+                   RequestOptionsVisible := TRUE;
+                 END;
+
+    }
+    CONTROLS
+    {
+      { 1180250003;0;Container;
+                  ContainerType=ContentArea }
+
+      { 1180250002;1;Group  ;
+                  CaptionML=[ENU=Options;
+                             FRA=Options] }
+
+      { 1180250001;2;Field  ;
+                  CaptionML=[ENU=Datetime Filter;
+                             FRA=Filtre date heure];
+                  SourceExpr=EDIDT }
+
+      { 1180250004;2;Field  ;
+                  CaptionML=[ENU=Delete Entry;
+                             FRA=Supprime Çcriture];
+                  SourceExpr=DeleteEDILogEntry }
+
+      { 1180250005;2;Field  ;
+                  CaptionML=[ENU=Print to Excel File;
+                             FRA=Imprimer dans un fichier Excel];
+                  SourceExpr=Print2XLS }
+
+      { 1180250006;2;Field  ;
+                  CaptionML=[ENU=Print to CSV file;
+                             FRA=Imprimer dans un fichier CSV];
+                  SourceExpr=Print2CSV }
+
+      { 1180250007;2;Field  ;
+                  CaptionML=[ENU=Save AS;
+                             FRA=Enregistrer sous];
+                  SourceExpr=ServerFileName;
+                  Visible=FALSE }
+
+      { 1180250008;2;Field  ;
+                  CaptionML=[ENU=Send to Mail;
+                             FRA=Envoyer par mail];
+                  SourceExpr=Send2Mail }
+
+    }
+  }
+  LABELS
+  {
+  }
+  CODE
+  {
+    VAR
+      EDILog@1180250038 : Record 50001;
+      SMTPMailSetup@1180250028 : Record 409;
+      TempExcelBuf@1180250027 : TEMPORARY Record 370;
+      MailMgt@1180250026 : Codeunit 397;
+      SMTPMail@1180250025 : Codeunit 400;
+      DeleteEDILogEntry@1180250001 : Boolean;
+      Print2XLS@1180250007 : Boolean;
+      Print2CSV@1180250006 : Boolean;
+      Send2Mail@1180250008 : Boolean;
+      NoOfLoops@1180250002 : Integer;
+      NoOfCopies@1180250003 : Integer;
+      RowNo@1180250024 : Integer;
+      ColNo@1180250023 : Integer;
+      i@1180250022 : Integer;
+      NbrOfCol@1180250037 : Integer;
+      LineFile@1180250032 : Text[1024];
+      ColValue@1180250020 : ARRAY [100] OF Text[250];
+      AsciiStr@1180250019 : Text[250];
+      AnsiStr@1180250018 : Text[250];
+      ServerFileName@1180250017 : Text[1024];
+      FileNameAttched@1180250016 : Text[1024];
+      SubjectTextMail@1180250015 : Text[250];
+      ObjectTextMail@1180250014 : Text[250];
+      Email@1180250013 : ARRAY [2] OF Text[50];
+      Receipients@1180250012 : Text[250];
+      DefaultSenderEMail@1180250011 : Text[250];
+      Text50000@1180250030 : TextConst 'ENU=Counting records...;FRA=Comptage des enregistrements...';
+      Text50001@1180250029 : TextConst 'ENU=Save As;FRA=Enregistrer sous';
+      Text50002@1180250004 : TextConst 'FRA=Le message de le/la %1 n''a pas ÇtÇ envoyÇ!\(Piäce jointe : %2.)';
+      CarriageReturn@1180250036 : Char;
+      LineFeed@1180250035 : Char;
+      CharVar@1180250009 : ARRAY [32] OF Char;
+      EDIDT@1180250033 : DateTime;
+      Window@1180250031 : Dialog;
+      MailMgtMethod@1180250021 : 'Mail,SMTP Mail';
+      CurrFileOutStream@1180250010 : OutStream;
+      CurrFile@1180250005 : File;
+      RequestOptionsVisible@1180250034 : Boolean;
+      FileMgt@1000000000 : Codeunit 419;
+      ClientFileName@1000000001 : Text;
+
+    PROCEDURE InitReport@1180250001(ForDeleteEDILogEntry@1180250004 : Boolean;ForEDIDT@1180250001 : DateTime;ForFileName@1180250003 : Text[1024];ForPrint2XlS@1180250005 : Boolean;ForPrintCSV@1180250006 : Boolean;ForSend2Mail@1180250002 : Boolean);
+    BEGIN
+      DeleteEDILogEntry := ForDeleteEDILogEntry;
+      EDIDT := ForEDIDT;
+      ServerFileName := ForFileName;
+      Print2XLS := ForPrint2XlS;
+      Print2CSV := ForPrintCSV;
+      Send2Mail := ForSend2Mail;
+    END;
+
+    LOCAL PROCEDURE EnterCell@1180250009(RowNo@1000 : Integer;ColumnNo@1001 : Integer;CellValue@1002 : Text[250];Bold@1003 : Boolean;UnderLine@1004 : Boolean;NumberFormat@1005 : Text[30]);
+    BEGIN
+      TempExcelBuf.INIT;
+      TempExcelBuf.VALIDATE("Row No.",RowNo);
+      TempExcelBuf.VALIDATE("Column No.",ColumnNo);
+      TempExcelBuf."Cell Value as Text" := CellValue;
+      TempExcelBuf.Formula := '';
+      TempExcelBuf.Bold := Bold;
+      TempExcelBuf.Underline := UnderLine;
+      TempExcelBuf.NumberFormat := NumberFormat;
+      TempExcelBuf.INSERT;
+    END;
+
+    PROCEDURE ConvColNo2XlColID@1000000001(ColumnNo@1000000000 : Integer) xlColID : Text[10];
+    VAR
+      x@1000000003 : Integer;
+      i@1000000002 : Integer;
+      c@1000000001 : Char;
+    BEGIN
+      xlColID := '';
+      IF ColumnNo <> 0 THEN BEGIN
+        x := ColumnNo - 1;
+        c := 65 + x MOD 26;
+        xlColID[10] := c;
+        i := 10;
+        WHILE x > 25 DO BEGIN
+          x := x DIV 26;
+          i := i - 1;
+          c := 64 + x MOD 26;
+          xlColID[i] := c;
+        END;
+        FOR x := i TO 10 DO
+          xlColID[1+x-i] := xlColID[x];
+      END;
+    END;
+
+    PROCEDURE ConvChar160To32@1000000002(Text@1180250001 : Text[256]) : Text[256];
+    BEGIN
+      EXIT(CONVERTSTR(Text,'ˇ',' '));
+    END;
+
+    PROCEDURE FileNameAfterValidate@1180250007();
+    BEGIN
+      GetFileName;
+    END;
+
+    PROCEDURE FileNameAssistEdit@1180250010();
+    BEGIN
+      GetFileName;
+    END;
+
+    PROCEDURE GetFileName@1180250006();
+    VAR
+      CommonDialogMgt@1180250002 : Codeunit 412;
+      ClientFileName@1180250001 : Text[1024];
+    BEGIN
+      ServerFileName := FileMgt.UploadFileWithFilter(Text50001,'*.txt','(*.txt)|*.txt','txt');
+    END;
+
+    PROCEDURE ConvAnsi2Ascii@1180250011(_Text@1180250001 : Text[250]) : Text[250];
+    BEGIN
+      MakeVars;
+      EXIT(CONVERTSTR(_Text,AnsiStr,AsciiStr));
+    END;
+
+    PROCEDURE ConvAscii2Ansi@1180250002(_Text@1180250001 : Text[250]) : Text[250];
+    BEGIN
+      MakeVars;
+      EXIT(CONVERTSTR(_Text,AsciiStr,AnsiStr));
+    END;
+
+    PROCEDURE MakeVars@1180250008();
+    BEGIN
+
+      AsciiStr := 'ÄÅÇÉÑÖÜáàâäãåçéèêëíìîïñóòôöõúùûü†°¢£§•¶ß®©™´¨≠ÆØ›››››µ∂∑∏››++Ωæ++--+-+∆«++--›-+';
+      AsciiStr := AsciiStr +'œ–—“”‘i÷◊ÿ++›_›ﬁÓ‡·‚„‰ÂÊÁËÈÍÎÏÌÓÔÒ=ÛÙıˆ˜¯˘˙˚¸˝›ˇ';
+      CharVar[1] := 196;
+      CharVar[2] := 197;
+      CharVar[3] := 201;
+      CharVar[4] := 242;
+      CharVar[5] := 220;
+      CharVar[6] := 186;
+      CharVar[7] := 191;
+      CharVar[8] := 188;
+      CharVar[9] := 187;
+      CharVar[10] := 193;
+      CharVar[11] := 194;
+      CharVar[12] := 192;
+      CharVar[13] := 195;
+      CharVar[14] := 202;
+      CharVar[15] := 203;
+      CharVar[16] := 200;
+      CharVar[17] := 205;
+      CharVar[18] := 206;
+      CharVar[19] := 204;
+      CharVar[20] := 175;
+      CharVar[21] := 223;
+      CharVar[22] := 213;
+      CharVar[23] := 254;
+      CharVar[24] := 218;
+      CharVar[25] := 219;
+      CharVar[26] := 217;
+
+      AnsiStr  := '«¸È‚‰‡ÂÁÍÎËÔÓÏ'+FORMAT(CharVar[1])+FORMAT(CharVar[2])+FORMAT(CharVar[3])+ 'Ê∆Ùˆ'+FORMAT(CharVar[4]);
+      AnsiStr := AnsiStr + '˚˘ˇ÷'+FORMAT(CharVar[5])+'¯£ÿ◊É·ÌÛ˙Ò—™'+FORMAT(CharVar[6])+FORMAT(CharVar[7]);
+      AnsiStr := AnsiStr + 'Æ¨Ω'+FORMAT(CharVar[8])+'°´'+FORMAT(CharVar[9])+'___¶¶' + FORMAT(CharVar[10])+FORMAT(CharVar[11]);
+      AnsiStr := AnsiStr + FORMAT(CharVar[12]) + '©¶¶++¢•++--+-+„' + FORMAT(CharVar[13]) + '++--¶-+§–';
+      AnsiStr  :=  AnsiStr +FORMAT(CharVar[14])+FORMAT(CharVar[15])+FORMAT(CharVar[16])+'i'+FORMAT(CharVar[17])+FORMAT(CharVar[18]);
+      AnsiStr  :=  AnsiStr + 'œ++__¶' + FORMAT(CharVar[19])+FORMAT(CharVar[20])+'”'+FORMAT(CharVar[21])+'‘“ı';
+      AnsiStr  :=  AnsiStr + FORMAT(CharVar[22]) + 'µ' + FORMAT(CharVar[23]) + 'ﬁ' + FORMAT(CharVar[24])+ FORMAT(CharVar[25]);
+      AnsiStr  :=  AnsiStr + FORMAT(CharVar[26]) + '˝›Ø' + FORMAT(CharVar[27]) + '≠' + FORMAT(CharVar[28]) +'=æ∂ß˜∏'+ FORMAT(CharVar[29]
+      );
+      AnsiStr  :=  AnsiStr + '®∑' + FORMAT(CharVar[30]) +FORMAT(CharVar[31]) +FORMAT(CharVar[32]) +'_ ';
+    END;
+
+    PROCEDURE SendDocument@1180250038(SenderName@1180250010 : Text[100];SenderAddress@1180250009 : Text[50];Recipients@1180250008 : Text[1024];Subject@1180250007 : Text[200];Body@1180250006 : Text[1024];AttachedFileName@1180250001 : Text[260]);
+    VAR
+      SMTPMail@1180250003 : Codeunit 400;
+    BEGIN
+      IF EXISTS(ServerFileName) THEN BEGIN
+        CLEAR(SMTPMail);
+
+        SMTPMail.CreateMessage(SenderName,SenderAddress,Recipients,Subject,Body,FALSE);
+
+        IF SenderAddress <> '' THEN
+          SMTPMail.AddBCC(SenderAddress);
+
+        SMTPMail.AddAttachment(AttachedFileName, ClientFileName);
+        SMTPMail.Send();
+      END;
+    END;
+
+    BEGIN
+    END.
+  }
+  RDLDATA
+  {
+  }
+}
+

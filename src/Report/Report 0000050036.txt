@@ -1,0 +1,120 @@
+OBJECT Report 50036 Import Taxe
+{
+  OBJECT-PROPERTIES
+  {
+    Date=27/07/16;
+    Time=18:23:22;
+    Modified=Yes;
+    Version List=,2016;
+  }
+  PROPERTIES
+  {
+    ShowPrintStatus=No;
+    ProcessingOnly=Yes;
+    OnInitReport=BEGIN
+                   CLEAR(CurrFile);
+                   CLEAR(CurrInStream);
+                 END;
+
+    OnPreReport=BEGIN
+                    //CurrFile.OPEN(FileName);
+                    //CurrFile.CREATEINSTREAM(CurrInStream);
+
+                    ImpTaxe.RUN;
+                    //CurrFile.CLOSE;
+
+                  COMMIT;
+
+                  Window.OPEN(
+                    Text000 + '\' +
+                    '@1@@@@@@@@@@@@@@@@@@@@@');
+                  Window.UPDATE(1,0);
+
+                  Item.RESET;
+                  IF Item.FINDSET(TRUE,FALSE) THEN BEGIN
+                    CurrRec := 0;
+                    RecCount := Item.COUNT;
+                    Window.UPDATE(1,0);
+                    REPEAT
+                      CurrRec += 1;
+                      Window.UPDATE(1,ROUND(CurrRec / RecCount * 10000,1));
+
+                      Amt := 0;
+
+                      ItemCrossRef.RESET;
+                      ItemCrossRef.SETCURRENTKEY("Item No.","Variant Code","Unit of Measure","Cross-Reference Type",
+                        "Cross-Reference Type No.","Cross-Reference No.");
+                      ItemCrossRef.SETRANGE("Cross-Reference Type",ItemCrossRef."Cross-Reference Type"::Vendor);
+                      ItemCrossRef.SETRANGE("Cross-Reference Type No.",'0174');
+                      ItemCrossRef.SETRANGE("Item No.",Item."No.");
+                      IF ItemCrossRef.FINDFIRST THEN BEGIN
+                        EDIEntry.RESET;
+                        EDIEntry.SETRANGE("EDI Code",'TAXE');
+                        EDIEntry.SETRANGE("Field 1",ItemCrossRef."Cross-Reference No.");
+                        IF EDIEntry.FINDSET THEN BEGIN
+                          REPEAT
+                            Decimal := 0;
+                            IF EVALUATE(Decimal,CONVERTSTR(EDIEntry."Field 4",'.',',')) THEN
+                              Amt += Decimal;
+                          UNTIL EDIEntry.NEXT = 0;
+                          Item.Ecotaxe := Amt;
+                          Item.MODIFY(TRUE);
+                          EDIEntry.Handled := TRUE;
+                          EDIEntry.MODIFY;
+                        END;
+                      END;
+                    UNTIL Item.NEXT = 0;
+
+                    EDIEntry.RESET;
+                    EDIEntry.SETRANGE("EDI Code",'TAXE');
+                    //EDIEntry.SETRANGE(Handled,TRUE);
+                    IF EDIEntry.FINDSET(TRUE,TRUE) THEN
+                      EDIEntry.DELETEALL;
+                  END;
+                  Window.CLOSE;
+                END;
+
+    UseRequestPage=No;
+  }
+  DATASET
+  {
+  }
+  REQUESTPAGE
+  {
+    PROPERTIES
+    {
+    }
+    CONTROLS
+    {
+    }
+  }
+  LABELS
+  {
+  }
+  CODE
+  {
+    VAR
+      Text000@1180250010 : TextConst 'ENU=Batch in process...;FRA=Traitement en cours...';
+      Text003@1180250001 : TextConst 'ENU=Import Excel File;FRA=Importer fichier csv';
+      ItemCrossRef@1000000000 : Record 5717;
+      Item@1180250002 : Record 27;
+      EDIEntry@1180250009 : Record 50002;
+      CurrInStream@1180250006 : InStream;
+      CurrFile@1180250005 : File;
+      FileName@1180250004 : Text[1024];
+      Window@1180250008 : Dialog;
+      RecCount@1180250007 : Integer;
+      CurrRec@1180250003 : Integer;
+      ImpTaxe@1180250011 : XMLport 50000;
+      Amt@1180250012 : Decimal;
+      Decimal@1180250013 : Decimal;
+      Filemanegment@1000000001 : Integer;
+
+    BEGIN
+    END.
+  }
+  RDLDATA
+  {
+  }
+}
+

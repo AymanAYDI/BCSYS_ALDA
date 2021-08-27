@@ -4,7 +4,8 @@ OBJECT Page 9003 Acc. Receivables Adm. RC
   {
     Date=09/09/14;
     Time=12:00:00;
-    Version List=NAVW18.00,NAVFR8.00;
+    Modified=Yes;
+    Version List=NAVW18.00,NAVFR8.00,AB6.JME.001;
   }
   PROPERTIES
   {
@@ -79,6 +80,7 @@ OBJECT Page 9003 Acc. Receivables Adm. RC
                       CaptionML=[ENU=Finance Cha&rge Memo Nos.;
                                  FRA=N¯ factu&re d'intÇràts];
                       RunObject=Report 127;
+                      Visible=FALSE;
                       Image=Report }
       { 1120005 ;1   ;Separator  }
       { 1120006 ;1   ;Action    ;
@@ -90,6 +92,7 @@ OBJECT Page 9003 Acc. Receivables Adm. RC
                       CaptionML=[ENU=GL/Cust. Ledger Reconciliation;
                                  FRA=Rapprochement cpta. gÇn./client];
                       RunObject=Report 10861;
+                      Visible=FALSE;
                       Image=Report }
       { 1900000011;0 ;ActionContainer;
                       ActionContainerType=HomeItems }
@@ -123,6 +126,7 @@ OBJECT Page 9003 Acc. Receivables Adm. RC
                       CaptionML=[ENU=Bank Accounts;
                                  FRA=Comptes bancaires];
                       RunObject=Page 371;
+                      Visible=FALSE;
                       Image=BankAccount }
       { 6       ;1   ;Action    ;
                       CaptionML=[ENU=Reminders;
@@ -133,6 +137,7 @@ OBJECT Page 9003 Acc. Receivables Adm. RC
                       CaptionML=[ENU=Finance Charge Memos;
                                  FRA=Factures d'intÇràts];
                       RunObject=Page 448;
+                      Visible=FALSE;
                       Image=FinChargeMemo }
       { 8       ;1   ;Action    ;
                       CaptionML=[ENU=Items;
@@ -144,24 +149,28 @@ OBJECT Page 9003 Acc. Receivables Adm. RC
                                  FRA=Feuilles vente];
                       RunObject=Page 251;
                       RunPageView=WHERE(Template Type=CONST(Sales),
-                                        Recurring=CONST(No)) }
+                                        Recurring=CONST(No));
+                      Visible=FALSE }
       { 32      ;1   ;Action    ;
                       CaptionML=[ENU=Cash Receipt Journals;
                                  FRA=Feuilles räglement];
                       RunObject=Page 251;
                       RunPageView=WHERE(Template Type=CONST(Cash Receipts),
                                         Recurring=CONST(No));
+                      Visible=FALSE;
                       Image=Journals }
       { 1120000 ;1   ;Action    ;
                       CaptionML=[ENU=Payment Slips;
                                  FRA=Bordereaux paiement];
-                      RunObject=Page 10870 }
+                      RunObject=Page 10870;
+                      Visible=FALSE }
       { 33      ;1   ;Action    ;
                       CaptionML=[ENU=General Journals;
                                  FRA=Feuilles comptabilitÇ];
                       RunObject=Page 251;
                       RunPageView=WHERE(Template Type=CONST(General),
                                         Recurring=CONST(No));
+                      Visible=FALSE;
                       Image=Journal }
       { 4       ;1   ;Action    ;
                       CaptionML=[ENU=Direct Debit Collections;
@@ -210,20 +219,24 @@ OBJECT Page 9003 Acc. Receivables Adm. RC
                       CaptionML=[ENU=Issued Fin. Charge Memos;
                                  FRA=Factures d'intÇràts Çmises];
                       RunObject=Page 452;
+                      Visible=FALSE;
                       Image=PostedMemo }
       { 102     ;2   ;Action    ;
                       CaptionML=[ENU=G/L Registers;
                                  FRA=Historiques des transactions comptabilitÇ];
                       RunObject=Page 116;
+                      Visible=FALSE;
                       Image=GLRegisters }
       { 1120001 ;2   ;Action    ;
                       CaptionML=[ENU=Simulation Registers;
                                  FRA=Hist. transactions simulation];
-                      RunObject=Page 10810 }
+                      RunObject=Page 10810;
+                      Visible=FALSE }
       { 1120002 ;2   ;Action    ;
                       CaptionML=[ENU=Payment Slip List Archives;
                                  FRA=Archives liste bordereau paiement];
-                      RunObject=Page 10879 }
+                      RunObject=Page 10879;
+                      Visible=FALSE }
       { 1900000004;0 ;ActionContainer;
                       ActionContainerType=ActionItems }
       { 64      ;1   ;Separator ;
@@ -271,6 +284,7 @@ OBJECT Page 9003 Acc. Receivables Adm. RC
                                  FRA=&Facture d'intÇràts vente];
                       RunObject=Page 446;
                       Promoted=No;
+                      Visible=FALSE;
                       Image=FinChargeMemo;
                       PromotedCategory=Process;
                       RunPageMode=Create }
@@ -290,28 +304,34 @@ OBJECT Page 9003 Acc. Receivables Adm. RC
                       CaptionML=[ENU=Cash Receipt &Journal;
                                  FRA=Feuille &räglement];
                       RunObject=Page 255;
+                      Visible=FALSE;
                       Image=CashReceiptJournal }
       { 1120008 ;1   ;Action    ;
                       CaptionML=[ENU=Payment Slip;
                                  FRA=Bordereau paiement];
-                      RunObject=Page 10868 }
+                      RunObject=Page 10868;
+                      Visible=FALSE }
       { 1120009 ;1   ;Action    ;
                       CaptionML=[ENU=Look/Edit Payment Line;
                                  FRA=Consulter/êditer ligne paiement];
-                      RunObject=Page 10862 }
+                      RunObject=Page 10862;
+                      Visible=FALSE }
       { 1120010 ;1   ;Action    ;
                       CaptionML=[ENU=Payment Report;
                                  FRA=êtat räglement];
-                      RunObject=Page 10863 }
+                      RunObject=Page 10863;
+                      Visible=FALSE }
       { 1120011 ;1   ;Action    ;
                       CaptionML=[ENU=Archive Payment Journals;
                                  FRA=Archiver les feuilles paiement];
                       RunObject=Report 10873;
+                      Visible=FALSE;
                       Image=Report }
       { 1120012 ;1   ;Action    ;
                       CaptionML=[ENU=Create Payment Slip;
                                  FRA=CrÇer bordereau paiement];
-                      RunObject=Codeunit 10860 }
+                      RunObject=Codeunit 10860;
+                      Visible=FALSE }
       { 111     ;1   ;Separator  }
       { 112     ;1   ;Action    ;
                       Ellipsis=Yes;
@@ -339,6 +359,7 @@ OBJECT Page 9003 Acc. Receivables Adm. RC
                       CaptionML=[ENU=Sales && Recei&vables Setup;
                                  FRA=Paramätres &ventes];
                       RunObject=Page 459;
+                      Visible=FALSE;
                       Image=Setup }
       { 89      ;1   ;Separator ;
                       CaptionML=[ENU=History;
@@ -348,6 +369,7 @@ OBJECT Page 9003 Acc. Receivables Adm. RC
                       CaptionML=[ENU=Navi&gate;
                                  FRA=&Naviguer];
                       RunObject=Page 344;
+                      Visible=FALSE;
                       Image=Navigate }
     }
   }

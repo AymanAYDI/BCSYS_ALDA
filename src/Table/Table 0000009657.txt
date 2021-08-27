@@ -2,8 +2,9 @@ OBJECT Table 9657 Custom Report Selection
 {
   OBJECT-PROPERTIES
   {
-    Date=26/11/15;
-    Time=12:00:00;
+    Date=11/05/17;
+    Time=14:44:40;
+    Modified=Yes;
     Version List=NAVW19.00.00.43897;
   }
   PROPERTIES
@@ -91,6 +92,7 @@ OBJECT Table 9657 Custom Report Selection
       DocumentRecordRef@1002 : RecordRef;
       AttachmentFilePath@1009 : Text;
       CustomLayoutPresent@1014 : Boolean;
+      SalesShipmentHeader@1000000000 : Record 110;
     BEGIN
       DocumentRecordRef.GETTABLE(HeaderDoc);
       CASE DocumentRecordRef.NUMBER OF
@@ -104,6 +106,20 @@ OBJECT Table 9657 Custom Report Selection
               CustomReportSelection2.Usage::"S.Invoice");
             SalesHeader."Document Type" := SalesHeader."Document Type"::Invoice;
           END;
+
+        //BCSYS 130417
+        DATABASE::"Sales Shipment Header":
+          BEGIN
+            SalesShipmentHeader := HeaderDoc;
+            SalesShipmentHeader.SETRANGE("No.",SalesShipmentHeader."No.");
+            SalesShipmentHeader.GET(SalesShipmentHeader."No.");
+            SetCustomReportSelectionRange(
+              CustomReportSelection2,DATABASE::Customer,SalesShipmentHeader."Sell-to Customer No.",
+              CustomReportSelection2.Usage::"S.Shipment");
+            //SalesShipmentHeader."Document Type" := SalesShipmentHeader."Document Type"::Shipment;
+          END;
+        //fin BCSYS 130417
+
         DATABASE::"Sales Cr.Memo Header":
           BEGIN
             SalesCrMemoHeader := HeaderDoc;
@@ -127,6 +143,12 @@ OBJECT Table 9657 Custom Report Selection
                 SetCustomReportSelectionRange(
                   CustomReportSelection2,DATABASE::Customer,SalesHeader."Bill-to Customer No.",
                   CustomReportSelection2.Usage::"S.Order");
+              //BCSYS 110517
+              SalesHeader."Document Type"::"Return Order":
+                SetCustomReportSelectionRange(
+                          CustomReportSelection2,DATABASE::Customer,SalesHeader."Bill-to Customer No.",
+                          CustomReportSelection2.Usage::"S.Return");
+              //fin BCSYS 110517
               SalesHeader."Document Type"::Invoice:
                 BEGIN
                   IF SalesHeader."Last Posting No." = '' THEN
@@ -185,8 +207,13 @@ OBJECT Table 9657 Custom Report Selection
                 REPORT.RUN(CustomReportSelection2."Report ID",ShowRequestPage,FALSE,SalesInvoiceHeader);
               SalesHeader."Document Type"::"Credit Memo":
                 REPORT.RUN(CustomReportSelection2."Report ID",ShowRequestPage,FALSE,SalesCrMemoHeader);
-              ELSE
-                REPORT.RUNMODAL(CustomReportSelection2."Report ID",TRUE,FALSE,SalesHeader);
+              ELSE BEGIN //BCSYS 130417
+                IF CustomReportSelection2.Usage = CustomReportSelection2.Usage::"S.Shipment" THEN
+                   REPORT.RUN(CustomReportSelection2."Report ID",TRUE,FALSE,SalesShipmentHeader)
+                  //fin BCSYS 130417
+                ELSE
+                  REPORT.RUNMODAL(CustomReportSelection2."Report ID",TRUE,FALSE,SalesHeader);
+              END;
             END;
 
             IF CustomLayoutPresent THEN

@@ -2,9 +2,10 @@ OBJECT Page 459 Sales & Receivables Setup
 {
   OBJECT-PROPERTIES
   {
-    Date=23/09/13;
-    Time=12:00:00;
-    Version List=NAVW17.10;
+    Date=29/03/17;
+    Time=16:52:02;
+    Modified=Yes;
+    Version List=NAVW17.10,AC1.00,ALDA;
   }
   PROPERTIES
   {
@@ -111,6 +112,20 @@ OBJECT Page 459 Sales & Receivables Setup
     { 14  ;2   ;Field     ;
                 SourceExpr="Salesperson Dimension Code" }
 
+    { 1000000000;1;Group  ;
+                CaptionML=[ENU=Defense Office;
+                           FRA=D‚fense Bureau];
+                GroupType=Group }
+
+    { 1000000001;2;Field  ;
+                SourceExpr="Picture Defense Office" }
+
+    { 1000000002;2;Field  ;
+                SourceExpr="WebSite Defense Office" }
+
+    { 1000000003;2;Field  ;
+                SourceExpr="MemberOf GMES Text" }
+
     { 1904569201;1;Group  ;
                 CaptionML=[ENU=Numbering;
                            FRA=Num‚rotation] }
@@ -207,6 +222,31 @@ OBJECT Page 459 Sales & Receivables Setup
     { 4   ;3   ;Field     ;
                 SourceExpr="Notify On Success" }
 
+    { 1180250001;1;Group  ;
+                CaptionML=[ENU=Shipping Charge;
+                           FRA=Frais transport];
+                GroupType=Group }
+
+    { 1180250002;2;Field  ;
+                SourceExpr="Item No. for Shipping Charge" }
+
+    { 1180250003;1;Group  ;
+                CaptionML=[ENU=Doc. text;
+                           FRA=Texte doc.];
+                GroupType=Group }
+
+    { 1180250004;2;Field  ;
+                SourceExpr="Footer text Line 1" }
+
+    { 1180250005;2;Field  ;
+                SourceExpr="Footer text Line 2" }
+
+    { 1180250006;2;Field  ;
+                SourceExpr="Footer text Line 3" }
+
+    { 1180250007;2;Field  ;
+                SourceExpr="Footer text Line 4" }
+
     { 1900000007;0;Container;
                 ContainerType=FactBoxArea }
 
@@ -225,6 +265,9 @@ OBJECT Page 459 Sales & Receivables Setup
   {
 
     BEGIN
+    {
+      Rudy VILAIN 11/01/13 : Ajout de 4 lignes de texte en pied de page des document vente
+    }
     END.
   }
 }

@@ -2,8 +2,9 @@ OBJECT Page 9349 Sales Order Archives
 {
   OBJECT-PROPERTIES
   {
-    Date=23/10/15;
-    Time=12:00:00;
+    Date=16/12/20;
+    Time=11:03:38;
+    Modified=Yes;
     Version List=NAVW19.00.00.43402;
   }
   PROPERTIES
@@ -63,6 +64,9 @@ OBJECT Page 9349 Sales Order Archives
     { 2   ;2   ;Field     ;
                 SourceExpr="Version No." }
 
+    { 1000000001;2;Field  ;
+                SourceExpr="Order Date" }
+
     { 4   ;2   ;Field     ;
                 SourceExpr="Date Archived" }
 
@@ -120,6 +124,12 @@ OBJECT Page 9349 Sales Order Archives
     { 40  ;2   ;Field     ;
                 SourceExpr="Posting Date" }
 
+    { 1000000002;2;Field  ;
+                SourceExpr=Amount }
+
+    { 1000000003;2;Field  ;
+                SourceExpr="Amount Including VAT" }
+
     { 42  ;2   ;Field     ;
                 SourceExpr="Shortcut Dimension 1 Code" }
 
@@ -162,6 +172,27 @@ OBJECT Page 9349 Sales Order Archives
     { 1102601015;2;Field  ;
                 SourceExpr="Shipment Date";
                 Visible=FALSE }
+
+    { 1000000000;2;Field  ;
+                SourceExpr="Your Reference" }
+
+    { 1000000004;2;Field  ;
+                SourceExpr="Sales Quote No." }
+
+    { 1000000005;2;Field  ;
+                SourceExpr=NUM_SUBSEQUENT }
+
+    { 1000000006;2;Field  ;
+                SourceExpr=REF_ENGAGEMENT }
+
+    { 1000000007;2;Field  ;
+                SourceExpr=TRS_ID }
+
+    { 1000000008;2;Field  ;
+                SourceExpr=CODE_WCP }
+
+    { 1000000009;2;Field  ;
+                SourceExpr=NUM_MARKET }
 
     { 1900000007;0;Container;
                 ContainerType=FactBoxArea }

@@ -4,7 +4,8 @@ OBJECT Table 32 Item Ledger Entry
   {
     Date=15/09/15;
     Time=12:00:00;
-    Version List=NAVW19.00,NAVFR9.00;
+    Modified=Yes;
+    Version List=NAVW19.00,NAVFR9.00,AC1.00,AB6.TAH.001,ALDA;
   }
   PROPERTIES
   {
@@ -294,6 +295,17 @@ OBJECT Table 32 Item Ledger Entry
     { 10800;  ;Shipment Method Code;Code10        ;TableRelation="Shipment Method";
                                                    CaptionML=[ENU=Shipment Method Code;
                                                               FRA=Code condition livraison] }
+    { 50002;  ;Order Reference Customer;Text35    ;CaptionML=[ENU=Order Reference Customer;
+                                                              FRA=R‚f‚rence commande client];
+                                                   Description=AC1.00 }
+    { 50011;  ;Montant Ecotaxe     ;Decimal       ;BlankZero=Yes;
+                                                   Description=AB6.TAH.001;
+                                                   AutoFormatType=2 }
+    { 50019;  ;Country Dimension Code;Code20      ;TableRelation=Country/Region;
+                                                   CaptionML=[ENU=Country Dimension Code;
+                                                              FRA=Code axe pays];
+                                                   Description=ALDA 171214D;
+                                                   Editable=No }
   }
   KEYS
   {
@@ -560,6 +572,11 @@ OBJECT Table 32 Item Ledger Entry
     END;
 
     BEGIN
+    {
+      AC1.00 Ajout Field "Order Reference Customer"
+      AB6.TAH.001 05/09/2012
+       -Ajout du champ  50011
+    }
     END.
   }
 }

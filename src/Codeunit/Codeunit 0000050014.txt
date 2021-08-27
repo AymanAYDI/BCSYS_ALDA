@@ -1,0 +1,396 @@
+OBJECT Codeunit 50014 PDFCreator Management
+{
+  OBJECT-PROPERTIES
+  {
+    Date=13/07/15;
+    Time=15:18:47;
+    Modified=Yes;
+    Version List=MARAIS;
+  }
+  PROPERTIES
+  {
+    OnRun=BEGIN
+          END;
+
+  }
+  CODE
+  {
+    VAR
+      CompanyInfo@1120019 : Record 79;
+      Object@1120010 : Record 2000000001;
+      PDFCreator@1120000 : Automation "{35447794-B66C-4757-A7C2-F47A49C16B30} 1.0:{DA7D25B1-1702-40F3-9845-DC7C66C8B75C}:Unknown Automation Server.Unknown Class";
+      PDFCreatorError@1120001 : Automation "{35447794-B66C-4757-A7C2-F47A49C16B30} 1.0:{4AE89092-3D8F-49C4-87B5-34A69B6EBB3B}:Unknown Automation Server.Unknown Class";
+      PDFCreatorOptions@1120002 : Automation "{35447794-B66C-4757-A7C2-F47A49C16B30} 1.0:{7F756A51-491D-41F9-BB44-5B22B487FEF6}:Unknown Automation Server.Unknown Class";
+      Text001@1120003 : TextConst 'FRA=Aucun ‚tat n''a ‚t‚ trouv‚.';
+      FileDirectory@1120004 : Text[1020];
+      FileName@1120005 : Text[80];
+      Text002@1120006 : TextConst 'FRA=Aucun document n''a ‚t‚ trouv‚.';
+      Text003@1120007 : TextConst 'ENU=Status: Error[%1]: %2.;FRA=Statut: erreur[%1]: %2.';
+      Text004@1120008 : TextConst 'ENU=Batch in process...;FRA=Traitement en cours...';
+      DefaultPrinter@1120014 : Text[200];
+      PDFCreatorname@1180250001 : Text[50];
+      Window@1120009 : Dialog;
+      ReportID@1120011 : Integer;
+      WithDialog@1120012 : Boolean;
+      WindowIsOpen@1120013 : Boolean;
+      Text005@1120017 : TextConst 'FRA=Votre facture ACE %1';
+      MailMgtMethod@1120020 : 'Mail,SMTP Mail';
+      Text010@1120028 : TextConst 'FRA=la facture %1 : %2 ci-jointe.';
+      Text011@1120027 : TextConst 'FRA=Le message de le/la %1 n''a pas ‚t‚ envoy‚!\(PiŠce jointe : %2.)';
+      Text014@1120026 : TextConst 'FRA=Bonjour,';
+      Text015@1120025 : TextConst 'FRA=Veuillez trouver ci-joint votre facture nø %1 du %2.';
+      Text016@1120024 : TextConst 'FRA=Cordialement,';
+      Text017@1120023 : TextConst 'FRA=Le Service facturation - ALDA';
+      Text019@1120021 : TextConst 'FRA=" "';
+      Text020@1120015 : TextConst 'FRA=Il n''y a pas de fichier pdf d''attach‚ pour %1 : %2.';
+
+    PROCEDURE SaveInvoiceAsPDF@1120000(VAR SalesInvHeader@1120002 : Record 112;ShowRequestForm@1120000 : Boolean);
+    VAR
+      ReportSelection@1120001 : Record 77;
+    BEGIN
+      WithDialog := ShowRequestForm;
+
+      IF ISSERVICETIER THEN BEGIN
+        CreateSalesDocToSend(7,SalesInvHeader."No.",SalesInvHeader."Bill-to Customer No.",FALSE);
+      END ELSE BEGIN
+        WITH SalesInvHeader DO BEGIN
+          IF "Service Mgt. Document" THEN
+            ReportSelection.SETRANGE(Usage,ReportSelection.Usage::"SM.Invoice")
+          ELSE
+            ReportSelection.SETRANGE(Usage,ReportSelection.Usage::"S.Invoice");
+          ReportSelection.SETFILTER("Report ID",'<>0');
+          ReportSelection.FINDFIRST;
+          ReportID := ReportSelection."Report ID";
+
+          FileName := STRSUBSTNO('%1.pdf',SalesInvHeader."No.");
+          Object.GET(Object.Type::Report,'',ReportID);
+
+          SETRANGE("No.",SalesInvHeader."No.");
+        END;
+
+        InitCode();
+        Code;
+        REPORT.RUNMODAL(ReportID,FALSE,TRUE,SalesInvHeader);
+        FinishCode;
+
+        CreateRecordLink(SalesInvHeader."No.",SalesInvHeader.TABLENAME);
+      END;
+    END;
+
+    PROCEDURE SaveCrMemoAsPDF@1120009(VAR SalesCrMemoHeader@1120002 : Record 114;ShowRequestForm@1120000 : Boolean);
+    VAR
+      ReportSelection@1120001 : Record 77;
+    BEGIN
+      WithDialog := ShowRequestForm;
+
+      IF ISSERVICETIER THEN BEGIN
+        CreateSalesDocToSend(9,SalesCrMemoHeader."No.",SalesCrMemoHeader."Bill-to Customer No.",FALSE);
+      END ELSE BEGIN
+        WITH SalesCrMemoHeader DO BEGIN
+          IF "Service Mgt. Document" THEN
+            ReportSelection.SETRANGE(Usage,ReportSelection.Usage::"SM.Credit Memo")
+          ELSE
+            ReportSelection.SETRANGE(Usage,ReportSelection.Usage::"S.Cr.Memo");
+          ReportSelection.SETFILTER("Report ID",'<>0');
+          ReportSelection.FINDFIRST;
+          ReportID := ReportSelection."Report ID";
+
+          FileName := STRSUBSTNO('%1.pdf',SalesCrMemoHeader."No.");
+          Object.GET(Object.Type::Report,'',ReportID);
+
+          SETRANGE("No.",SalesCrMemoHeader."No.");
+        END;
+
+        InitCode();
+        Code;
+        REPORT.RUNMODAL(ReportID,FALSE,TRUE,SalesCrMemoHeader);
+        FinishCode;
+
+        CreateRecordLink(SalesCrMemoHeader."No.",SalesCrMemoHeader.TABLENAME);
+      END;
+    END;
+
+    LOCAL PROCEDURE InitCode@1120003();
+    BEGIN
+      CompanyInfo.GET;
+
+      CompanyInfo.TESTFIELD("File Folder");
+      CompanyInfo.TESTFIELD("Printer Name");
+
+      PDFCreatorname := CompanyInfo."Printer Name";
+      FileDirectory := CompanyInfo."File Folder";
+
+      IF FILE.EXISTS(FileDirectory + FileName) THEN
+        FILE.ERASE(FileDirectory + FileName);
+    END;
+
+    LOCAL PROCEDURE Code@1120001();
+    BEGIN
+      IF ISCLEAR(PDFCreator) THEN BEGIN
+        CREATE(PDFCreator);
+        IF PDFCreator.cStart('/NoProcessingAtStartup',TRUE) = FALSE THEN
+          ERROR(STRSUBSTNO(Text003,PDFCreatorError.Number,PDFCreatorError.Description));
+      END;
+
+      IF ISCLEAR(PDFCreatorError) THEN
+        CREATE(PDFCreatorError);
+      PDFCreatorError := PDFCreator.cError;
+
+      IF ReportID = 0 THEN
+        ERROR(Text001);
+      Object.GET(Object.Type::Report,'',ReportID);
+      IF FileName = '' THEN
+        ERROR(Text002);
+      IF FileDirectory = '' THEN
+        FileDirectory := TEMPORARYPATH;
+
+      WindowIsOpen := FALSE;
+      IF GUIALLOWED THEN
+        IF WithDialog THEN BEGIN
+          Window.OPEN(Text004);
+          WindowIsOpen := TRUE;
+        END;
+
+      PDFCreatorOptions := PDFCreator.cOptions;
+      PDFCreatorOptions.UseAutosave := 1;
+      PDFCreatorOptions.UseAutosaveDirectory := 1;
+      PDFCreatorOptions.AutosaveDirectory := FileDirectory;
+      PDFCreatorOptions.AutosaveFormat := 0;
+      PDFCreatorOptions.AutosaveFilename := FileName;
+      //PDFCreatorOptions.ShowAnimation := 0;
+      PDFCreator.cOptions := PDFCreatorOptions;
+
+      PDFCreator.cSaveOptions(PDFCreatorOptions);
+      PDFCreator.cClearCache();
+
+      DefaultPrinter := PDFCreator.cDefaultPrinter;
+
+      PDFCreator.cDefaultPrinter := PDFCreatorname;
+      PDFCreator.cPrinterStop := FALSE;
+    END;
+
+    LOCAL PROCEDURE FinishCode@1120005();
+    VAR
+      WaitTime@1120000 : Integer;
+    BEGIN
+      SLEEP(5000);
+
+      PDFCreatorOptions := PDFCreator.cOptions;
+
+      PDFCreatorOptions.UseAutosave := 0;
+      PDFCreatorOptions.UseAutosaveDirectory := 0;
+      PDFCreatorOptions.AutosaveDirectory :='';
+      PDFCreatorOptions.AutosaveFormat := 0;
+      PDFCreatorOptions.AutosaveFilename := '';
+
+      PDFCreator.cOptions := PDFCreatorOptions;
+
+      PDFCreator.cSaveOptions(PDFCreatorOptions);
+      PDFCreator.cClearCache();
+      PDFCreator.cDefaultPrinter := DefaultPrinter;
+
+      PDFCreator.cClose();
+      CLEAR(PDFCreator);
+      PDFCreatorOptions.UseAutosave := 0;
+      PDFCreatorOptions.UseAutosaveDirectory := 0;
+
+      REPEAT
+        SLEEP(100);
+        WaitTime := WaitTime + 100;
+      UNTIL (FILE.EXISTS(FileDirectory + FileName)) OR (WaitTime >= 10000);
+
+      IF GUIALLOWED THEN
+        IF WindowIsOpen THEN
+          Window.CLOSE;
+      WindowIsOpen := FALSE;
+    END;
+
+    LOCAL PROCEDURE CreateRecordLink@1120006(DocNo@1120000 : Code[20];RecordTableName@1120003 : Text[50]);
+    VAR
+      LinkID@1120001 : Integer;
+      RecordLink@1120002 : Record 2000000068;
+    BEGIN
+      RecordLink.RESET;
+      IF RecordLink.FINDLAST THEN
+        LinkID := RecordLink."Link ID" + 1
+      ELSE
+        LinkID := 1;
+      RecordLink.INIT;
+      RecordLink."Link ID" := LinkID;
+      EVALUATE(RecordLink."Record ID",STRSUBSTNO('%1 : %2',RecordTableName,DocNo));
+      RecordLink.URL1 := FileDirectory + FileName;
+      RecordLink.Type := RecordLink.Type::Link;
+      RecordLink.Created := CURRENTDATETIME;
+      RecordLink."User ID" := USERID;
+      RecordLink.Company := COMPANYNAME;
+      RecordLink.INSERT;
+    END;
+
+    PROCEDURE ExistRecordLink@1120002(DocNo@1120000 : Code[20];RecordTableName@1120003 : Text[50]) : Boolean;
+    VAR
+      RecordLink@1120004 : Record 2000000068;
+      RecordID@1120001 : RecordID;
+    BEGIN
+      EVALUATE(RecordID,STRSUBSTNO('%1 : %2',RecordTableName,DocNo));
+      RecordLink.RESET;
+      RecordLink.SETRANGE("Record ID",RecordID);
+      RecordLink.SETRANGE(Type,RecordLink.Type::Link);
+      RecordLink.SETFILTER(URL1,'<>%1','');
+      EXIT(RecordLink.FINDSET);
+    END;
+
+    PROCEDURE SendInvoiceAsPDF@1120007(VAR SalesInvHeader@1120000 : Record 112);
+    VAR
+      DocumentByMail@1120001 : Record 50006;
+      DocumentByMail2@1120002 : Record 50006;
+      CR@1120003 : Char;
+      LF@1120004 : Char;
+    BEGIN
+      CR := 12;
+      LF := 10;
+
+      DocumentByMail.RESET;
+      DocumentByMail.SETCURRENTKEY("Document Type","Document No.",Handled);
+      DocumentByMail.SETRANGE("Document Type",DocumentByMail."Document Type"::"Posted Invoice");;
+      DocumentByMail.SETRANGE("Document No.",SalesInvHeader."No.");
+      DocumentByMail.SETRANGE(Handled,FALSE);
+      IF DocumentByMail.FINDLAST THEN BEGIN
+        CreateMail(SalesInvHeader."No.",FORMAT(SalesInvHeader.TABLENAME),DocumentByMail."E-Mail 1",DocumentByMail."E-Mail 2"
+          ,STRSUBSTNO(Text005,SalesInvHeader."No."),
+          Text014 + FORMAT(CR) + FORMAT(LF) +
+          STRSUBSTNO(Text015,SalesInvHeader."No.",SalesInvHeader."Posting Date") + FORMAT(CR) + FORMAT(LF) +
+          Text016 + FORMAT(CR) + FORMAT(LF) +
+          Text017 + FORMAT(CR) + FORMAT(LF));
+        DocumentByMail2 := DocumentByMail;
+        DocumentByMail2.Handled := TRUE;
+        DocumentByMail2."Handled By" := USERID;
+        DocumentByMail2.MODIFY;
+      END;
+    END;
+
+    PROCEDURE SendCrMemoAsPDF@1120011(VAR SalesCrMemoHeader@1120000 : Record 114);
+    VAR
+      DocumentByMail@1120001 : Record 50006;
+      DocumentByMail2@1120002 : Record 50006;
+      CR@1120003 : Char;
+      LF@1120004 : Char;
+    BEGIN
+      CR := 12;
+      LF := 10;
+
+      DocumentByMail.RESET;
+      DocumentByMail.SETRANGE("Document Type",DocumentByMail."Document Type"::"Posted Credit Memo");;
+      DocumentByMail.SETRANGE("Document No.",SalesCrMemoHeader."No.");
+      DocumentByMail.SETRANGE(Handled,FALSE);
+      IF DocumentByMail.FINDLAST THEN BEGIN
+        CreateMail(SalesCrMemoHeader."No.",FORMAT(SalesCrMemoHeader.TABLENAME),DocumentByMail."E-Mail 1",DocumentByMail."E-Mail 2"
+          ,STRSUBSTNO(Text005,SalesCrMemoHeader."No."),
+          Text014 + FORMAT(CR) + FORMAT(LF) +
+          STRSUBSTNO(Text015,SalesCrMemoHeader."No.",SalesCrMemoHeader."Posting Date") + FORMAT(CR) + FORMAT(LF) +
+          Text016 + FORMAT(CR) + FORMAT(LF) +
+          Text017 + FORMAT(CR) + FORMAT(LF));
+        DocumentByMail2 := DocumentByMail;
+        DocumentByMail2.Handled := TRUE;
+        DocumentByMail2."Handled By" := USERID;
+        DocumentByMail2.MODIFY;
+      END;
+    END;
+
+    LOCAL PROCEDURE CreateMail@1120004(DocNo@1120000 : Code[20];RecordTableName@1120003 : Text[50];ToName@1120010 : Text[80];CcName@1120011 : Text[80];Subject@1120009 : Text[250];Body@1120008 : Text[250]);
+    VAR
+      LinkID@1120001 : Integer;
+      RecordLink@1120002 : Record 2000000068;
+      RecordID@1120004 : RecordID;
+      MailMgt@1120007 : Codeunit 397;
+      SMTPMail@1120006 : Codeunit 400;
+      Receipients@1120005 : Text[250];
+    BEGIN
+      CompanyInfo.GET;
+
+      MailMgtMethod := CompanyInfo."Sending Mail Mgt. Method";
+
+      CcName := CompanyInfo."E-mail for Sent Items";
+
+      EVALUATE(RecordID,STRSUBSTNO('%1 : %2',RecordTableName,DocNo));
+      RecordLink.RESET;
+      RecordLink.SETRANGE("Record ID",RecordID);
+      RecordLink.SETRANGE(Type,RecordLink.Type::Link);
+      RecordLink.SETFILTER(URL1,'<>%1','');
+      IF RecordLink.FINDSET THEN BEGIN
+        CASE MailMgtMethod OF
+          MailMgtMethod::Mail:BEGIN
+            // M‚thode de cr‚ation du mail (se base sur le codeunit 397)
+            CLEAR(MailMgt);
+            IF NOT MailMgt.NewMessage(ToName,CcName,Subject,Body,RecordLink.URL1,TRUE) THEN BEGIN
+              IF MailMgt.GetErrorCode <> 0 THEN
+                ERROR(FORMAT(MailMgt.GetErrorCode) + ' : ' + MailMgt.GetErrorDesc + '.');
+              MESSAGE(STRSUBSTNO(Text011,Subject,RecordLink.URL1));
+            END;
+          END;
+          MailMgtMethod::"SMTP Mail":BEGIN
+            // M‚thode de cr‚ation du mail (se base sur le codeunit 400)
+            CLEAR(SMTPMail);
+            SMTPMail.CreateMessage(COMPANYNAME,CompanyInfo."E-Mail",ToName,Subject,Body,TRUE);
+            SMTPMail.AddCC(CompanyInfo."E-mail for Sent Items");
+            SMTPMail.AddBCC(CompanyInfo."E-Mail");
+            SMTPMail.AddAttachment(RecordLink.URL1);
+            SMTPMail.Send();
+          END;
+        END;//CASE
+      END ELSE
+         ERROR(STRSUBSTNO(Text020,RecordTableName,DocNo));
+    END;
+
+    PROCEDURE CreateSalesDocToSend@1120008(DocumentType@1120000 : 'Quote,Blanket Order,Order,Invoice,Return Order,Credit Memo,Posted Shipment,Posted Invoice,Posted Return Receipt,Posted Credit Memo';DocumentNo@1120001 : Code[20];CustomerNo@1120006 : Code[20];From@1120008 : Boolean);
+    VAR
+      Cust@1120007 : Record 18;
+      DocumentByMail@1120002 : Record 50006;
+      Email@1120003 : ARRAY [2] OF Text[80];
+      NextEntryNo@1120004 : Integer;
+      CustNo@1120005 : Code[20];
+    BEGIN
+      IF NOT Cust.GET(CustomerNo) THEN
+        EXIT;
+
+      IF Cust."Inv./Cr Memo Type" = Cust."Inv./Cr Memo Type"::"0" THEN
+        EXIT;
+
+      Email[1] := Cust."E-Mail";
+      Email[2] := '';
+
+      DocumentByMail.RESET;
+      IF DocumentByMail.FINDLAST THEN
+        NextEntryNo := DocumentByMail."Entry No." + 1
+      ELSE
+        NextEntryNo := 1;
+
+      DocumentByMail.INIT;
+      DocumentByMail."Entry No." := NextEntryNo;
+      DocumentByMail."Creation Date" := TODAY;
+      DocumentByMail."Created By" := USERID;
+      DocumentByMail."Document Type" := DocumentType;
+      DocumentByMail."Document No." := DocumentNo;
+      DocumentByMail."E-Mail 1" := Email[1];
+      DocumentByMail."E-Mail 2" := Email[2];
+      DocumentByMail.System := From;
+      DocumentByMail.INSERT(TRUE);
+      COMMIT;
+    END;
+
+    EVENT PDFCreator@1120000::eReady@1();
+    BEGIN
+    END;
+
+    EVENT PDFCreator@1120000::eError@2();
+    BEGIN
+    END;
+
+    BEGIN
+    {
+      PDFCreator 1.7.3
+      http://download.pdfforge.org/download/pdfcreator/PDFCreator-stable
+    }
+    END.
+  }
+}
+

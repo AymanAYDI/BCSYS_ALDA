@@ -1,0 +1,619 @@
+OBJECT Codeunit 50001 PRO2
+{
+  OBJECT-PROPERTIES
+  {
+    Date=28/11/12;
+    Time=10:14:36;
+    Modified=Yes;
+    Version List=AC1.00;
+  }
+  PROPERTIES
+  {
+    TableNo=50001;
+    OnRun=VAR
+            EDIEntry@1180250005 : Record 50002;
+            Fields2Import@1180250001 : ARRAY [100] OF Text[250];
+            CurrFile@1180250004 : File;
+            FileInStream@1180250003 : InStream;
+            Line@1180250002 : BigText;
+          BEGIN
+            EDISetup.GET("EDI Code");
+            EDISetup.TESTFIELD("Source Type");
+            EDISetup.TESTFIELD("Source No.");
+            EDISetup.TESTFIELD("Default Base Unit of Measure");
+
+            IF GUIALLOWED THEN
+              Window.OPEN(Text000);
+
+            CheckDataError();
+            IF "Data Error" = FALSE THEN BEGIN
+              CLEAR(FileInStream);
+              CLEAR(Line);
+              CLEAR(Fields2Import);
+              CLEAR(CurrFile);
+
+              TESTFIELD(Mode,Mode::Normal);
+
+              CurrFile.WRITEMODE := FALSE;
+              CurrFile.TEXTMODE := TRUE;
+              CurrFile.OPEN(EDISetup."File Imp. Path (Err.)" +'\' + Filename);
+              CurrFile.CREATEINSTREAM(FileInStream);
+              Line.READ(FileInStream);
+              SplitFileLineInRec(EDIEntry,Line,"EDI Code","Treatment Date");
+              RegisterRec(EDIEntry,EDISetup."Source No.","EDI Code","Treatment Date");
+              CurrFile.CLOSE;
+            END ELSE BEGIN
+              TESTFIELD(Mode,Mode::Recovery);
+              RegisterRec(EDIEntry,EDISetup."Source No.","EDI Code","Treatment Date");
+              Mode := Mode::Normal;
+              MODIFY;
+            END;
+
+            IF GUIALLOWED THEN
+              Window.CLOSE;
+          END;
+
+  }
+  CODE
+  {
+    VAR
+      Text000@1180250004 : TextConst 'ENU=Batch in process...;FRA=Traitement en cours...';
+      Text001@1180250002 : TextConst 'FRA=Nø s‚quence %1 : %2';
+      Text002@1180250006 : TextConst 'FRA=R‚f‚rence MJ %1 non trouv‚, mise … jour non r‚alis‚e.';
+      Text003@1180250007 : TextConst 'FRA=R‚f‚rence MJ %1 en %2, mise … jour non r‚alis‚e.';
+      Text004@1180250003 : TextConst 'FRA=%1 r‚f‚rence(s) trait‚(s).';
+      EDISetup@1180250001 : Record 50000;
+      Window@1180250005 : Dialog;
+
+    PROCEDURE SplitFileLineInRec@1180250003(VAR EDIEntry@1180250006 : Record 50002;ReadLine@1180250008 : BigText;EDICode@1180250007 : Code[10];EDILogDT@1180250016 : DateTime);
+    VAR
+      LineToRead@1000000001 : BigText;
+      LineToReadBuff@1180250002 : BigText;
+      ReadField@1000000003 : Text[30];
+      i@1180250015 : Integer;
+      EndOfLinePos@1000000007 : Integer;
+      EntryNo@1180250001 : Integer;
+      NextStartingPos@1180250012 : Integer;
+      CurrStrLen@1180250013 : Integer;
+      CarriageReturn@1180250004 : Char;
+      LineFeed@1180250003 : Char;
+      EOF@1180250005 : Boolean;
+      SubStr@1180250009 : Text[128];
+      CNUR@1180250010 : Text[3];
+      CNUT_Lot@1180250011 : Text[5];
+      CNUT_Msg@1180250014 : Text[5];
+    BEGIN
+      CarriageReturn := 13;
+      LineFeed := 10;
+      EOF := FALSE;
+      LineToRead := ReadLine;
+
+      EDIEntry.RESET;
+      IF EDIEntry.FINDLAST THEN
+        EntryNo := EDIEntry."Entry No."
+      ELSE
+        EntryNo := 0;
+
+      i := 0;
+
+      REPEAT
+        EndOfLinePos := LineToRead.TEXTPOS(FORMAT(CarriageReturn)+FORMAT(LineFeed));
+        EOF := EndOfLinePos = 0;
+        EntryNo += 1;
+
+        EDIEntry.INIT;
+        EDIEntry."Entry No." := EntryNo;
+        EDIEntry."User ID" := USERID;
+        EDIEntry."Imp./Exp. Date" := EDILogDT;
+        EDIEntry."EDI Code" := EDICode;
+        EDIEntry.Error := TRUE;
+        EDIEntry.INSERT;
+
+        LineToRead.GETSUBTEXT(SubStr,1,5);
+        CASE SubStr OF
+          '03503':CNUT_Lot := SubStr;
+          '05003':CNUT_Msg := SubStr;
+        END;//CASE
+
+        LineToRead.GETSUBTEXT(SubStr,1,3);
+        IF SubStr IN ['100','176','177','190','191','198','199','221'] THEN
+          CNUR := SubStr
+        ELSE
+          CNUR := '';
+
+        EDIEntry."Field 1" := CNUT_Lot;
+        EDIEntry."Field 2" := CNUT_Msg;
+        EDIEntry."Field 3" := CNUR;
+
+        NextStartingPos := 4;
+
+        CASE CNUR OF
+          '100':LineToRead.GETSUBTEXT(EDIEntry."Field 4",NextStartingPos,13);
+          '176':LineToRead.GETSUBTEXT(EDIEntry."Field 4",NextStartingPos,6);
+          '177':BEGIN
+            //R‚f MJ
+            CurrStrLen := 5;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 4",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //D‚signation
+            CurrStrLen := 35;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 5",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //EAN
+            CurrStrLen := 14;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 6",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //Code Rayon
+            CurrStrLen := 2;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 7",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //Code TVA
+            CurrStrLen := 1;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 8",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //Poids
+            CurrStrLen := 7;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 9",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //R‚f MDS de remplacment
+            CurrStrLen := 5;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 10",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //Code fabricant
+            CurrStrLen := 4;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 11",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //Prix cession HT
+            CurrStrLen := 10;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 12",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //Prix HT
+            CurrStrLen := 10;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 13",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //Prix de vente de r‚f HT
+            CurrStrLen := 10;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 14",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //Code marque
+            CurrStrLen := 4;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 15",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //Mn‚mo
+            CurrStrLen := 8;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 16",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //Conditionnement de gros
+            CurrStrLen := 5;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 17",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //Bar‚misation
+            CurrStrLen := 1;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 18",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //Code remise
+            CurrStrLen := 1;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 19",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //Code modification
+            CurrStrLen := 1;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 20",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //Positionnement de classement dans la nomenclature
+            CurrStrLen := 8;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 21",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //Nomenclature
+            CurrStrLen := 7;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 22",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //Code monaie
+            CurrStrLen := 1;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 23",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //Code gestion de l'article
+            CurrStrLen := 1;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 24",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //Code barre EAN/DUN/ITF du paquetage
+            CurrStrLen := 14;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 25",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //Code barre EAN/DUN/ITF du carton
+            CurrStrLen := 14;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 26",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //Qt‚ d'unit‚s ds 1 carton
+            CurrStrLen := 6;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 27",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //Qt‚ d'unit‚s ds 1 palette
+            CurrStrLen := 6;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 28",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //Nomenclature douanes
+            CurrStrLen := 8;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 29",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //Code pays douanes
+            CurrStrLen := 3;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 30",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //R‚f commerciale fournisseur
+            CurrStrLen := 13;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 31",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //Code article inflammable
+            CurrStrLen := 1;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 32",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //Ref de l'art maitre ds la gestion
+            CurrStrLen := 5;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 33",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //Pr‚sentation sous blister
+            CurrStrLen := 1;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 34",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //Identifiant enseigne
+            CurrStrLen := 5;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 35",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //Dimension hauteur en cm
+            CurrStrLen := 3;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 36",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //Dimension largeur en cm
+            CurrStrLen := 3;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 37",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //Dimension profondeur en cm
+            CurrStrLen := 3;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 38",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //Volume en l
+            CurrStrLen := 4;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 39",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //Date de diffusion de la M…J
+            CurrStrLen := 6;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 40",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+            //Date d'application de la M…J
+            CurrStrLen := 6;
+            LineToRead.GETSUBTEXT(EDIEntry."Field 41",NextStartingPos,CurrStrLen);
+            NextStartingPos := NextStartingPos + CurrStrLen;
+          END;
+          '190':LineToRead.GETSUBTEXT(EDIEntry."Field 4",NextStartingPos,6);
+          '191':LineToRead.GETSUBTEXT(EDIEntry."Field 4",NextStartingPos,6);
+          '198':LineToRead.GETSUBTEXT(EDIEntry."Field 4",NextStartingPos,7);
+          '199':LineToRead.GETSUBTEXT(EDIEntry."Field 4",NextStartingPos,6);
+          '221':LineToRead.GETSUBTEXT(EDIEntry."Field 4",NextStartingPos,13);
+        END;//CASE
+        EDIEntry.MODIFY;
+        COMMIT;
+
+        IF ((EDIEntry."Field 2" = '05003') AND (EDIEntry."Field 3" = '199')) OR
+           ((EDIEntry."Field 2" = '05003') AND (EDIEntry."Field 3" = '')) THEN
+          i += 1;
+        IF i MOD 2 = 0 THEN
+          CNUT_Msg := '';
+
+        CLEAR(LineToReadBuff);
+        LineToReadBuff.ADDTEXT(LineToRead);
+        CLEAR(LineToRead);
+        LineToReadBuff.GETSUBTEXT(LineToRead,EndOfLinePos + 2);
+      UNTIL EOF;
+    END;
+
+    LOCAL PROCEDURE RegisterRec@1180210000(VAR EDIEntry@1180210000 : Record 50002;VendorNo@1180250004 : Code[20];EDICode@1180250008 : Code[10];EDILogDT@1180250006 : DateTime);
+    VAR
+      CompanyInfo@1180250012 : Record 79;
+      Item@1180250003 : Record 27;
+      ItemUnitOfMeasure@1180250001 : Record 5404;
+      ItemCrossRef@1180250002 : Record 5717;
+      DefaultDim@1180250009 : Record 352;
+      DimValue@1180250010 : Record 349;
+      Manuf@1180250011 : Record 5720;
+      ItemCat@1180250013 : Record 5722;
+      ProdGrp@1180250014 : Record 5723;
+      Seg@1180250015 : Record 50003;
+      TempEDIEntry@1180250007 : TEMPORARY Record 50002;
+      ItemCatCode@1180250016 : Code[10];
+      ProdGrpCode@1180250017 : Code[10];
+      SegCode@1180250018 : Code[10];
+      LastMsgError@1180250005 : Text[128];
+      Found@1180250019 : Boolean;
+      NbrOfItem@1180250020 : Integer;
+      NbrOfHandledItem@1180250021 : Integer;
+    BEGIN
+      EDISetup.GET(EDICode);
+
+      CompanyInfo.GET();
+
+      CLEAR(TempEDIEntry);
+      TempEDIEntry.RESET;
+      TempEDIEntry.DELETEALL;
+
+      NbrOfHandledItem := 0;
+      NbrOfItem := 0;
+
+      EDIEntry.RESET;
+      EDIEntry.SETCURRENTKEY("EDI Code","Imp./Exp. Date",Error,Handled);
+      EDIEntry.SETRANGE("EDI Code",EDICode);
+      EDIEntry.SETRANGE("Imp./Exp. Date",EDILogDT);
+      IF EDIEntry.FIND('-') THEN
+        NbrOfItem := EDIEntry.COUNT;
+        NbrOfItem := NbrOfItem - 12;
+        REPEAT
+          IF EDIEntry."Field 3" = '177' THEN BEGIN
+            Found := FALSE;
+            NbrOfHandledItem += 1;
+            CASE UPPERCASE(EDIEntry."Field 20") OF
+              //Cr‚ation (C), mise … jour des donn‚es produits(D), radiation(R)
+              //Les enregistrement en mises … jour de type (M) supprim‚
+              'C':BEGIN
+                CLEAR(Item);
+                Item.INIT;
+                Item.INSERT(TRUE);
+                IF NOT ItemUnitOfMeasure.GET(Item."No.",EDISetup."Default Base Unit of Measure") THEN BEGIN
+                  ItemUnitOfMeasure.INIT;
+                  ItemUnitOfMeasure."Item No." := Item."No.";
+                  ItemUnitOfMeasure.Code := EDISetup."Default Base Unit of Measure";
+                  ItemUnitOfMeasure."Qty. per Unit of Measure" := 1;
+                  ItemUnitOfMeasure.INSERT;
+                END;
+                Item."Base Unit of Measure" := EDISetup."Default Base Unit of Measure";
+                Item."Sales Unit of Measure" := EDISetup."Default Base Unit of Measure";
+                Item."Purch. Unit of Measure" := EDISetup."Default Base Unit of Measure";
+                Item.MODIFY(TRUE);
+
+                CLEAR(ItemCrossRef);
+                ItemCrossRef.INIT;
+                ItemCrossRef.VALIDATE("Item No.",Item."No.");
+                ItemCrossRef."Unit of Measure" := EDISetup."Default Base Unit of Measure";
+                ItemCrossRef."Cross-Reference Type" := ItemCrossRef."Cross-Reference Type"::Vendor;
+                ItemCrossRef."Cross-Reference Type No." := VendorNo;
+                ItemCrossRef."Cross-Reference No." := EDIEntry."Field 4";
+                ItemCrossRef.INSERT;
+
+                ItemCrossRef.INIT;
+                ItemCrossRef.VALIDATE("Item No.",Item."No.");
+                ItemCrossRef."Unit of Measure" := EDISetup."Default Base Unit of Measure";
+                ItemCrossRef."Cross-Reference Type" := ItemCrossRef."Cross-Reference Type"::Customer;
+                ItemCrossRef."Cross-Reference Type No." := '';
+                ItemCrossRef."Cross-Reference No." := EDIEntry."Field 4";
+                ItemCrossRef.INSERT;
+
+                Found := TRUE;
+               END;
+              'D','R':BEGIN
+                ItemCrossRef.RESET;
+                ItemCrossRef.SETCURRENTKEY("Cross-Reference No.","Cross-Reference Type","Cross-Reference Type No.",
+                  "Discontinue Bar Code");
+                ItemCrossRef.SETRANGE("Cross-Reference Type",ItemCrossRef."Cross-Reference Type"::Vendor);
+                ItemCrossRef.SETRANGE("Cross-Reference Type No.",VendorNo);
+                ItemCrossRef.SETRANGE("Cross-Reference No.",EDIEntry."Field 4");
+                IF ItemCrossRef.FINDFIRST THEN BEGIN
+                  Item.GET(ItemCrossRef."Item No.");
+                  Found := TRUE;
+                END ELSE
+                  Found := FALSE;
+
+                // suite pb de base art partielle : si on trouve pas on cr‚‚
+                IF (UPPERCASE(EDIEntry."Field 20") = 'D') AND
+                   (Found = FALSE) THEN BEGIN
+                  CLEAR(Item);
+                  Item.INIT;
+                  Item.INSERT(TRUE);
+                  IF NOT ItemUnitOfMeasure.GET(Item."No.",EDISetup."Default Base Unit of Measure") THEN BEGIN
+                    ItemUnitOfMeasure.INIT;
+                    ItemUnitOfMeasure."Item No." := Item."No.";
+                    ItemUnitOfMeasure.Code := EDISetup."Default Base Unit of Measure";
+                    ItemUnitOfMeasure."Qty. per Unit of Measure" := 1;
+                    ItemUnitOfMeasure.INSERT;
+                  END;
+                  Item."Base Unit of Measure" := EDISetup."Default Base Unit of Measure";
+                  Item."Sales Unit of Measure" := EDISetup."Default Base Unit of Measure";
+                  Item."Purch. Unit of Measure" := EDISetup."Default Base Unit of Measure";
+                  Item.MODIFY(TRUE);
+
+                  CLEAR(ItemCrossRef);
+                  ItemCrossRef.INIT;
+                  ItemCrossRef.VALIDATE("Item No.",Item."No.");
+                  ItemCrossRef."Unit of Measure" := EDISetup."Default Base Unit of Measure";
+                  ItemCrossRef."Cross-Reference Type" := ItemCrossRef."Cross-Reference Type"::Vendor;
+                  ItemCrossRef."Cross-Reference Type No." := VendorNo;
+                  ItemCrossRef."Cross-Reference No." := EDIEntry."Field 4";
+                  ItemCrossRef.INSERT;
+
+                  ItemCrossRef.INIT;
+                  ItemCrossRef.VALIDATE("Item No.",Item."No.");
+                  ItemCrossRef."Unit of Measure" := EDISetup."Default Base Unit of Measure";
+                  ItemCrossRef."Cross-Reference Type" := ItemCrossRef."Cross-Reference Type"::Customer;
+                  ItemCrossRef."Cross-Reference Type No." := '';
+                  ItemCrossRef."Cross-Reference No." := EDIEntry."Field 4";
+                  ItemCrossRef.INSERT;
+
+                  Found := TRUE;
+                END;
+              END;
+            END;//CASE
+
+            IF Found THEN BEGIN
+              IF UPPERCASE(EDIEntry."Field 20") = 'R' THEN BEGIN
+                CreateEDILogEntry(EDICode,EDILogDT,STRSUBSTNO(Text003,EDIEntry."Field 4",EDIEntry."Field 20"),0,EDIEntry."Entry No.");
+              END ELSE BEGIN
+                ItemCrossRef."Bar Code" := EDIEntry."Field 6";
+                ItemCrossRef."Alternative Cross-Ref. No." := EDIEntry."Field 10";
+                ItemCrossRef."Vendor Traide Item No." := EDIEntry."Field 31";
+                ItemCrossRef.MODIFY(TRUE);
+
+                //***************************
+                Item."Inventory Posting Group" := 'STOCK';
+                Item."Costing Method" := Item."Costing Method"::Average;
+                Item."Gen. Prod. Posting Group" := '01';
+                //***************************
+
+                Item.VALIDATE(Description,DELCHR(COPYSTR(EDIEntry."Field 5",1,30),'>',' '));
+                Item.VALIDATE("Description 2",DELCHR(COPYSTR(EDIEntry."Field 5",31,30),'>',' '));
+                CASE EDIEntry."Field 8" OF
+                  '1':Item.VALIDATE("VAT Prod. Posting Group",'2');
+                  '2':Item.VALIDATE("VAT Prod. Posting Group",'1');
+                END;
+                IF ConvTxt2Dec(EDIEntry."Field 9") <> 0 THEN
+                  Item."Net Weight" := ConvTxt2Dec(EDIEntry."Field 9") / 1000;
+                IF NOT DefaultDim.GET(DATABASE::Item,Item."No.",CompanyInfo."Dim. Manufaturer Code") THEN BEGIN
+                  DefaultDim.INIT;
+                  DefaultDim.VALIDATE("Table ID",DATABASE::Item);
+                  DefaultDim."No." := Item."No.";
+                  DefaultDim.VALIDATE("Dimension Code",CompanyInfo."Dim. Manufaturer Code");
+                  IF NOT DimValue.GET(CompanyInfo."Dim. Manufaturer Code",FORMAT(EDIEntry."Field 11")) THEN BEGIN
+                    DimValue.INIT;
+                    DimValue."Dimension Code" := CompanyInfo."Dim. Manufaturer Code";
+                    DimValue.Code := FORMAT(EDIEntry."Field 11");
+                    DimValue.INSERT;
+                  END;
+                  DefaultDim."Dimension Value Code" := FORMAT(EDIEntry."Field 11");
+                  DefaultDim.INSERT;
+                END;
+                Item."Transfer Price (LCY)" := ConvTxt2Dec(EDIEntry."Field 12");
+                IF NOT Manuf.GET(EDIEntry."Field 15") THEN BEGIN
+                  Manuf.INIT;
+                  Manuf.Code := EDIEntry."Field 15";
+                  Manuf.Name := EDIEntry."Field 15";
+                  Manuf.INSERT;
+                END;
+                Item."Manufacturer Code" := EDIEntry."Field 15";
+                Item."Price List Type" := ConvTxt2Int(EDIEntry."Field 18");
+                Item."Discount Type" := ConvTxt2Int(EDIEntry."Field 19");
+                CASE EDIEntry."Field 24" OF
+                  'S':Item."Item Management" := Item."Item Management"::S;
+                  'P':Item."Item Management" := Item."Item Management"::P;
+                  'H':Item."Item Management" := Item."Item Management"::H;
+                  'F':Item."Item Management" := Item."Item Management"::F;
+                  'N':Item."Item Management" := Item."Item Management"::N;
+                  'M':Item."Item Management" := Item."Item Management"::M;
+                  'T':Item."Item Management" := Item."Item Management"::T;
+                  'W':Item."Item Management" := Item."Item Management"::W;
+                  'X':Item."Item Management" := Item."Item Management"::X;
+                  'G':Item."Item Management" := Item."Item Management"::G;
+                  'Y':Item."Item Management" := Item."Item Management"::Y;
+                  'Z':Item."Item Management" := Item."Item Management"::Z;
+                END;
+                Item."Tariff No." := EDIEntry."Field 29";
+                Item."Country/Region Purchased Code" := EDIEntry."Field 30";
+                Item."Vendor No." := VendorNo;
+                Item."Vendor Item No." := EDIEntry."Field 4";
+                Item."Update Circulation Date" := DMY2DATE(ConvTxt2Int(COPYSTR(EDIEntry."Field 40",5,2)),
+                  ConvTxt2Int(COPYSTR(EDIEntry."Field 40",3,2)),ConvTxt2Int('20' + COPYSTR(EDIEntry."Field 40",1,2)));
+
+                ItemCatCode := COPYSTR(EDIEntry."Field 22",1,3);
+                ProdGrpCode := COPYSTR(EDIEntry."Field 22",1,5);
+                SegCode := COPYSTR(EDIEntry."Field 22",1,7);
+                IF NOT ItemCat.GET(ItemCatCode) THEN BEGIN
+                  ItemCat.INIT;
+                  ItemCat.Code := ItemCatCode;
+                  ItemCat.INSERT;
+                END;
+                IF NOT ProdGrp.GET(ItemCatCode,ProdGrpCode) THEN BEGIN
+                  ProdGrp.INIT;
+                  ProdGrp."Item Category Code" := ItemCatCode;
+                  ProdGrp.Code := ProdGrpCode;
+                  ProdGrp.INSERT;
+                END;
+                IF NOT Seg.GET(ProdGrpCode,SegCode) THEN BEGIN
+                  Seg."Product Group Code" := ProdGrpCode;
+                  Seg.Code := SegCode;
+                  Seg.INSERT;
+                END;
+                Item."Item Category Code" := ItemCatCode;
+                Item."Product Group Code" := ProdGrpCode;
+                Item."Segment Code" := SegCode;
+                Item."Last Import Code" := EDICode;
+                Item."Last Import Date" := EDILogDT;
+                Item.MODIFY(TRUE);
+              END;
+            END ELSE
+              CreateEDILogEntry(EDICode,EDILogDT,STRSUBSTNO(Text002,EDIEntry."Field 4"),2,EDIEntry."Entry No.");
+          END;
+          TempEDIEntry := EDIEntry;
+          TempEDIEntry.Error := FALSE;
+          TempEDIEntry.INSERT;
+        UNTIL EDIEntry.NEXT = 0;
+
+
+      CreateEDILogEntry(EDICode,EDILogDT,STRSUBSTNO(Text004,NbrOfHandledItem,NbrOfItem),0,0);
+
+      TempEDIEntry.RESET;
+      TempEDIEntry.SETRANGE(Error,FALSE);
+      IF TempEDIEntry.FIND('-') THEN
+        REPEAT
+          EDIEntry := TempEDIEntry;
+          EDIEntry.Error := FALSE;
+          EDIEntry.Handled := TRUE;
+          EDIEntry.MODIFY;
+        UNTIL TempEDIEntry.NEXT = 0;
+    END;
+
+    LOCAL PROCEDURE ConvTxt2Dec@1180250002(Txt2Conv@1180250001 : Text[50]) DecConv : Decimal;
+    BEGIN
+      IF Txt2Conv <> '' THEN
+        EVALUATE(DecConv,CONVERTSTR(Txt2Conv,'.',','))
+      ELSE
+        DecConv := 0.0;
+    END;
+
+    LOCAL PROCEDURE ConvTxt2Int@1180250001(Txt2Conv@1180250001 : Text[50]) IntConv : Integer;
+    BEGIN
+      IF Txt2Conv <> '' THEN
+        EVALUATE(IntConv,Txt2Conv)
+      ELSE
+        IntConv := 0;
+    END;
+
+    PROCEDURE ConvYMD2DMY@1180250004(String@1180250001 : Text[50]) NewString : Text[50];
+    VAR
+      Y@1180250002 : Text[2];
+      M@1180250003 : Text[2];
+      D@1180250004 : Text[2];
+    BEGIN
+      IF String <> '' THEN BEGIN
+        Y := COPYSTR(String,1,2);
+        M := COPYSTR(String,3,2);
+        D := COPYSTR(String,5,2);
+        NewString := D + M + Y
+      END ELSE
+        NewString := '';
+    END;
+
+    PROCEDURE CreateEDILogEntry@1180250011(EDICode@1180250003 : Code[10];EDILogDT@1180250002 : DateTime;String@1180250001 : Text[250];Status@1180250006 : ' ,OK,Error';EntryNo@1180250007 : Integer);
+    VAR
+      EDILogEntry@1180250004 : Record 50004;
+      LineNo@1180250005 : Integer;
+    BEGIN
+      EDILogEntry.RESET;
+      EDILogEntry.SETRANGE("EDI Code",EDICode);
+      EDILogEntry.SETRANGE("Treatment Date",EDILogDT);
+      IF EDILogEntry.FINDLAST THEN
+        LineNo := EDILogEntry."Ligne No."
+      ELSE
+        LineNo := 0;
+
+      LineNo += 10000;
+
+      EDILogEntry.INIT;
+      EDILogEntry."EDI Code" := EDICode;
+      EDILogEntry."Treatment Date" := EDILogDT;
+      EDILogEntry."Ligne No." := LineNo;
+      EDILogEntry."Error Text" := String;
+      EDILogEntry.Status := Status;
+      EDILogEntry."Applied E.D.I. Entry No." := EntryNo;
+      EDILogEntry.INSERT;
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

@@ -1,0 +1,87 @@
+OBJECT Report 50025 Batch Cancel Exported Inv.
+{
+  OBJECT-PROPERTIES
+  {
+    Date=22/04/16;
+    Time=11:26:46;
+    Modified=Yes;
+    Version List=,2016;
+  }
+  PROPERTIES
+  {
+    CaptionML=[ENU=Batch Cancel Exported Inv.;
+               FRA=TPL annuler facture export‚e];
+    ShowPrintStatus=No;
+    ProcessingOnly=Yes;
+    OnPreReport=BEGIN
+                  Window.OPEN(
+                    Text000 + '\' +
+                    '@1@@@@@@@@@@@@@@@@@@@@@');
+                  Window.UPDATE(1,0);
+                END;
+
+    OnPostReport=BEGIN
+                   Window.CLOSE;
+                   MESSAGE(Text001,i);
+                 END;
+
+  }
+  DATASET
+  {
+    { 5290;    ;DataItem;                    ;
+               DataItemTable=Table112;
+               DataItemTableView=SORTING(No.)
+                                 WHERE(Exported=CONST(Yes));
+               OnPreDataItem=BEGIN
+                               CurrRec := 0;
+                               RecCount := COUNT;
+                               Window.UPDATE(1,0);
+                               i := 0;
+                             END;
+
+               OnAfterGetRecord=BEGIN
+                                  CurrRec += 1;
+
+                                  T112 := "Sales Invoice Header";
+                                  T112.Exported := FALSE;
+                                  T112."Date Exported" := CURRENTDATETIME;
+                                  T112.MODIFY;
+                                  i += 1;
+
+                                  Window.UPDATE(1,ROUND(CurrRec / RecCount * 10000,1));
+                                END;
+
+               ReqFilterFields=No.,Sell-to Customer No. }
+
+  }
+  REQUESTPAGE
+  {
+    PROPERTIES
+    {
+    }
+    CONTROLS
+    {
+    }
+  }
+  LABELS
+  {
+  }
+  CODE
+  {
+    VAR
+      T112@1180250001 : Record 112;
+      i@1180250002 : Integer;
+      Text000@1180250004 : TextConst 'ENU=Batch in process...;FRA=Traitement en cours...';
+      Text001@1180250003 : TextConst 'FRA=%1 facture(s) vente(s) annulâ€še(s).';
+      Window@1180250007 : Dialog;
+      RecCount@1180250006 : Integer;
+      CurrRec@1180250005 : Integer;
+
+    BEGIN
+    END.
+  }
+  RDLDATA
+  {
+  }
+}
+

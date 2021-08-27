@@ -2,9 +2,10 @@ OBJECT Page 5052 Contact List
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
-    Version List=NAVW19.00;
+    Date=10/05/16;
+    Time=10:38:21;
+    Modified=Yes;
+    Version List=NAVW19.00,BC6AUTOINV;
   }
   PROPERTIES
   {
@@ -527,55 +528,248 @@ OBJECT Page 5052 Contact List
                 IndentationControls=Name;
                 GroupType=Repeater }
 
-    { 2   ;2   ;Field     ;
-                SourceExpr="No.";
-                Style=Strong;
-                StyleExpr=StyleIsStrong }
+    { 1000000000;2;Field  ;
+                SourceExpr="No." }
 
-    { 4   ;2   ;Field     ;
-                SourceExpr=Name;
-                Style=Strong;
-                StyleExpr=StyleIsStrong }
+    { 1000000001;2;Field  ;
+                SourceExpr=Name }
 
-    { 66  ;2   ;Field     ;
-                SourceExpr="Company Name";
-                Visible=FALSE }
+    { 1000000002;2;Field  ;
+                SourceExpr="Search Name" }
 
-    { 6   ;2   ;Field     ;
-                SourceExpr="Post Code";
-                Visible=FALSE }
+    { 1000000003;2;Field  ;
+                SourceExpr="Name 2" }
 
-    { 8   ;2   ;Field     ;
-                SourceExpr="Country/Region Code";
-                Visible=FALSE }
+    { 1000000004;2;Field  ;
+                SourceExpr=Address }
 
-    { 10  ;2   ;Field     ;
+    { 1000000005;2;Field  ;
+                SourceExpr="Address 2" }
+
+    { 1000000006;2;Field  ;
+                SourceExpr=City }
+
+    { 1000000007;2;Field  ;
                 SourceExpr="Phone No." }
 
-    { 24  ;2   ;Field     ;
-                SourceExpr="Mobile Phone No.";
-                Visible=FALSE }
+    { 1000000008;2;Field  ;
+                SourceExpr="Telex No." }
 
-    { 12  ;2   ;Field     ;
-                SourceExpr="Fax No.";
-                Visible=FALSE }
-
-    { 14  ;2   ;Field     ;
-                SourceExpr="Salesperson Code" }
-
-    { 16  ;2   ;Field     ;
+    { 1000000009;2;Field  ;
                 SourceExpr="Territory Code" }
 
-    { 18  ;2   ;Field     ;
-                SourceExpr="Currency Code";
-                Visible=FALSE }
+    { 1000000010;2;Field  ;
+                SourceExpr="Currency Code" }
 
-    { 20  ;2   ;Field     ;
-                SourceExpr="Language Code";
-                Visible=FALSE }
+    { 1000000011;2;Field  ;
+                SourceExpr="Language Code" }
 
-    { 22  ;2   ;Field     ;
-                SourceExpr="Search Name" }
+    { 1000000012;2;Field  ;
+                SourceExpr="Salesperson Code" }
+
+    { 1000000013;2;Field  ;
+                SourceExpr="Country/Region Code" }
+
+    { 1000000014;2;Field  ;
+                SourceExpr=Comment }
+
+    { 1000000015;2;Field  ;
+                SourceExpr="Last Date Modified" }
+
+    { 1000000016;2;Field  ;
+                SourceExpr="Fax No." }
+
+    { 1000000017;2;Field  ;
+                SourceExpr="Telex Answer Back" }
+
+    { 1000000018;2;Field  ;
+                SourceExpr="VAT Registration No." }
+
+    { 1000000019;2;Field  ;
+                SourceExpr=Picture }
+
+    { 1000000020;2;Field  ;
+                SourceExpr="Post Code" }
+
+    { 1000000021;2;Field  ;
+                SourceExpr=County }
+
+    { 1000000022;2;Field  ;
+                SourceExpr="E-Mail" }
+
+    { 1000000080;2;Field  ;
+                SourceExpr="Incl. in Email Inv." }
+
+    { 1000000023;2;Field  ;
+                SourceExpr="Home Page" }
+
+    { 1000000024;2;Field  ;
+                SourceExpr="No. Series" }
+
+    { 1000000025;2;Field  ;
+                SourceExpr=Type }
+
+    { 1000000026;2;Field  ;
+                SourceExpr="Company No." }
+
+    { 1000000027;2;Field  ;
+                SourceExpr="Company Name" }
+
+    { 1000000028;2;Field  ;
+                SourceExpr="Lookup Contact No." }
+
+    { 1000000029;2;Field  ;
+                SourceExpr="First Name" }
+
+    { 1000000030;2;Field  ;
+                SourceExpr="Middle Name" }
+
+    { 1000000031;2;Field  ;
+                SourceExpr=Surname }
+
+    { 1000000032;2;Field  ;
+                SourceExpr="Job Title" }
+
+    { 1000000033;2;Field  ;
+                SourceExpr=Initials }
+
+    { 1000000034;2;Field  ;
+                SourceExpr="Extension No." }
+
+    { 1000000035;2;Field  ;
+                SourceExpr="Mobile Phone No." }
+
+    { 1000000036;2;Field  ;
+                SourceExpr=Pager }
+
+    { 1000000037;2;Field  ;
+                SourceExpr="Organizational Level Code" }
+
+    { 1000000038;2;Field  ;
+                SourceExpr="Exclude from Segment" }
+
+    { 1000000039;2;Field  ;
+                SourceExpr="Date Filter" }
+
+    { 1000000040;2;Field  ;
+                SourceExpr="Next To-do Date" }
+
+    { 1000000041;2;Field  ;
+                SourceExpr="Last Date Attempted" }
+
+    { 1000000042;2;Field  ;
+                SourceExpr="Date of Last Interaction" }
+
+    { 1000000043;2;Field  ;
+                SourceExpr="No. of Job Responsibilities" }
+
+    { 1000000044;2;Field  ;
+                SourceExpr="No. of Industry Groups" }
+
+    { 1000000045;2;Field  ;
+                SourceExpr="No. of Business Relations" }
+
+    { 1000000046;2;Field  ;
+                SourceExpr="No. of Mailing Groups" }
+
+    { 1000000047;2;Field  ;
+                SourceExpr="External ID" }
+
+    { 1000000048;2;Field  ;
+                SourceExpr="No. of Interactions" }
+
+    { 1000000049;2;Field  ;
+                SourceExpr="Cost (LCY)" }
+
+    { 1000000050;2;Field  ;
+                SourceExpr="Duration (Min.)" }
+
+    { 1000000051;2;Field  ;
+                SourceExpr="No. of Opportunities" }
+
+    { 1000000052;2;Field  ;
+                SourceExpr="Estimated Value (LCY)" }
+
+    { 1000000053;2;Field  ;
+                SourceExpr="Calcd. Current Value (LCY)" }
+
+    { 1000000054;2;Field  ;
+                SourceExpr="Opportunity Entry Exists" }
+
+    { 1000000055;2;Field  ;
+                SourceExpr="To-do Entry Exists" }
+
+    { 1000000056;2;Field  ;
+                SourceExpr="Salesperson Filter" }
+
+    { 1000000057;2;Field  ;
+                SourceExpr="Campaign Filter" }
+
+    { 1000000058;2;Field  ;
+                SourceExpr="Action Taken Filter" }
+
+    { 1000000059;2;Field  ;
+                SourceExpr="Sales Cycle Filter" }
+
+    { 1000000060;2;Field  ;
+                SourceExpr="Sales Cycle Stage Filter" }
+
+    { 1000000061;2;Field  ;
+                SourceExpr="Probability % Filter" }
+
+    { 1000000062;2;Field  ;
+                SourceExpr="Completed % Filter" }
+
+    { 1000000063;2;Field  ;
+                SourceExpr="Estimated Value Filter" }
+
+    { 1000000064;2;Field  ;
+                SourceExpr="Calcd. Current Value Filter" }
+
+    { 1000000065;2;Field  ;
+                SourceExpr="Chances of Success % Filter" }
+
+    { 1000000066;2;Field  ;
+                SourceExpr="To-do Status Filter" }
+
+    { 1000000067;2;Field  ;
+                SourceExpr="To-do Closed Filter" }
+
+    { 1000000068;2;Field  ;
+                SourceExpr="Priority Filter" }
+
+    { 1000000069;2;Field  ;
+                SourceExpr="Team Filter" }
+
+    { 1000000070;2;Field  ;
+                SourceExpr="Close Opportunity Filter" }
+
+    { 1000000071;2;Field  ;
+                SourceExpr="Correspondence Type" }
+
+    { 1000000072;2;Field  ;
+                SourceExpr="Salutation Code" }
+
+    { 1000000073;2;Field  ;
+                SourceExpr="Search E-Mail" }
+
+    { 1000000074;2;Field  ;
+                SourceExpr="Last Time Modified" }
+
+    { 1000000075;2;Field  ;
+                SourceExpr="E-Mail 2" }
+
+    { 1000000076;2;Field  ;
+                SourceExpr="Trade Register" }
+
+    { 1000000077;2;Field  ;
+                SourceExpr="APE Code" }
+
+    { 1000000078;2;Field  ;
+                SourceExpr="Legal Form" }
+
+    { 1000000079;2;Field  ;
+                SourceExpr="Stock Capital" }
 
     { 1900000007;0;Container;
                 ContainerType=FactBoxArea }

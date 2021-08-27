@@ -2,9 +2,10 @@ OBJECT Page 130 Posted Sales Shipment
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
-    Version List=NAVW19.00;
+    Date=27/07/20;
+    Time=14:25:40;
+    Modified=Yes;
+    Version List=NAVW19.00,AC1.00;
   }
   PROPERTIES
   {
@@ -99,6 +100,7 @@ OBJECT Page 130 Posted Sales Shipment
       { 79      ;2   ;Action    ;
                       CaptionML=[ENU=&Track Package;
                                  FRA=&Suivre colis];
+                      Visible=FALSE;
                       Image=ItemTracking;
                       OnAction=BEGIN
                                  StartTrackingSite;
@@ -113,7 +115,9 @@ OBJECT Page 130 Posted Sales Shipment
                       PromotedCategory=Process;
                       OnAction=BEGIN
                                  CurrPage.SETSELECTIONFILTER(SalesShptHeader);
-                                 SalesShptHeader.PrintRecords(TRUE);
+                                 //BCSYS 130417
+                                 //SalesShptHeader.PrintRecords(TRUE);
+                                 SalesShptHeader.PrintRecords2(TRUE,Rec);
                                END;
                                 }
       { 50      ;1   ;Action    ;
@@ -162,6 +166,9 @@ OBJECT Page 130 Posted Sales Shipment
     { 56  ;2   ;Field     ;
                 SourceExpr="Sell-to Address 2";
                 Editable=FALSE }
+
+    { 1000000005;2;Field  ;
+                SourceExpr="Sell-to County" }
 
     { 8   ;2   ;Field     ;
                 SourceExpr="Sell-to Post Code";
@@ -218,10 +225,69 @@ OBJECT Page 130 Posted Sales Shipment
                 SourceExpr="Responsibility Center";
                 Editable=FALSE }
 
+    { 1180250002;2;Field  ;
+                SourceExpr="Order Reference Customer";
+                Editable=FALSE }
+
+    { 1180250006;2;Field  ;
+                SourceExpr="Your Reference";
+                Editable=FALSE }
+
+    { 1180250005;2;Field  ;
+                SourceExpr="Vendor Shipment No.";
+                Editable=FALSE }
+
     { 46  ;1   ;Part      ;
                 Name=SalesShipmLines;
                 SubPageLink=Document No.=FIELD(No.);
                 PagePartID=Page131 }
+
+    { 1000000011;1;Group  ;
+                CaptionML=[ENU=Defence Office;
+                           FRA=D‚fense Bureau];
+                GroupType=Group }
+
+    { 1000000010;2;Field  ;
+                CaptionML=[ENU=NUM_SUBSEQUENT;
+                           FRA=Nø du march‚ subs‚quent];
+                SourceExpr=NUM_SUBSEQUENT;
+                Editable=false }
+
+    { 1000000009;2;Field  ;
+                CaptionML=[ENU=REF_ENGAGEMENT;
+                           FRA=R‚f‚rence engagement];
+                SourceExpr=REF_ENGAGEMENT;
+                Editable=false }
+
+    { 1000000008;2;Field  ;
+                CaptionML=[ENU=NUM_EJ;
+                           FRA=Nø d'engagement juridique];
+                SourceExpr=NUM_EJ;
+                Editable=false }
+
+    { 1000000007;2;Field  ;
+                CaptionML=[ENU=NUM_EJ;
+                           FRA=Nø de transaction];
+                SourceExpr=TRS_ID;
+                Editable=false }
+
+    { 1000000006;2;Field  ;
+                CaptionML=[ENU=TRS_ID_AUTORISATION;
+                           FRA=Nø de paiement INGENICO];
+                SourceExpr=TRS_ID_AUTORISATION;
+                Editable=false }
+
+    { 1000000012;2;Field  ;
+                CaptionML=[ENU=CODE_WCP;
+                           FRA=Nø Client g‚n‚r‚ par le site];
+                SourceExpr=CODE_WCP;
+                Editable=false }
+
+    { 1000000013;2;Field  ;
+                CaptionML=[ENU=Market Nø;
+                           FRA=Code march‚];
+                SourceExpr=NUM_MARKET;
+                Editable=false }
 
     { 1905885101;1;Group  ;
                 CaptionML=[ENU=Invoicing;
@@ -260,6 +326,14 @@ OBJECT Page 130 Posted Sales Shipment
                 SourceExpr="Bill-to Contact";
                 Editable=FALSE }
 
+    { 1000000015;2;Field  ;
+                SourceExpr="Registration No.";
+                Editable=FALSE }
+
+    { 1000000014;2;Field  ;
+                SourceExpr="Executing Service Code";
+                Editable=FALSE }
+
     { 9   ;2   ;Field     ;
                 SourceExpr="Shortcut Dimension 1 Code";
                 Editable=FALSE }
@@ -267,6 +341,9 @@ OBJECT Page 130 Posted Sales Shipment
     { 63  ;2   ;Field     ;
                 SourceExpr="Shortcut Dimension 2 Code";
                 Editable=FALSE }
+
+    { 1180250007;2;Field  ;
+                SourceExpr="Validated by" }
 
     { 1906801201;1;Group  ;
                 CaptionML=[ENU=Shipping;
@@ -288,6 +365,9 @@ OBJECT Page 130 Posted Sales Shipment
     { 36  ;2   ;Field     ;
                 SourceExpr="Ship-to Address 2";
                 Editable=FALSE }
+
+    { 1000000016;2;Field  ;
+                SourceExpr="Ship-to County" }
 
     { 69  ;2   ;Field     ;
                 SourceExpr="Ship-to Post Code";
@@ -333,6 +413,40 @@ OBJECT Page 130 Posted Sales Shipment
                 Importance=Promoted;
                 Editable=FALSE }
 
+    { 1180250003;2;Field  ;
+                SourceExpr="Ship. Agent Instruction Line" }
+
+    { 1180250001;2;Field  ;
+                SourceExpr="Ship. Agent Instruction Line 2" }
+
+    { 1180250004;2;Field  ;
+                Name=Vendor Shipment No._2;
+                SourceExpr="Vendor Shipment No.";
+                Editable=FALSE }
+
+    { 1000000000;2;Field  ;
+                SourceExpr="Gross Weight";
+                Editable=FALSE }
+
+    { 1000000001;2;Field  ;
+                SourceExpr="Net Weight";
+                Editable=FALSE }
+
+    { 1000000002;2;Field  ;
+                SourceExpr=Volume;
+                Editable=FALSE }
+
+    { 1000000003;2;Field  ;
+                SourceExpr="Nbr. of Pallet";
+                Editable=FALSE }
+
+    { 1000000004;2;Field  ;
+                SourceExpr="Nbr. of Package per Pallet";
+                Editable=FALSE }
+
+    { 1180250008;2;Field  ;
+                SourceExpr="Grouping Code" }
+
     { 1900000007;0;Container;
                 ContainerType=FactBoxArea }
 
@@ -353,6 +467,9 @@ OBJECT Page 130 Posted Sales Shipment
       SalesShptHeader@1000 : Record 110;
 
     BEGIN
+    {
+      AC1.00 Ajout Field "Order Reference Customer"
+    }
     END.
   }
 }

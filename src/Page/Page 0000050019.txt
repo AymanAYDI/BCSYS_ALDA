@@ -1,0 +1,57 @@
+OBJECT Page 50019 Field Caption Setup
+{
+  OBJECT-PROPERTIES
+  {
+    Date=03/07/18;
+    Time=14:28:18;
+    Modified=Yes;
+    Version List=;
+  }
+  PROPERTIES
+  {
+    CaptionML=[ENU=Field Caption Setup;
+               FRA=Param‚trage nom de champ];
+    SourceTable=Table50007;
+    PageType=List;
+  }
+  CONTROLS
+  {
+    { 1000000000;0;Container;
+                ContainerType=ContentArea }
+
+    { 1000000001;1;Group  ;
+                Name=Group;
+                GroupType=Repeater }
+
+    { 1000000002;2;Field  ;
+                SourceExpr="Table No." }
+
+    { 1000000003;2;Field  ;
+                SourceExpr="Field No." }
+
+    { 1000000004;2;Field  ;
+                SourceExpr=Code;
+                OnDrillDown=VAR
+                              Customer@1000000000 : Record 18;
+                            BEGIN
+                              Customer.FINDFIRST;
+                              IF PAGE.RUNMODAL(0,Customer) = ACTION::LookupOK THEN
+                                Code := Customer."No.";
+                            END;
+                             }
+
+    { 1000000005;2;Field  ;
+                SourceExpr=Description }
+
+    { 1000000006;2;Field  ;
+                SourceExpr=Value }
+
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

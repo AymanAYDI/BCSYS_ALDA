@@ -2,8 +2,9 @@ OBJECT Page 97 Purchase Quote Subform
 {
   OBJECT-PROPERTIES
   {
-    Date=22/12/15;
-    Time=12:00:00;
+    Date=03/04/18;
+    Time=13:28:33;
+    Modified=Yes;
     Version List=NAVW19.00.00.44365;
   }
   PROPERTIES
@@ -424,6 +425,9 @@ OBJECT Page 97 Purchase Quote Subform
                              ValidateShortcutDimCode(8,ShortcutDimCode[8]);
                            END;
                             }
+
+    { 1000000000;2;Field  ;
+                SourceExpr="Line No." }
 
     { 40  ;1   ;Group     ;
                 GroupType=Group }

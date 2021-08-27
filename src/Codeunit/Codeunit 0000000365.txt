@@ -4,6 +4,7 @@ OBJECT Codeunit 365 Format Address
   {
     Date=23/10/15;
     Time=12:00:00;
+    Modified=Yes;
     Version List=NAVW19.00.00.43402,NAVFR9.00.00.43402;
   }
   PROPERTIES
@@ -60,8 +61,12 @@ OBJECT Codeunit 365 Format Address
             ContLineNo := 3;
             AddrLineNo := 4;
             Addr2LineNo := 5;
-            PostCodeCityLineNo := 6;
-            CountyLineNo := 7;
+            //ACBDU 180413D.Begin
+            //PostCodeCityLineNo := 6;
+            //CountyLineNo := 7;
+            PostCodeCityLineNo := 7;
+            CountyLineNo := 6;
+            //ACBDU 180413D.End
             CountryLineNo := 8;
           END;
         Country."Contact Address Format"::Last:
@@ -210,6 +215,16 @@ OBJECT Codeunit 365 Format Address
         FormatAddr(
           AddrArray,Name,"Name 2",'',Address,"Address 2",
           City,"Post Code",County,'');
+    END;
+
+    PROCEDURE Company2@1180250001(VAR AddrArray@1000 : ARRAY [8] OF Text[50];VAR CompanyInfo@1001 : Record 79);
+    BEGIN
+      // ALDA 150115D.Begin
+      WITH CompanyInfo DO
+        FormatAddr(
+          AddrArray,Name,"Name 2",'',Address,"Address 2",
+          City,"Post Code",County,"Country/Region Code");
+      // ALDA 150115D.End
     END;
 
     PROCEDURE Customer@3(VAR AddrArray@1000 : ARRAY [8] OF Text[50];VAR Cust@1001 : Record 18);

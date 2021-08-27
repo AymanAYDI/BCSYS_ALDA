@@ -1,0 +1,75 @@
+OBJECT Codeunit 50009 MAJUSCULE XML File Mgt
+{
+  OBJECT-PROPERTIES
+  {
+    Date=15/03/16;
+    Time=12:20:59;
+    Modified=Yes;
+    Version List=;
+  }
+  PROPERTIES
+  {
+    OnRun=BEGIN
+          END;
+
+  }
+  CODE
+  {
+    VAR
+      Text001@1180250001 : TextConst 'FRA=Le chemin et nom de fichier ne sont pas renseign‚s.';
+      FileMgt@1000000000 : Codeunit 419;
+
+    PROCEDURE ExportPurchInv@1180250001(FromPurchHeader@1180250004 : Record 38);
+    VAR
+      PurchHeader@1180250001 : Record 38;
+      XMLFile@1180250002 : File;
+      XMLOutStream@1180250003 : OutStream;
+      ComDialogMng@1180250006 : Codeunit 412;
+      FileName@1180250005 : Text[1024];
+    BEGIN
+      FileName := STRSUBSTNO('%1%2_%3',TEMPORARYPATH,FromPurchHeader."Document Type",FromPurchHeader."No.");
+
+      CLEAR(ComDialogMng);
+      FileName := FileMgt.OpenFileDialog('Export MAJUSCULE',FileName,'');
+      IF FileName = '' THEN
+        ERROR(Text001);
+
+
+      PurchHeader.SETRANGE("Document Type",FromPurchHeader."Document Type"::Invoice);
+      PurchHeader.SETRANGE("No.",FromPurchHeader."No.");
+      PurchHeader.FINDSET;
+
+      XMLFile.CREATE(FileName);
+      XMLFile.CREATEOUTSTREAM(XMLOutStream);
+      XMLPORT.EXPORT(XMLPORT::"Import MAJUSCULE Invoice UBL",XMLOutStream,PurchHeader);
+      XMLFile.CLOSE;
+    END;
+
+    PROCEDURE ImportPurchInv@1180250002(VAR ToPurchHeader@1180250003 : Record 38);
+    VAR
+      FileName@1180250001 : Text[1024];
+      XMLFile@1180250004 : File;
+      XMLInStream@1180250005 : InStream;
+      XMLImportInvoice@1180250006 : XMLport 50005;
+    BEGIN
+      CLEAR(FileMgt);
+      FileName := FileMgt.OpenFileDialog('Import MAJUSCULE',FileName,'');
+      IF FileName = '' THEN
+        ERROR(Text001);
+
+      XMLImportInvoice.SETTABLEVIEW(ToPurchHeader);
+
+      XMLFile.OPEN(FileName);
+      XMLFile.CREATEINSTREAM(XMLInStream);
+      //XMLPORT.IMPORT(XMLPORT::"Import MAJUSCULE Invoice UBL",XMLInStream);
+      XMLImportInvoice.IMPORT;
+      XMLImportInvoice.SETSOURCE(XMLInStream);
+      CLEAR(XMLImportInvoice);
+      XMLFile.CLOSE;
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

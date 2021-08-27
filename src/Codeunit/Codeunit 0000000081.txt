@@ -2,8 +2,9 @@ OBJECT Codeunit 81 Sales-Post (Yes/No)
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
+    Date=02/02/16;
+    Time=15:29:51;
+    Modified=Yes;
     Version List=NAVW19.00;
   }
   PROPERTIES
@@ -38,6 +39,8 @@ OBJECT Codeunit 81 Sales-Post (Yes/No)
           CASE "Document Type" OF
             "Document Type"::Order:
               BEGIN
+              //AC1.00
+              TESTFIELD(Status,Status::Released);
                 Selection := STRMENU(Text000,3);
                 IF Selection = 0 THEN
                   EXIT;

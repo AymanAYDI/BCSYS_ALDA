@@ -2,9 +2,10 @@ OBJECT Page 25 Customer Ledger Entries
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
-    Version List=NAVW19.00;
+    Date=04/02/20;
+    Time=16:42:20;
+    Modified=Yes;
+    Version List=NAVW19.00,AC1.00,ALDA;
   }
   PROPERTIES
   {
@@ -29,6 +30,8 @@ OBJECT Page 25 Customer Ledger Entries
                          BEGIN
                            HasIncomingDocument := IncomingDocument.PostedDocExists("Document No.","Posting Date");
                            CurrPage.IncomingDocAttachFactBox.PAGE.LoadDataFromRecord(Rec);
+                           //BC6 EABO 03.02.20 Integration of Chorus invoice status
+                           UpdateCommentFactbox;
                          END;
 
     ActionList=ACTIONS
@@ -238,6 +241,10 @@ OBJECT Page 25 Customer Ledger Entries
                 SourceExpr=Description;
                 Editable=FALSE }
 
+    { 1180250001;2;Field  ;
+                SourceExpr="Order Reference Customer";
+                Editable=FALSE }
+
     { 39  ;2   ;Field     ;
                 SourceExpr="Global Dimension 1 Code";
                 Visible=FALSE;
@@ -247,6 +254,9 @@ OBJECT Page 25 Customer Ledger Entries
                 SourceExpr="Global Dimension 2 Code";
                 Visible=FALSE;
                 Editable=FALSE }
+
+    { 1180250002;2;Field  ;
+                SourceExpr="Country Dimension Code" }
 
     { 67  ;2   ;Field     ;
                 SourceExpr="IC Partner Code";
@@ -365,6 +375,12 @@ OBJECT Page 25 Customer Ledger Entries
                 SourceExpr="Direct Debit Mandate ID";
                 Visible=FALSE }
 
+    { 1000000000;2;Field  ;
+                SourceExpr="Inv Acquitted by EDI" }
+
+    { 1000000001;2;Field  ;
+                SourceExpr="CrMemo Acquitted by EDI" }
+
     { 1900000007;0;Container;
                 ContainerType=FactBoxArea }
 
@@ -372,6 +388,13 @@ OBJECT Page 25 Customer Ledger Entries
                 SubPageLink=Entry No.=FIELD(Entry No.);
                 PagePartID=Page9106;
                 Visible=TRUE;
+                PartType=Page }
+
+    { 1000000002;1;Part   ;
+                SubPageView=WHERE(Document Type=FILTER(Posted Invoice|Posted Credit Memo));
+                SubPageLink=No.=FIELD(Document No.);
+                PagePartID=Page50033;
+                Visible=IsAcquittedByEDIPlatform;
                 PartType=Page }
 
     { 9   ;1   ;Part      ;
@@ -397,8 +420,22 @@ OBJECT Page 25 Customer Ledger Entries
       Navigate@1000 : Page 344;
       StyleTxt@1001 : Text;
       HasIncomingDocument@1003 : Boolean;
+      IsAcquittedByEDIPlatform@1000000000 : Boolean INDATASET;
+
+    LOCAL PROCEDURE UpdateCommentFactbox@1000000000();
+    BEGIN
+      CALCFIELDS("Inv Acquitted by EDI","CrMemo Acquitted by EDI");
+      IsAcquittedByEDIPlatform := "Inv Acquitted by EDI" OR "CrMemo Acquitted by EDI";
+    END;
 
     BEGIN
+    {
+      AC1.00 Ajout Field "Order Reference Customer"
+      BC6 EABO 03.02.20 Integration of Chorus invoice status
+        - add fields "Inv Acquitted by EDI" & "CrMemo Acquitted by EDI"
+        - add factbox <Sales Comment ListPart>
+        - Add function UpdateCommentFactbox to update visibility of factbox
+    }
     END.
   }
 }

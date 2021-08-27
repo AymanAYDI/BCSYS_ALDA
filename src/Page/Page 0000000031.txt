@@ -2,8 +2,9 @@ OBJECT Page 31 Item List
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
+    Date=04/03/21;
+    Time=12:24:53;
+    Modified=Yes;
     Version List=NAVW19.00;
   }
   PROPERTIES
@@ -47,6 +48,7 @@ OBJECT Page 31 Item List
                       AccessByPermission=TableData 14=R;
                       CaptionML=[ENU=Items b&y Location;
                                  FRA=Articles &par magasin];
+                      Visible=FALSE;
                       Image=ItemAvailbyLoc;
                       OnAction=VAR
                                  ItemsByLocation@1001 : Page 491;
@@ -89,6 +91,7 @@ OBJECT Page 31 Item List
                                   Location Filter=FIELD(Location Filter),
                                   Drop Shipment Filter=FIELD(Drop Shipment Filter),
                                   Variant Filter=FIELD(Variant Filter);
+                      Visible=FALSE;
                       Image=ItemVariant }
       { 78      ;3   ;Action    ;
                       CaptionML=[ENU=Location;
@@ -100,6 +103,7 @@ OBJECT Page 31 Item List
                                   Location Filter=FIELD(Location Filter),
                                   Drop Shipment Filter=FIELD(Drop Shipment Filter),
                                   Variant Filter=FIELD(Variant Filter);
+                      Visible=FALSE;
                       Image=Warehouse }
       { 13      ;3   ;Action    ;
                       CaptionML=[ENU=BOM Level;
@@ -387,6 +391,7 @@ OBJECT Page 31 Item List
       { 84      ;2   ;ActionGroup;
                       CaptionML=[ENU=E&ntries;
                                  FRA=&critures];
+                      Visible=FALSE;
                       Image=Entries }
       { 14      ;3   ;Action    ;
                       ShortCutKey=Ctrl+F7;
@@ -466,6 +471,7 @@ OBJECT Page 31 Item List
                                   Location Filter=FIELD(Location Filter),
                                   Drop Shipment Filter=FIELD(Drop Shipment Filter),
                                   Variant Filter=FIELD(Variant Filter);
+                      Visible=FALSE;
                       Image=EntryStatistics }
       { 22      ;3   ;Action    ;
                       CaptionML=[ENU=T&urnover;
@@ -477,6 +483,7 @@ OBJECT Page 31 Item List
                                   Location Filter=FIELD(Location Filter),
                                   Drop Shipment Filter=FIELD(Drop Shipment Filter),
                                   Variant Filter=FIELD(Variant Filter);
+                      Visible=FALSE;
                       Image=Turnover }
       { 15      ;2   ;Action    ;
                       CaptionML=[ENU=Co&mments;
@@ -484,6 +491,7 @@ OBJECT Page 31 Item List
                       RunObject=Page 124;
                       RunPageLink=Table Name=CONST(Item),
                                   No.=FIELD(No.);
+                      Visible=FALSE;
                       Image=ViewComments }
       { 33      ;1   ;ActionGroup;
                       CaptionML=[ENU=S&ales;
@@ -588,6 +596,7 @@ OBJECT Page 31 Item List
                       RunObject=Page 7379;
                       RunPageView=SORTING(Item No.);
                       RunPageLink=Item No.=FIELD(No.);
+                      Visible=FALSE;
                       Image=BinContent }
       { 81      ;2   ;Action    ;
                       CaptionML=[ENU=Stockkeepin&g Units;
@@ -595,6 +604,7 @@ OBJECT Page 31 Item List
                       RunObject=Page 5701;
                       RunPageView=SORTING(Item No.);
                       RunPageLink=Item No.=FIELD(No.);
+                      Visible=FALSE;
                       Image=SKU }
       { 60      ;1   ;ActionGroup;
                       CaptionML=[ENU=Service;
@@ -774,6 +784,21 @@ OBJECT Page 31 Item List
                       Promoted=Yes;
                       Image=AdjustEntries;
                       PromotedCategory=Process }
+      { 1000000001;1 ;Action    ;
+                      Name=Duplicate;
+                      CaptionML=[ENU=Duplicate...;
+                                 FRA=Dupliquer...];
+                      Promoted=Yes;
+                      PromotedIsBig=Yes;
+                      Image=Copy;
+                      PromotedCategory=Process;
+                      OnAction=VAR
+                                 BCSystools@1000000000 : Codeunit 50015;
+                               BEGIN
+                                 //BC6>>
+                                 BCSystools.DuplicateItem(Rec);
+                               END;
+                                }
       { 1900000006;0 ;ActionContainer;
                       ActionContainerType=Reports }
       { 1900907306;1 ;Action    ;
@@ -1055,7 +1080,21 @@ OBJECT Page 31 Item List
                 Visible=FALSE }
 
     { 97  ;2   ;Field     ;
-                SourceExpr="Substitutes Exist" }
+                SourceExpr="Substitutes Exist";
+                Visible=FALSE }
+
+    { 1000000000;2;Field  ;
+                SourceExpr=Inventory }
+
+    { 1180250005;2;Field  ;
+                SourceExpr="Item Ledger Entries";
+                Editable=FALSE }
+
+    { 1180250003;2;Field  ;
+                SourceExpr="Purchases (Qty.)" }
+
+    { 1180250002;2;Field  ;
+                SourceExpr="Sales (Qty.)" }
 
     { 112 ;2   ;Field     ;
                 SourceExpr="Stockkeeping Unit Exists";
@@ -1065,24 +1104,29 @@ OBJECT Page 31 Item List
                 SourceExpr="Assembly BOM" }
 
     { 99  ;2   ;Field     ;
-                SourceExpr="Production BOM No." }
+                SourceExpr="Production BOM No.";
+                Visible=FALSE }
 
     { 101 ;2   ;Field     ;
-                SourceExpr="Routing No." }
+                SourceExpr="Routing No.";
+                Visible=FALSE }
 
     { 6   ;2   ;Field     ;
                 SourceExpr="Base Unit of Measure" }
 
     { 43  ;2   ;Field     ;
-                SourceExpr="Shelf No.";
-                Visible=FALSE }
+                SourceExpr="Shelf No." }
+
+    { 1180250004;2;Field  ;
+                SourceExpr="Last Phys. Invt. Date" }
 
     { 45  ;2   ;Field     ;
                 SourceExpr="Costing Method";
                 Visible=FALSE }
 
     { 122 ;2   ;Field     ;
-                SourceExpr="Cost is Adjusted" }
+                SourceExpr="Cost is Adjusted";
+                Visible=FALSE }
 
     { 51  ;2   ;Field     ;
                 SourceExpr="Standard Cost";
@@ -1104,7 +1148,8 @@ OBJECT Page 31 Item List
                 Visible=FALSE }
 
     { 61  ;2   ;Field     ;
-                SourceExpr="Unit Price" }
+                SourceExpr="Unit Price";
+                Visible=FALSE }
 
     { 63  ;2   ;Field     ;
                 SourceExpr="Inventory Posting Group";
@@ -1126,15 +1171,18 @@ OBJECT Page 31 Item List
                 SourceExpr="Vendor No." }
 
     { 67  ;2   ;Field     ;
-                SourceExpr="Vendor Item No.";
-                Visible=FALSE }
+                SourceExpr="Vendor Item No." }
+
+    { 1180250001;2;Field  ;
+                SourceExpr="Cross-Reference No. of Vendor" }
 
     { 69  ;2   ;Field     ;
                 SourceExpr="Tariff No.";
                 Visible=FALSE }
 
     { 71  ;2   ;Field     ;
-                SourceExpr="Search Description" }
+                SourceExpr="Search Description";
+                Visible=FALSE }
 
     { 91  ;2   ;Field     ;
                 SourceExpr="Overhead Rate";
@@ -1151,6 +1199,9 @@ OBJECT Page 31 Item List
     { 1102601002;2;Field  ;
                 SourceExpr="Product Group Code";
                 Visible=FALSE }
+
+    { 1000000002;2;Field  ;
+                SourceExpr="Segment Code" }
 
     { 1102601004;2;Field  ;
                 SourceExpr=Blocked;
@@ -1196,6 +1247,9 @@ OBJECT Page 31 Item List
                 CaptionML=[ENU=Default Deferral Template;
                            FRA=ModŠle ‚chelonnement par d‚faut];
                 SourceExpr="Default Deferral Template Code" }
+
+    { 1000000003;2;Field  ;
+                SourceExpr=Ecotaxe }
 
     { 1900000007;0;Container;
                 ContainerType=FactBoxArea }

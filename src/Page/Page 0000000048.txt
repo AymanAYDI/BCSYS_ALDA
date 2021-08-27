@@ -4,7 +4,8 @@ OBJECT Page 48 Sales Orders
   {
     Date=09/09/14;
     Time=12:00:00;
-    Version List=NAVW18.00;
+    Modified=Yes;
+    Version List=NAVW18.00,AB6.JME.001;
   }
   PROPERTIES
   {
@@ -35,6 +36,7 @@ OBJECT Page 48 Sales Orders
                       AccessByPermission=TableData 27=R;
                       CaptionML=[ENU=Reservation Entries;
                                  FRA=êcritures rÇservation];
+                      Visible=FALSE;
                       Image=ReservationLedger;
                       OnAction=BEGIN
                                  ShowReservationEntries(TRUE);
@@ -60,7 +62,8 @@ OBJECT Page 48 Sales Orders
                 SourceExpr=Description }
 
     { 2   ;2   ;Field     ;
-                SourceExpr="Shipment Date" }
+                SourceExpr="Shipment Date";
+                Visible=FALSE }
 
     { 4   ;2   ;Field     ;
                 SourceExpr="Sell-to Customer No." }
@@ -69,7 +72,8 @@ OBJECT Page 48 Sales Orders
                 SourceExpr="Document No." }
 
     { 27  ;2   ;Field     ;
-                SourceExpr="Currency Code" }
+                SourceExpr="Currency Code";
+                Visible=FALSE }
 
     { 8   ;2   ;Field     ;
                 SourceExpr=Quantity }

@@ -2,9 +2,10 @@ OBJECT Page 5159 Sales Order Archive
 {
   OBJECT-PROPERTIES
   {
-    Date=09/09/14;
-    Time=12:00:00;
-    Version List=NAVW18.00;
+    Date=14/04/17;
+    Time=15:44:11;
+    Modified=Yes;
+    Version List=NAVW18.00,AC1.00;
   }
   PROPERTIES
   {
@@ -112,6 +113,9 @@ OBJECT Page 5159 Sales Order Archive
     { 10  ;2   ;Field     ;
                 SourceExpr="Sell-to Address 2" }
 
+    { 1000000000;2;Field  ;
+                SourceExpr="Sell-to County" }
+
     { 12  ;2   ;Field     ;
                 SourceExpr="Sell-to Post Code" }
 
@@ -151,12 +155,66 @@ OBJECT Page 5159 Sales Order Archive
     { 34  ;2   ;Field     ;
                 SourceExpr=Status }
 
+    { 1180250002;2;Field  ;
+                SourceExpr="Order Reference Customer";
+                Editable=FALSE }
+
+    { 1000000001;2;Field  ;
+                SourceExpr="Your Reference" }
+
     { 122 ;1   ;Part      ;
                 Name=SalesLinesArchive;
                 SubPageLink=Document No.=FIELD(No.),
                             Doc. No. Occurrence=FIELD(Doc. No. Occurrence),
                             Version No.=FIELD(Version No.);
                 PagePartID=Page5160 }
+
+    { 1000000007;1;Group  ;
+                CaptionML=[ENU=Defence Office;
+                           FRA=D‚fense Bureau];
+                GroupType=Group }
+
+    { 1000000006;2;Field  ;
+                CaptionML=[ENU=NUM_SUBSEQUENT;
+                           FRA=Nø du march‚ subs‚quent];
+                SourceExpr=NUM_SUBSEQUENT;
+                Editable=false }
+
+    { 1000000005;2;Field  ;
+                CaptionML=[ENU=REF_ENGAGEMENT;
+                           FRA=R‚f‚rence engagement];
+                SourceExpr=REF_ENGAGEMENT;
+                Editable=false }
+
+    { 1000000004;2;Field  ;
+                CaptionML=[ENU=NUM_EJ;
+                           FRA=Nø d'engagement juridique];
+                SourceExpr=NUM_EJ;
+                Editable=false }
+
+    { 1000000003;2;Field  ;
+                CaptionML=[ENU=NUM_EJ;
+                           FRA=Nø de transaction];
+                SourceExpr=TRS_ID;
+                Editable=false }
+
+    { 1000000002;2;Field  ;
+                CaptionML=[ENU=TRS_ID_AUTORISATION;
+                           FRA=Nø de paiement INGENICO];
+                SourceExpr=TRS_ID_AUTORISATION;
+                Editable=false }
+
+    { 1000000008;2;Field  ;
+                CaptionML=[ENU=CODE_WCP;
+                           FRA=Nø Client g‚n‚r‚ par le site];
+                SourceExpr=CODE_WCP;
+                Editable=false }
+
+    { 1000000009;2;Field  ;
+                CaptionML=[ENU=Market Nø;
+                           FRA=Code march‚];
+                SourceExpr=NUM_MARKET;
+                Editable=false }
 
     { 1905885101;1;Group  ;
                 CaptionML=[ENU=Invoicing;
@@ -218,6 +276,9 @@ OBJECT Page 5159 Sales Order Archive
                            FRA=Num‚ro de carte de cr‚dit (4ÿderniers chiffres)];
                 SourceExpr=GetCreditcardNumber }
 
+    { 1180250001;2;Field  ;
+                SourceExpr="Validated by" }
+
     { 1906801201;1;Group  ;
                 CaptionML=[ENU=Shipping;
                            FRA=Livraison] }
@@ -272,6 +333,9 @@ OBJECT Page 5159 Sales Order Archive
 
     { 94  ;2   ;Field     ;
                 SourceExpr="Shipping Advice" }
+
+    { 1180250003;2;Field  ;
+                SourceExpr="Dim. Shipping Method Filter" }
 
     { 1907468901;1;Group  ;
                 CaptionML=[ENU=Foreign Trade;
@@ -337,6 +401,9 @@ OBJECT Page 5159 Sales Order Archive
       DocPrint@1000 : Codeunit 229;
 
     BEGIN
+    {
+      AC1.00 Ajout Field "Order Type" "Order Reference Customer"
+    }
     END.
   }
 }

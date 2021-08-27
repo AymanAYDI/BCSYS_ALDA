@@ -1,0 +1,171 @@
+OBJECT Page 50023 GIM Purchase Invoice
+{
+  OBJECT-PROPERTIES
+  {
+    Date=08/10/15;
+    Time=18:03:08;
+    Modified=Yes;
+    Version List=GIM;
+  }
+  PROPERTIES
+  {
+    CaptionML=[ENU=Purchase Invoice;
+               FRA=Facture achat];
+    InsertAllowed=No;
+    SourceTable=Table50008;
+    SourceTableView=WHERE(Document Type=FILTER(Invoice|Credit Memo));
+    PageType=Document;
+    RefreshOnActivate=Yes;
+    ActionList=ACTIONS
+    {
+      { 1000000000;  ;ActionContainer;
+                      Name=<Action1000000000>;
+                      CaptionML=[ENU=Container;
+                                 FRA=Container];
+                      ActionContainerType=RelatedInformation }
+      { 1000000010;1 ;ActionGroup;
+                      Name=<Action19>;
+                      CaptionML=[ENU=&Line;
+                                 FRA=&Ligne] }
+      { 1000000009;2 ;Action    ;
+                      CaptionML=[ENU=Generate Purchase Invoice;
+                                 FRA=G‚n‚rer facture achat];
+                      Promoted=Yes;
+                      PromotedIsBig=Yes;
+                      Image=Start;
+                      PromotedCategory=Process;
+                      OnAction=BEGIN
+                                 GenPurchInvoice.RUN(Rec);
+                                 GenPurchInvoice.GetPurchHeader(PurchHeader);
+                                 PAGE.RUN(51,PurchHeader);
+                               END;
+                                }
+      { 1000000011;2 ;Separator  }
+      { 1000000015;2 ;Action    ;
+                      Name=ErrorOnlyFilter;
+                      CaptionML=[ENU=Filter lines on error only;
+                                 FRA=Filtrer lignes en erreur];
+                      Promoted=Yes;
+                      PromotedIsBig=Yes;
+                      OnAction=VAR
+                                 GIMPurchLine@1000000001 : Record 50009;
+                                 Filter@1000000002 : Text[250];
+                               BEGIN
+                                 CurrPage.PurchLines.PAGE.FilterErrorOnly();
+                                 CurrPage.UPDATE(FALSE);
+                               END;
+                                }
+    }
+  }
+  CONTROLS
+  {
+    { 1900000001;0;Container;
+                ContainerType=ContentArea }
+
+    { 1   ;1   ;Group     ;
+                CaptionML=[ENU=General;
+                           FRA=G‚n‚ral] }
+
+    { 2   ;2   ;Field     ;
+                SourceExpr="No.";
+                Importance=Promoted }
+
+    { 4   ;2   ;Field     ;
+                SourceExpr="Buy-from Vendor No.";
+                Importance=Promoted }
+
+    { 12  ;2   ;Field     ;
+                SourceExpr="Posting Date";
+                Importance=Promoted }
+
+    { 43  ;2   ;Field     ;
+                SourceExpr="Document Date";
+                Visible=FALSE }
+
+    { 1000000004;2;Field  ;
+                SourceExpr="Total Amt Exc VAT" }
+
+    { 1000000001;2;Field  ;
+                SourceExpr="Total VAT Amount" }
+
+    { 1000000003;2;Field  ;
+                SourceExpr="Total Amt Inc VAT" }
+
+    { 54  ;1   ;Part      ;
+                Name=PurchLines;
+                SubPageLink=Document No.=FIELD(No.);
+                PagePartID=Page50024 }
+
+    { 1000000014;0;Container;
+                ContainerType=FactBoxArea }
+
+    { 1000000013;1;Part   ;
+                SubPageLink=Document Type=FIELD(Document Type),
+                            Document No.=FIELD(Document No.),
+                            Line No.=FIELD(Line No.);
+                PagePartID=Page50027;
+                ProviderID=54;
+                Visible=TRUE;
+                PartType=Page }
+
+  }
+  CODE
+  {
+    VAR
+      PurchSetup@1000 : Record 312;
+      CopyPurchDoc@1002 : Report 492;
+      MoveNegPurchLines@1005 : Report 6698;
+      ReportPrint@1003 : Codeunit 228;
+      UserMgt@1004 : Codeunit 5700;
+      PurchInfoPaneMgmt@1006 : Codeunit 7181;
+      PurchHistoryBtnVisible@19036652 : Boolean INDATASET;
+      PayToCommentPictVisible@19020250 : Boolean INDATASET;
+      PayToCommentBtnVisible@19034709 : Boolean INDATASET;
+      PurchHistoryBtn1Visible@19028975 : Boolean INDATASET;
+      GenPurchInvoice@1000000000 : Codeunit 50023;
+      PurchHeader@1000000001 : Record 38;
+
+    LOCAL PROCEDURE ApproveCalcInvDisc@1();
+    BEGIN
+    END;
+
+    LOCAL PROCEDURE UpdateInfoPanel@2();
+    VAR
+      DifferBuyFromPayTo@1000 : Boolean;
+    BEGIN
+    END;
+
+    LOCAL PROCEDURE BuyfromVendorNoOnAfterValidate@19032492();
+    BEGIN
+      CurrPage.UPDATE;
+    END;
+
+    LOCAL PROCEDURE PurchaserCodeOnAfterValidate@19046120();
+    BEGIN
+    END;
+
+    LOCAL PROCEDURE PaytoVendorNoOnAfterValidate@19048314();
+    BEGIN
+    END;
+
+    LOCAL PROCEDURE ShortcutDimension1CodeOnAfterV@19029405();
+    BEGIN
+    END;
+
+    LOCAL PROCEDURE ShortcutDimension2CodeOnAfterV@19008725();
+    BEGIN
+    END;
+
+    LOCAL PROCEDURE PricesIncludingVATOnAfterValid@19009096();
+    BEGIN
+    END;
+
+    LOCAL PROCEDURE CurrencyCodeOnAfterValidate@19068298();
+    BEGIN
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

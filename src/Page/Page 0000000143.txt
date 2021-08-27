@@ -2,9 +2,10 @@ OBJECT Page 143 Posted Sales Invoices
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
-    Version List=NAVW19.00;
+    Date=04/02/20;
+    Time=16:40:17;
+    Modified=Yes;
+    Version List=NAVW19.00,AB6.JME.001,BC6AUTOINV;
   }
   PROPERTIES
   {
@@ -33,6 +34,8 @@ OBJECT Page 143 Posted Sales Invoices
                            DocExchStatusStyle := GetDocExchStatusStyle;
                            CurrPage.IncomingDocAttachFactBox.PAGE.LoadDataFromRecord(Rec);
                            CRMIsCoupledToRecord := CRMIntegrationEnabled AND CRMCouplingManagement.IsRecordCoupledToCRM(RECORDID);
+                           //BC6 EABO 03.02.20 Integration of Chorus invoice status
+                           UpdateCommentFactbox;
                          END;
 
     ActionList=ACTIONS
@@ -199,6 +202,7 @@ OBJECT Page 143 Posted Sales Invoices
                       CaptionML=[ENU=&Navigate;
                                  FRA=Na&viguer];
                       Promoted=Yes;
+                      Visible=FALSE;
                       PromotedIsBig=Yes;
                       Image=Navigate;
                       PromotedCategory=Category5;
@@ -230,6 +234,12 @@ OBJECT Page 143 Posted Sales Invoices
     { 2   ;2   ;Field     ;
                 SourceExpr="No." }
 
+    { 1180250001;2;Field  ;
+                SourceExpr="Order Reference Customer" }
+
+    { 1180250002;2;Field  ;
+                SourceExpr="External Document No." }
+
     { 4   ;2   ;Field     ;
                 SourceExpr="Sell-to Customer No." }
 
@@ -237,7 +247,8 @@ OBJECT Page 143 Posted Sales Invoices
                 SourceExpr="Sell-to Customer Name" }
 
     { 37  ;2   ;Field     ;
-                SourceExpr="Currency Code" }
+                SourceExpr="Currency Code";
+                Visible=FALSE }
 
     { 13  ;2   ;Field     ;
                 SourceExpr=Amount;
@@ -309,11 +320,11 @@ OBJECT Page 143 Posted Sales Invoices
 
     { 109 ;2   ;Field     ;
                 SourceExpr="Posting Date";
-                Visible=FALSE }
+                Visible=TRUE }
 
     { 69  ;2   ;Field     ;
                 SourceExpr="Salesperson Code";
-                Visible=FALSE }
+                Visible=TRUE }
 
     { 91  ;2   ;Field     ;
                 SourceExpr="Shortcut Dimension 1 Code";
@@ -325,10 +336,11 @@ OBJECT Page 143 Posted Sales Invoices
 
     { 93  ;2   ;Field     ;
                 SourceExpr="Location Code";
-                Visible=TRUE }
+                Visible=FALSE }
 
     { 8   ;2   ;Field     ;
-                SourceExpr="No. Printed" }
+                SourceExpr="No. Printed";
+                Visible=FALSE }
 
     { 1102601001;2;Field  ;
                 SourceExpr="Document Date";
@@ -354,6 +366,9 @@ OBJECT Page 143 Posted Sales Invoices
                 SourceExpr="Shipment Date";
                 Visible=FALSE }
 
+    { 1000000000;2;Field  ;
+                SourceExpr="Data Flow Status Caption" }
+
     { 11  ;2   ;Field     ;
                 SourceExpr="Document Exchange Status";
                 StyleExpr=DocExchStatusStyle;
@@ -366,6 +381,40 @@ OBJECT Page 143 Posted Sales Invoices
                 SourceExpr="Coupled to CRM";
                 Visible=CRMIntegrationEnabled }
 
+    { 1000000001;2;Field  ;
+                SourceExpr="Sell-to City" }
+
+    { 1000000002;2;Field  ;
+                SourceExpr="Your Reference" }
+
+    { 1000000010;2;Field  ;
+                SourceExpr=NUM_SUBSEQUENT }
+
+    { 1000000004;2;Field  ;
+                SourceExpr=REF_ENGAGEMENT }
+
+    { 1000000005;2;Field  ;
+                SourceExpr=NUM_EJ }
+
+    { 1000000006;2;Field  ;
+                SourceExpr=TRS_ID }
+
+    { 1000000007;2;Field  ;
+                SourceExpr=TRS_ID_AUTORISATION }
+
+    { 1000000008;2;Field  ;
+                SourceExpr=CODE_WCP }
+
+    { 1000000009;2;Field  ;
+                SourceExpr=NUM_MARKET }
+
+    { 1000000003;2;Field  ;
+                SourceExpr="Registration No." }
+
+    { 1000000011;2;Field  ;
+                SourceExpr="Acquitted by EDI";
+                Editable=FALSE }
+
     { 1900000007;0;Container;
                 ContainerType=FactBoxArea }
 
@@ -374,6 +423,13 @@ OBJECT Page 143 Posted Sales Invoices
                 PagePartID=Page193;
                 PartType=Page;
                 ShowFilter=No }
+
+    { 1000000012;1;Part   ;
+                SubPageLink=Document Type=CONST(Posted Invoice),
+                            No.=FIELD(No.);
+                PagePartID=Page50033;
+                Visible=IsAcquittedByEDIPlatform;
+                PartType=Page }
 
     { 1900383207;1;Part   ;
                 Visible=FALSE;
@@ -392,8 +448,20 @@ OBJECT Page 143 Posted Sales Invoices
       DocExchStatusStyle@1111 : Text;
       CRMIntegrationEnabled@1222 : Boolean;
       CRMIsCoupledToRecord@1001 : Boolean;
+      IsAcquittedByEDIPlatform@1000000000 : Boolean INDATASET;
+
+    LOCAL PROCEDURE UpdateCommentFactbox@1000000000();
+    BEGIN
+      IsAcquittedByEDIPlatform := "Acquitted by EDI";
+    END;
 
     BEGIN
+    {
+      BC6 EABO 03.02.20 Integration of Chorus invoice status
+        - Add field 50100 "Acquitted by EDI"
+        - add factbox <Sales Comment ListPart>
+        - Add function UpdateCommentFactbox to update visibility of factbox
+    }
     END.
   }
 }

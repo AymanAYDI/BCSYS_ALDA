@@ -4,7 +4,8 @@ OBJECT Table 472 Job Queue Entry
   {
     Date=15/09/15;
     Time=12:00:00;
-    Version List=NAVW19.00;
+    Modified=Yes;
+    Version List=NAVW19.00,AC1.00;
   }
   PROPERTIES
   {
@@ -318,6 +319,18 @@ OBJECT Table 472 Job Queue Entry
       RequestPagesOptionsDeletedMsg@1004 : TextConst 'ENU=You have cleared the report parameters. Select the check box in the field to show the report request page again.;FRA=Vous avez effac‚ les paramŠtres de l''‚tat. Activez le champ pour afficher … nouveau la page de s‚lection de l''‚tat.';
       ExpiresBeforeStartErr@1005 : TextConst '@@@="%1 = Expiration Date, %2=Start date";ENU=%1 must be later than %2.;FRA=%1 doit ˆtre post‚rieur(e) … %2.';
       UserSessionJobsCannotBeRecurringErr@1006 : TextConst 'ENU=You cannot set up user session job queue entries to be recurring.;FRA=Vous ne pouvez pas param‚trer la r‚currence des ‚critures file projets de session utilisateur.';
+
+    PROCEDURE RunJob@1180250001();
+    BEGIN
+      // AC1.00 BEGIN
+      TESTFIELD(Status,Status::"On Hold");
+
+        CASE "Object Type to Run" OF
+          "Object Type to Run"::Codeunit:CODEUNIT.RUN("Object ID to Run",Rec);
+          "Object Type to Run"::Report:REPORT.RUN("Object ID to Run",FALSE,FALSE,Rec);
+        END;//CASE
+      // A1.00 END
+    END;
 
     PROCEDURE GetErrorMessage@1() : Text;
     BEGIN
@@ -685,6 +698,9 @@ OBJECT Table 472 Job Queue Entry
     END;
 
     BEGIN
+    {
+      AC1.00 BDU Ajout Fonction : RunJob()
+    }
     END.
   }
 }

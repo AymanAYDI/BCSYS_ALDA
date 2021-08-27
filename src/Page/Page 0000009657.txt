@@ -2,8 +2,9 @@ OBJECT Page 9657 Customer Report Selections
 {
   OBJECT-PROPERTIES
   {
-    Date=26/11/15;
-    Time=12:00:00;
+    Date=14/04/17;
+    Time=17:54:42;
+    Modified=Yes;
     Version List=NAVW19.00.00.43897;
   }
   PROPERTIES
@@ -37,8 +38,8 @@ OBJECT Page 9657 Customer Report Selections
                 Name=Usage2;
                 CaptionML=[ENU=Usage;
                            FRA=Utilisation];
-                OptionCaptionML=[ENU=Quote,Confirmation Order,Invoice,Credit Memo,Customer Statement;
-                                 FRA=Devis,Commande confirmation,Facture,Avoir,Relev‚ client];
+                OptionCaptionML=[ENU=Quote,Confirmation Order,Invoice,Credit Memo,Customer Statement,Shipment;
+                                 FRA=Devis,Commande confirmation,Facture,Avoir,Relev‚ client,Exp‚dition];
                 SourceExpr=Usage2;
                 OnValidate=BEGIN
                              CASE Usage2 OF
@@ -52,6 +53,9 @@ OBJECT Page 9657 Customer Report Selections
                                  Usage := Usage::"S.Cr.Memo";
                                Usage2::"Customer Statement":
                                  Usage := Usage::"C.Statement";
+                                //BCSYS 130417
+                               Usage2::Shipment:
+                                 Usage := Usage::"S.Shipment";
                              END;
                            END;
                             }
@@ -100,7 +104,7 @@ OBJECT Page 9657 Customer Report Selections
   CODE
   {
     VAR
-      Usage2@1000 : 'Quote,Confirmation Order,Invoice,Credit Memo,Customer Statement';
+      Usage2@1000 : 'Quote,Confirmation Order,Invoice,Credit Memo,Customer Statement,Shipment';
 
     LOCAL PROCEDURE MapTableUsageValueToPageValue@3();
     VAR
@@ -117,6 +121,9 @@ OBJECT Page 9657 Customer Report Selections
           Usage2 := Usage::"S.Cr.Memo";
         CustomReportSelection.Usage::"C.Statement":
           Usage2 := Usage2::"Customer Statement";
+        //BCSYS 130417
+        CustomReportSelection.Usage::"S.Shipment":
+          Usage2 := Usage2::Shipment;
       END;
     END;
 

@@ -1,0 +1,55 @@
+OBJECT Table 50016 Model Permission Set
+{
+  OBJECT-PROPERTIES
+  {
+    Date=05/02/16;
+    Time=13:58:15;
+    Modified=Yes;
+    Version List=;
+  }
+  PROPERTIES
+  {
+    DataPerCompany=No;
+    DataCaptionFields=Role ID,Name;
+    OnDelete=VAR
+               ModelPermission@1000000000 : Record 50017;
+               AccessCtrlbyRes@1000000001 : Record 50015;
+             BEGIN
+               ModelPermission.SETRANGE("Role ID", "Role ID");
+               ModelPermission.DELETEALL;
+               AccessCtrlbyRes.SETRANGE("Role ID", "Role ID");
+               AccessCtrlbyRes.DELETEALL;
+             END;
+
+    CaptionML=[ENU=Permission Set;
+               FRB=Ensemble d'autorisations;
+               NLB=Machtigingenset];
+    LookupPageID=Page50084;
+  }
+  FIELDS
+  {
+    { 1   ;   ;Role ID             ;Code20        ;CaptionML=[ENU=Role ID;
+                                                              FRB=ID r“le;
+                                                              NLB=Rol-id] }
+    { 2   ;   ;Name                ;Text30        ;CaptionML=[ENU=Name;
+                                                              FRB=Nom;
+                                                              NLB=Naam] }
+    { 3   ;   ;Role ID Published   ;Code10        ;CaptionML=[ENU=Role ID Published;
+                                                              FRB=ID r“le publication;
+                                                              NLB=Rol-id] }
+  }
+  KEYS
+  {
+    {    ;Role ID                                 ;Clustered=Yes }
+  }
+  FIELDGROUPS
+  {
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

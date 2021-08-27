@@ -2,8 +2,9 @@ OBJECT Table 121 Purch. Rcpt. Line
 {
   OBJECT-PROPERTIES
   {
-    Date=22/12/15;
-    Time=12:00:00;
+    Date=17/03/17;
+    Time=09:17:12;
+    Modified=Yes;
     Version List=NAVW19.00.00.44365;
   }
   PROPERTIES
@@ -391,6 +392,26 @@ OBJECT Table 121 Purch. Rcpt. Line
     { 6608;   ;Return Reason Code  ;Code10        ;TableRelation="Return Reason";
                                                    CaptionML=[ENU=Return Reason Code;
                                                               FRA=Code motif retour] }
+    { 50000;  ;Point‚              ;Boolean       ;Description=AB6.JME.001;
+                                                   Editable=Yes }
+    { 50001;  ;Vendor Shipment No. ;Code35        ;FieldClass=FlowField;
+                                                   CalcFormula=Lookup("Purch. Rcpt. Header"."Vendor Shipment No." WHERE (Buy-from Vendor No.=FIELD(Buy-from Vendor No.),
+                                                                                                                         No.=FIELD(Document No.)));
+                                                   CaptionML=FRA=Nø B.L. fournisseur }
+    { 50006;  ;Order Reference Customer;Text35    ;CaptionML=[ENU=Order Reference Customer;
+                                                              FRA=R‚f‚rence commande client];
+                                                   Description=AC1.00;
+                                                   Editable=No }
+    { 50013;  ;Line No. Reference Customer;Integer;CaptionML=[ENU=Line No. Reference Customer;
+                                                              FRA=Nø ligne r‚f‚rence commande client];
+                                                   Description=AC1.00;
+                                                   Editable=No }
+    { 50014;  ;Anomaly Code        ;Code10        ;CaptionML=[ENU=Anomaly Code;
+                                                              FRA=Code anomalie];
+                                                   Description=AC1.00 }
+    { 50033;  ;Micro Order No.     ;Code20        ;CaptionML=[ENU=Micro Order No.;
+                                                              FRA=Nø commande micro];
+                                                   Description=ALDA 061015D }
     { 99000750;;Routing No.        ;Code20        ;TableRelation="Routing Header";
                                                    CaptionML=[ENU=Routing No.;
                                                               FRA=Nø gamme] }
@@ -427,12 +448,13 @@ OBJECT Table 121 Purch. Rcpt. Line
   CODE
   {
     VAR
-      Text000@1000 : TextConst 'ENU=Receipt No. %1:;FRA=Nø r‚ception %1 :';
+      Text000@1000 : TextConst 'ENU=Receipt No. %1:;FRA="Nø r‚ception %1 "';
       Text001@1001 : TextConst 'ENU=The program cannot find this purchase line.;FRA=Le programme ne trouve pas cette ligne achat.';
       Currency@1005 : Record 4;
       PurchRcptHeader@1004 : Record 120;
       DimMgt@1003 : Codeunit 408;
       CurrencyRead@1002 : Boolean;
+      Text50000@1180250001 : TextConst 'ENU=Vendor Ship No. %1;FRA=-Nø BL Frs %1';
 
     PROCEDURE GetCurrencyCodeFromHeader@1() : Code[10];
     BEGIN
@@ -467,6 +489,8 @@ OBJECT Table 121 Purch. Rcpt. Line
       PurchCalcDiscount@1008 : Codeunit 70;
       NextLineNo@1001 : Integer;
       ExtTextLine@1006 : Boolean;
+      "-------------------"@1180250001 : Integer;
+      G_RcptHeader@1180250002 : Record 120;
     BEGIN
       SETRANGE("Document No.","Document No.");
 
@@ -485,6 +509,13 @@ OBJECT Table 121 Purch. Rcpt. Line
         PurchLine."Document Type" := TempPurchLine."Document Type";
         PurchLine."Document No." := TempPurchLine."Document No.";
         PurchLine.Description := STRSUBSTNO(Text000,"Document No.");
+        //AB6.JME.001 <<
+        IF G_RcptHeader.GET("Document No.") THEN
+          IF G_RcptHeader."Vendor Shipment No." <> '' THEN
+          PurchLine.Description := COPYSTR(STRSUBSTNO(Text000,"Document No.") +
+          STRSUBSTNO(Text50000,G_RcptHeader."Vendor Shipment No." ),  1,50);
+        //AB6.JME.001 >>
+
         PurchLine.INSERT;
         NextLineNo := NextLineNo + 10000;
       END;
@@ -782,6 +813,9 @@ OBJECT Table 121 Purch. Rcpt. Line
     END;
 
     BEGIN
+    {
+      //AB6.JME.001 15/10/12  Ajout du nø BL fournisseur dans la pr‚-facture
+    }
     END.
   }
 }

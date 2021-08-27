@@ -1,0 +1,51 @@
+OBJECT Query 50010 OrderRefCustMissing
+{
+  OBJECT-PROPERTIES
+  {
+    Date=22/06/16;
+    Time=16:34:39;
+    Modified=Yes;
+    Version List=;
+  }
+  PROPERTIES
+  {
+  }
+  ELEMENTS
+  {
+    { 1000000000;;DataItem;                  ;
+               DataItemTable=Table112 }
+
+    { 1000000005;1;Column;                   ;
+               DataSource=No. }
+
+    { 1000000006;1;Column;                   ;
+               DataSource=Posting Date }
+
+    { 1000000001;1;Column;                   ;
+               DataSource=Order Reference Customer }
+
+    { 1000000002;1;Filter;Order_Reference_Customer_Filt;
+               DataSource=Order Reference Customer }
+
+    { 1000000003;1;DataItem;                 ;
+               DataItemTable=Table21;
+               DataItemLink=Document No.=Sales_Invoice_Header."No." }
+
+    { 1000000007;2;Filter;Custle_Order_Ref_Customer_Filt;
+               DataSource=Order Reference Customer }
+
+    { 1000000004;2;Column;                   ;
+               DataSource=Entry No. }
+
+    { 1000000008;2;Filter;Entry_No_Filter    ;
+               DataSource=Entry No. }
+
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

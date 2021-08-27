@@ -2,9 +2,10 @@ OBJECT Table 5107 Sales Header Archive
 {
   OBJECT-PROPERTIES
   {
-    Date=23/10/15;
-    Time=12:00:00;
-    Version List=NAVW19.00.00.43402;
+    Date=14/04/17;
+    Time=15:40:12;
+    Modified=Yes;
+    Version List=NAVW19.00.00.43402,AC1.00;
   }
   PROPERTIES
   {
@@ -538,6 +539,59 @@ OBJECT Table 5107 Sales Header Archive
     { 9000;   ;Assigned User ID    ;Code50        ;TableRelation="User Setup";
                                                    CaptionML=[ENU=Assigned User ID;
                                                               FRA=Code utilisateur affect‚] }
+    { 50000;  ;Dim. Shipping Method Filter;Code20 ;TableRelation=Dimension;
+                                                   CaptionML=[ENU=Dim. Shipping Method Filter;
+                                                              FRA=Filtre axe mode d'exp‚dition];
+                                                   Description=AC1.00;
+                                                   Editable=No }
+    { 50001;  ;Dim. Shipping Method Code;Code20   ;FieldClass=FlowField;
+                                                   CalcFormula=Lookup("Dimension Set Entry"."Dimension Value Code" WHERE (Dimension Set ID=FIELD(Dimension Set ID),
+                                                                                                                          Dimension Code=FIELD(Dim. Shipping Method Filter)));
+                                                   CaptionML=[ENU=Dim. Shipping Method Code;
+                                                              FRA=Code axe mode d'exp‚dition];
+                                                   Description=AC1.00;
+                                                   Editable=No }
+    { 50002;  ;Order Reference Customer;Text35    ;CaptionML=[ENU=Order Reference Customer;
+                                                              FRA=R‚f‚rence commande client];
+                                                   Description=AC1.00 }
+    { 50003;  ;Direct Inv. Posted  ;Boolean       ;CaptionML=[ENU=Direct Inv. Posted;
+                                                              FRA=Facturation direct];
+                                                   Description=AC1.00 }
+    { 50004;  ;Sell-to Phone No.   ;Text30        ;ExtendedDatatype=Phone No.;
+                                                   CaptionML=[ENU=Sell-to Phone No.;
+                                                              FRA=Nø t‚l‚phone donneur d'ordre];
+                                                   Description=AC1.00 }
+    { 50005;  ;Sell-to Fax No.     ;Text30        ;CaptionML=[ENU=Sell-to Fax No.;
+                                                              FRA=Nø t‚l‚copie donneur d'ordre];
+                                                   Description=AC1.00 }
+    { 50006;  ;Sell-to E-Mail      ;Text80        ;ExtendedDatatype=E-Mail;
+                                                   CaptionML=[ENU=Sell-to E-Mail;
+                                                              FRA=E-mail donneur d'ordre];
+                                                   Description=AC1.00 }
+    { 50029;  ;Validated by        ;Text50        ;CaptionML=[ENU=Validated by;
+                                                              FRA=Valid‚ par];
+                                                   Description=ALDA 031114D;
+                                                   Editable=No }
+    { 50035;  ;NUM_SUBSEQUENT      ;Code50        ;CaptionML=[ENU=NUM_SUBSEQUENT;
+                                                              FRA=NUM_SUBSEQUENT];
+                                                   Description=Nø du march‚ subs‚quent }
+    { 50036;  ;REF_ENGAGEMENT      ;Code50        ;CaptionML=[ENU=REF_ENGAGEMENT;
+                                                              FRA=REF_ENGAGEMENT];
+                                                   Description=R‚f‚rence engagement }
+    { 50037;  ;NUM_EJ              ;Code50        ;CaptionML=[ENU=NUM_EJ;
+                                                              FRA=NUM_EJ];
+                                                   Description=Nø d'engagement juridique }
+    { 50038;  ;TRS_ID              ;Code50        ;CaptionML=[ENU=NUM_EJ;
+                                                              FRA=TRS_ID];
+                                                   Description=Nø de transaction unique }
+    { 50039;  ;TRS_ID_AUTORISATION ;Decimal       ;CaptionML=[ENU=TRS_ID_AUTORISATION;
+                                                              FRA=TRS_ID_AUTORISATION];
+                                                   Description=Nø de paiment Ingenico }
+    { 50040;  ;CODE_WCP            ;Code20        ;CaptionML=FRA=CODE_WCP;
+                                                   Description=Nø client g‚n‚r‚ par le site D‚fense Bureau }
+    { 50041;  ;NUM_MARKET          ;Code50        ;CaptionML=[ENU=NUM_MARKET;
+                                                              FRA=NUM_MARKET];
+                                                   Description=Num‚ro de march‚ }
   }
   KEYS
   {

@@ -3,8 +3,9 @@ OBJECT Table 25 Vendor Ledger Entry
   OBJECT-PROPERTIES
   {
     Date=15/09/15;
-    Time=12:00:00;
-    Version List=NAVW19.00,NAVFR9.00;
+    Time=15:51:08;
+    Modified=Yes;
+    Version List=NAVW19.00,NAVFR9.00,AC1.00,AB6.TAH.001,ALDA;
   }
   PROPERTIES
   {
@@ -396,6 +397,15 @@ OBJECT Table 25 Vendor Ledger Entry
                                                    CaptionML=[ENU=Dimension Set ID;
                                                               FRA=ID ensemble de dimensions];
                                                    Editable=No }
+    { 50002;  ;Order Reference Customer;Text35    ;CaptionML=[ENU=Order Reference Customer;
+                                                              FRA=R‚f‚rence commande client];
+                                                   Description=AC1.00 }
+    { 50003;  ;ID lettrage Sage    ;Code10        ;Description=AB6.TAH.001 }
+    { 50019;  ;Country Dimension Code;Code20      ;TableRelation=Country/Region;
+                                                   CaptionML=[ENU=Country Dimension Code;
+                                                              FRA=Code axe pays];
+                                                   Description=ALDA 171214D;
+                                                   Editable=No }
   }
   KEYS
   {
@@ -553,6 +563,14 @@ OBJECT Table 25 Vendor Ledger Entry
       "Payment Reference" := GenJnlLine."Payment Reference";
       "Payment Method Code" := GenJnlLine."Payment Method Code";
       "Exported to Payment File" := GenJnlLine."Exported to Payment File";
+      //AC1.00
+      "Order Reference Customer" := "Order Reference Customer";
+      //AB6.TAH.001  <<
+      "ID lettrage Sage" := "ID lettrage Sage";
+      //AB6.TAH.001  >>
+
+      // ALDA 171214D
+      "Country Dimension Code" := "Country Dimension Code";
 
       OnAfterCopyVendLedgerEntryFromGenJnlLine(Rec,GenJnlLine);
     END;
@@ -580,6 +598,15 @@ OBJECT Table 25 Vendor Ledger Entry
     END;
 
     BEGIN
+    {
+      AC1.00 Ajout Field "Order Reference Customer"
+      AB6.TAH.001 - 04/09/12
+       Ajout d'un champ :50003
+
+      //AC1.00
+      //AB6.TAH.001 Id lettrage sage
+      // ALDA 171214D Country dimension code
+    }
     END.
   }
 }

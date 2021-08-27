@@ -4,6 +4,7 @@ OBJECT Table 125 Purch. Cr. Memo Line
   {
     Date=15/09/15;
     Time=12:00:00;
+    Modified=Yes;
     Version List=NAVW19.00;
   }
   PROPERTIES
@@ -386,6 +387,13 @@ OBJECT Table 125 Purch. Cr. Memo Line
     { 6608;   ;Return Reason Code  ;Code10        ;TableRelation="Return Reason";
                                                    CaptionML=[ENU=Return Reason Code;
                                                               FRA=Code motif retour] }
+    { 50006;  ;Order Reference Customer;Text35    ;CaptionML=[ENU=Order Reference Customer;
+                                                              FRA=R‚f‚rence commande client];
+                                                   Description=AC1.00;
+                                                   Editable=No }
+    { 50033;  ;Micro Order No.     ;Code20        ;CaptionML=[ENU=Micro Order No.;
+                                                              FRA=Nø commande micro];
+                                                   Description=ALDA 061015D }
   }
   KEYS
   {

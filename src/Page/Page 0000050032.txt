@@ -1,0 +1,179 @@
+OBJECT Page 50032 Data Flow Steps
+{
+  OBJECT-PROPERTIES
+  {
+    Date=12/05/16;
+    Time=10:01:27;
+    Modified=Yes;
+    Version List=BC6AUTOINV;
+  }
+  PROPERTIES
+  {
+    SourceTable=Table50018;
+    DelayedInsert=Yes;
+    PageType=List;
+    RefreshOnActivate=Yes;
+    ActionList=ACTIONS
+    {
+      { 1000000014;  ;ActionContainer;
+                      ActionContainerType=ActionItems }
+      { 1000000015;1 ;Action    ;
+                      Name=ExecuteStep;
+                      CaptionML=[ENU=Execute Step Only;
+                                 FRA=Ex‚cuter cette ‚tape];
+                      Promoted=Yes;
+                      PromotedIsBig=Yes;
+                      Image=Start;
+                      PromotedCategory=Process;
+                      OnAction=VAR
+                                 DataFlowMgt@1000000000 : Codeunit 50013;
+                               BEGIN
+                                 DataFlowMgt.ExcuteStepOnly(Rec);
+                               END;
+                                }
+      { 1000000013;1 ;Action    ;
+                      Name=ExecuteFromStep;
+                      CaptionML=[ENU=Execute From Step;
+                                 FRA=Ex‚cuter … partir de cette ‚tape];
+                      Promoted=Yes;
+                      Image=ExecuteBatch;
+                      OnAction=VAR
+                                 DataFlowMgt@1000000000 : Codeunit 50013;
+                               BEGIN
+                                 DataFlowMgt.ExcuteFromStep(Rec);
+                               END;
+                                }
+      { 1000000016;0 ;ActionContainer;
+                      ActionContainerType=RelatedInformation }
+      { 1000000018;1 ;Action    ;
+                      Name=ShowEntries;
+                      CaptionML=[ENU=Show Entries;
+                                 FRA=Afficher ‚critures];
+                      Promoted=Yes;
+                      PromotedIsBig=Yes;
+                      Image=ShowSelected;
+                      PromotedCategory=Report;
+                      OnAction=BEGIN
+                                 ShowRecInDataFlow(TRUE);
+                                 CurrPage.UPDATE(FALSE);
+                               END;
+                                }
+      { 1000000019;1 ;Action    ;
+                      Name=ShowLog;
+                      CaptionML=[ENU=Show Logs;
+                                 FRA=Afficher logs];
+                      Promoted=Yes;
+                      PromotedIsBig=Yes;
+                      Image=Log;
+                      PromotedCategory=Report;
+                      OnAction=BEGIN
+                                 ShowLogEntries;
+                               END;
+                                }
+      { 1000000024;1 ;Action    ;
+                      Name=ShowError;
+                      CaptionML=[ENU=Show Error;
+                                 FRA=Afficher erreur];
+                      Promoted=Yes;
+                      PromotedIsBig=Yes;
+                      Image=Error;
+                      PromotedCategory=Process;
+                      OnAction=BEGIN
+                                 ShowErrorMessage;
+                               END;
+                                }
+    }
+  }
+  CONTROLS
+  {
+    { 1000000000;0;Container;
+                ContainerType=ContentArea }
+
+    { 1000000001;1;Group  ;
+                Name=Group;
+                GroupType=Repeater }
+
+    { 1000000002;2;Field  ;
+                SourceExpr="Data Flow Code";
+                Visible=FALSE;
+                Editable=FALSE }
+
+    { 1000000003;2;Field  ;
+                SourceExpr="No." }
+
+    { 1000000005;2;Field  ;
+                SourceExpr="Prev. Status No." }
+
+    { 1000000006;2;Field  ;
+                SourceExpr="Next Status No." }
+
+    { 1000000007;2;Field  ;
+                SourceExpr="Next Status Caption" }
+
+    { 1000000008;2;Field  ;
+                SourceExpr="Object Type to Run" }
+
+    { 1000000009;2;Field  ;
+                SourceExpr="Object ID to Run" }
+
+    { 1000000010;2;Field  ;
+                SourceExpr="Object Caption to Run" }
+
+    { 1000000004;2;Field  ;
+                SourceExpr=Name }
+
+    { 1000000011;2;Field  ;
+                SourceExpr="Source Table ID" }
+
+    { 1000000012;2;Field  ;
+                SourceExpr="Source Table Name" }
+
+    { 1000000017;2;Field  ;
+                SourceExpr="Table Filter";
+                OnAssistEdit=VAR
+                               TableFilter@1000 : Record 9805;
+                               TableFilterPage@1001 : Page 9805;
+                             BEGIN
+                               CALCFIELDS("Source Table Name");
+                               TableFilter.FILTERGROUP(2);
+                               TableFilter.SETRANGE("Table Number","Source Table ID");
+                               TableFilter.FILTERGROUP(0);
+                               TableFilterPage.SETTABLEVIEW(TableFilter);
+                               TableFilterPage.SetSourceTable(FORMAT("Table Filter"),"Source Table ID","Source Table Name");
+                               IF ACTION::OK = TableFilterPage.RUNMODAL THEN
+                                 EVALUATE("Table Filter",TableFilterPage.CreateTextTableFilter(FALSE));
+                             END;
+                              }
+
+    { 1000000021;2;Field  ;
+                SourceExpr="Cross Data Flow" }
+
+    { 1000000022;2;Field  ;
+                SourceExpr=Manual }
+
+    { 1000000020;2;Field  ;
+                Name=NbRecInFlow;
+                CaptionML=[ENU=Nb. Rec. in Flow;
+                           FRA=Nb. enr. dans le flux];
+                SourceExpr=ShowRecInDataFlow(FALSE);
+                Editable=FALSE;
+                Style=StrongAccent;
+                StyleExpr=TRUE;
+                OnDrillDown=BEGIN
+                              ShowRecInDataFlow(TRUE);
+                              CurrPage.UPDATE(FALSE);
+                            END;
+                             }
+
+    { 1000000023;2;Field  ;
+                SourceExpr=Status }
+
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

@@ -4,7 +4,8 @@ OBJECT Page 5721 Item Cross Reference Entries
   {
     Date=25/02/02;
     Time=12:00:00;
-    Version List=NAVW13.10.01;
+    Modified=Yes;
+    Version List=NAVW13.10.01,AC1.00;
   }
   PROPERTIES
   {
@@ -44,6 +45,15 @@ OBJECT Page 5721 Item Cross Reference Entries
     { 6   ;2   ;Field     ;
                 SourceExpr="Discontinue Bar Code" }
 
+    { 1180250001;2;Field  ;
+                SourceExpr="Bar Code" }
+
+    { 1180250002;2;Field  ;
+                SourceExpr="Alternative Cross-Ref. No." }
+
+    { 1180250003;2;Field  ;
+                SourceExpr="Vendor Traide Item No." }
+
     { 1900000007;0;Container;
                 ContainerType=FactBoxArea }
 
@@ -62,6 +72,9 @@ OBJECT Page 5721 Item Cross Reference Entries
   {
 
     BEGIN
+    {
+      AC1.00 Ajout Fields : "Manufacturer Code", "Bar Code", "Alternative Cross-Reference No"
+    }
     END.
   }
 }

@@ -4,7 +4,8 @@ OBJECT Codeunit 74 Purch.-Get Receipt
   {
     Date=09/09/14;
     Time=12:00:00;
-    Version List=NAVW18.00;
+    Modified=Yes;
+    Version List=NAVW18.00,AB6.JME.001;
   }
   PROPERTIES
   {
@@ -36,6 +37,8 @@ OBJECT Codeunit 74 Purch.-Get Receipt
       PurchRcptHeader@1003 : Record 120;
       PurchRcptLine@1004 : Record 121;
       GetReceipts@1005 : Page 5709;
+      "-----------"@1180250001 : Integer;
+      PurchRcptLine3@1180250002 : Record 121;
 
     PROCEDURE CreateInvLines@1(VAR PurchRcptLine2@1000 : Record 121);
     VAR
@@ -78,6 +81,12 @@ OBJECT Codeunit 74 Purch.-Get Receipt
               IF Type = Type::"Charge (Item)" THEN
                 GetItemChargeAssgnt(PurchRcptLine2,PurchLine."Qty. to Invoice");
             END;
+          //AB6.JME.001--<<
+          //PurchRcptLine3 := PurchRcptLine2;
+          //PurchRcptLine3.Point‚ := TRUE;
+          //PurchRcptLine3.MODIFY;
+          //AB6.JME.001-->>
+
           UNTIL NEXT = 0;
         END;
       END;
@@ -200,6 +209,9 @@ OBJECT Codeunit 74 Purch.-Get Receipt
     END;
 
     BEGIN
+    {
+      //AB6.JME.001   09/10/12    Ajout de code permettant de voir les lignes qui ont d‚j… ‚t‚ extraites dans la pr‚-facture
+    }
     END.
   }
 }

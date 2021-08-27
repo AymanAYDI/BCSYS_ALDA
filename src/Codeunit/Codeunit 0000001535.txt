@@ -2,9 +2,10 @@ OBJECT Codeunit 1535 Approvals Mgmt.
 {
   OBJECT-PROPERTIES
   {
-    Date=22/12/15;
-    Time=12:00:00;
-    Version List=NAVW19.00.00.44365;
+    Date=09/02/16;
+    Time=14:14:10;
+    Modified=Yes;
+    Version List=NAVW19.00.00.44365,AC1.00;
   }
   PROPERTIES
   {
@@ -50,6 +51,9 @@ OBJECT Codeunit 1535 Approvals Mgmt.
       PendingJournalBatchApprovalExistsErr@1017 : TextConst '@@@=%1 is the Document No. of the journal line;ENU=An approval request already exists.;FRA=Il existe d‚j… une demande d''approbation.';
       ApporvalChainIsUnsupportedMsg@1016 : TextConst '@@@=Only Direct Approver is supported as Approver Limit Type option for Gen. Journal Batch DEFAULT, CASH. The approval request will be approved automatically.;ENU=Only Direct Approver is supported as Approver Limit Type option for %1. The approval request will be approved automatically.;FRA=Seule l''option Approbateur direct est prise en charge comme Type limite approbateur pour %1. La demande d''approbation sera approuv‚e automatiquement.';
       RecHasBeenApprovedMsg@1008 : TextConst '@@@="%1 = Record Id";ENU=%1 has been approved.;FRA=%1 a ‚t‚ approuv‚(e).';
+      Text50000@1000000002 : TextConst 'FRA=Vous ˆtes sur le point de lancer une commande avec des commentaires. Voulez-vous continuer ?';
+      Text50001@1000000001 : TextConst 'FRA=Vous ˆtes sur le point de lancer une commande sans commentaires sp‚cifiques pour le transporteur. Voulez-vous continuer ?';
+      Text50002@1000000000 : TextConst 'FRA="Il existe d‚j… une ligne avec %1=%2, cela provoque des erreurs dans l''EDI."';
 
     [Integration]
     PROCEDURE OnSendPurchaseDocForApproval@3(VAR PurchaseHeader@1000 : Record 38);
@@ -1514,6 +1518,84 @@ OBJECT Codeunit 1535 Approvals Mgmt.
       ApprovalEntry.SETRANGE("Record ID to Approve",RecId);
       ApprovalEntry.SETRANGE("Related to Change",FALSE);
       PAGE.RUNMODAL(PAGE::"Approval Entries",ApprovalEntry);
+    END;
+
+    PROCEDURE TestSalesOrder@1180250001(SalesHeader@1000 : Record 36) : Boolean;
+    VAR
+      SalesSetup@1002 : Record 311;
+      SalesLine@1180250001 : Record 37;
+      SalesLine2@1180250002 : Record 37;
+      CustLedgerEntry@1004 : Record 21;
+      SalesInvHeader@1005 : Record 112;
+      EntryFound@1006 : Boolean;
+      Found@1180250003 : Boolean;
+    BEGIN
+      //AC1.00 BEGIN
+      IF SalesHeader."Document Type" <> SalesHeader."Document Type"::Order THEN
+        EXIT;
+
+      SalesSetup.GET;
+
+      // Test sur commentaires g‚n‚raux
+      WITH SalesHeader DO BEGIN
+        CALCFIELDS(Comment);
+        IF Comment THEN
+          IF NOT CONFIRM(Text50000) THEN BEGIN
+            ERROR('');
+            EXIT;
+          END;
+      END;
+      // Test sur commentaires sp‚cifiques au transporteur pour la livraison
+      IF (SalesHeader."Ship. Agent Instruction Line" = '') OR
+         (SalesHeader."Ship. Agent Instruction Line 2" = '') THEN
+        IF NOT CONFIRM(Text50001) THEN BEGIN
+          ERROR('');
+          EXIT;
+        END;
+      // Test sur doublon article
+      Found := FALSE;
+      IF SalesHeader."Order Type" <> SalesHeader."Order Type"::AA THEN BEGIN
+        SalesLine.RESET;
+        SalesLine.SETRANGE("Document Type",SalesHeader."Document Type");
+        SalesLine.SETRANGE("Document No.",SalesHeader."No.");
+        SalesLine.SETRANGE(Type,SalesLine.Type::Item);
+        SalesLine.SETFILTER("Vendor No. for EDI Sending",'<>%1','');
+        IF SalesLine.FINDSET(FALSE,FALSE) THEN BEGIN
+          REPEAT
+            SalesLine2.RESET;
+            SalesLine2.SETRANGE("Document Type",SalesLine."Document Type");
+            SalesLine2.SETRANGE("Document No.",SalesLine."Document No.");
+            SalesLine2.SETRANGE(Type,SalesLine.Type);
+            SalesLine2.SETRANGE("No.",SalesLine."No.");
+            SalesLine2.SETRANGE("Vendor No. for EDI Sending",SalesLine."Vendor No. for EDI Sending");
+            SalesLine2.SETFILTER("Line No.",'<>%1',SalesLine."Line No.");
+            IF SalesLine2.FINDFIRST THEN
+              Found := TRUE;
+          UNTIL SalesLine.NEXT = 0;
+        END;
+        IF Found THEN
+          IF NOT CONFIRM(STRSUBSTNO(Text50002,SalesLine2.FIELDCAPTION("No."),SalesLine2."No.")) THEN BEGIN
+            ERROR('');
+            EXIT;
+          END;
+      END;
+      //Remise des qty … liv = 0
+      IF SalesHeader."Order Type" <> SalesHeader."Order Type"::AA THEN BEGIN
+        SalesLine.RESET;
+        SalesLine.SETRANGE("Document Type",SalesHeader."Document Type");
+        SalesLine.SETRANGE("Document No.",SalesLine."Document No.");
+        SalesLine.SETFILTER("Outstanding Quantity",'<>%1',0);
+        SalesLine.SETFILTER("Vendor No. for EDI Sending",'<>%1','');
+        IF SalesLine.FINDSET(TRUE,FALSE) THEN
+          REPEAT
+            IF SalesLine."No." <> SalesSetup."Item No. for Shipping Charge" THEN BEGIN
+              SalesLine2 := SalesLine;
+              SalesLine2.VALIDATE("Qty. to Ship",0);
+              SalesLine2.MODIFY;
+            END;
+          UNTIL SalesLine.NEXT = 0;
+      END;
+      //AC1.00 END
     END;
 
     BEGIN

@@ -1,0 +1,238 @@
+OBJECT Page 50003 E.D.I. Entries
+{
+  OBJECT-PROPERTIES
+  {
+    Date=02/02/16;
+    Time=14:24:16;
+    Modified=Yes;
+    Version List=AC1.00;
+  }
+  PROPERTIES
+  {
+    CaptionML=[ENU=Electronic Data Interchange Entry;
+               FRA=êcriture d'Çchange de DonnÇes InformatisÇ];
+    InsertAllowed=No;
+    SourceTable=Table50002;
+    PageType=List;
+  }
+  CONTROLS
+  {
+    { 1900000001;0;Container;
+                ContainerType=ContentArea }
+
+    { 1180250001;1;Group  ;
+                GroupType=Repeater }
+
+    { 1180250002;2;Field  ;
+                SourceExpr="Entry No." }
+
+    { 1180250004;2;Field  ;
+                SourceExpr="User ID" }
+
+    { 1180250006;2;Field  ;
+                SourceExpr="Imp./Exp. Date" }
+
+    { 1180250008;2;Field  ;
+                SourceExpr="EDI Code" }
+
+    { 1180250010;2;Field  ;
+                SourceExpr=Error }
+
+    { 1180250012;2;Field  ;
+                SourceExpr=Handled }
+
+    { 1180250014;2;Field  ;
+                SourceExpr="Field 1" }
+
+    { 1180250016;2;Field  ;
+                SourceExpr="Field 2" }
+
+    { 1180250018;2;Field  ;
+                SourceExpr="Field 3" }
+
+    { 1180250020;2;Field  ;
+                SourceExpr="Field 4" }
+
+    { 1180250022;2;Field  ;
+                SourceExpr="Field 6" }
+
+    { 1180250024;2;Field  ;
+                SourceExpr="Field 7" }
+
+    { 1180250026;2;Field  ;
+                SourceExpr="Field 8" }
+
+    { 1180250028;2;Field  ;
+                SourceExpr="Field 9" }
+
+    { 1180250030;2;Field  ;
+                SourceExpr="Field 10" }
+
+    { 1180250032;2;Field  ;
+                SourceExpr="Field 11" }
+
+    { 1180250034;2;Field  ;
+                SourceExpr="Field 12" }
+
+    { 1180250036;2;Field  ;
+                SourceExpr="Field 13" }
+
+    { 1180250038;2;Field  ;
+                SourceExpr="Field 14" }
+
+    { 1180250040;2;Field  ;
+                SourceExpr="Field 15" }
+
+    { 1180250042;2;Field  ;
+                SourceExpr="Field 16" }
+
+    { 1180250044;2;Field  ;
+                SourceExpr="Field 17" }
+
+    { 1180250046;2;Field  ;
+                SourceExpr="Field 18" }
+
+    { 1180250048;2;Field  ;
+                SourceExpr="Field 19" }
+
+    { 1180250050;2;Field  ;
+                SourceExpr="Field 20" }
+
+    { 1180250052;2;Field  ;
+                SourceExpr="Field 21" }
+
+    { 1180250054;2;Field  ;
+                SourceExpr="Field 22" }
+
+    { 1180250056;2;Field  ;
+                SourceExpr="Field 23" }
+
+    { 1180250058;2;Field  ;
+                SourceExpr="Field 24" }
+
+    { 1180250060;2;Field  ;
+                SourceExpr="Field 25" }
+
+    { 1180250062;2;Field  ;
+                SourceExpr="Field 26" }
+
+    { 1180250064;2;Field  ;
+                SourceExpr="Field 27" }
+
+    { 1180250066;2;Field  ;
+                SourceExpr="Field 28" }
+
+    { 1180250068;2;Field  ;
+                SourceExpr="Field 29" }
+
+    { 1180250070;2;Field  ;
+                SourceExpr="Field 30" }
+
+    { 1180250072;2;Field  ;
+                SourceExpr="Field 31" }
+
+    { 1180250074;2;Field  ;
+                SourceExpr="Field 32" }
+
+    { 1180250076;2;Field  ;
+                SourceExpr="Field 33" }
+
+    { 1180250078;2;Field  ;
+                SourceExpr="Field 34" }
+
+    { 1180250080;2;Field  ;
+                SourceExpr="Field 35" }
+
+    { 1180250082;2;Field  ;
+                SourceExpr="Field 36" }
+
+    { 1180250084;2;Field  ;
+                SourceExpr="Field 37" }
+
+    { 1180250086;2;Field  ;
+                SourceExpr="Field 38" }
+
+    { 1180250088;2;Field  ;
+                SourceExpr="Field 39" }
+
+    { 1180250090;2;Field  ;
+                SourceExpr="Field 40" }
+
+    { 1180250092;2;Field  ;
+                SourceExpr="Field 41" }
+
+    { 1180250094;2;Field  ;
+                SourceExpr="Field 42" }
+
+    { 1180250096;2;Field  ;
+                SourceExpr="Field 43" }
+
+    { 1180250098;2;Field  ;
+                SourceExpr="Field 44" }
+
+    { 1180250100;2;Field  ;
+                SourceExpr="Field 45" }
+
+    { 1180250102;2;Field  ;
+                SourceExpr="Field 46" }
+
+    { 1180250104;2;Field  ;
+                SourceExpr="Field 47" }
+
+    { 1180250106;2;Field  ;
+                SourceExpr="Field 48" }
+
+    { 1180250108;2;Field  ;
+                SourceExpr="Field 49" }
+
+    { 1180250110;2;Field  ;
+                SourceExpr="Field 50" }
+
+    { 1180250112;2;Field  ;
+                SourceExpr="Field 51" }
+
+    { 1180250114;2;Field  ;
+                SourceExpr="Field 52" }
+
+    { 1180250116;2;Field  ;
+                SourceExpr="Field 53" }
+
+    { 1180250118;2;Field  ;
+                SourceExpr="Field 54" }
+
+    { 1180250120;2;Field  ;
+                SourceExpr="Field 55" }
+
+    { 1180250122;2;Field  ;
+                SourceExpr="Field 56" }
+
+    { 1180250124;2;Field  ;
+                SourceExpr="Field 57" }
+
+    { 1180250126;2;Field  ;
+                SourceExpr="Field 58" }
+
+    { 1180250128;2;Field  ;
+                SourceExpr="Field 59" }
+
+    { 1180250130;2;Field  ;
+                SourceExpr="Field 60" }
+
+    { 1180250132;2;Field  ;
+                SourceExpr="Field 61" }
+
+    { 1180250134;2;Field  ;
+                SourceExpr="Field 62" }
+
+    { 1180250136;2;Field  ;
+                SourceExpr="Field 63" }
+
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

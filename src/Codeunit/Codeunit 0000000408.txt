@@ -2,15 +2,16 @@ OBJECT Codeunit 408 DimensionManagement
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
+    Date=22/03/16;
+    Time=18:13:28;
+    Modified=Yes;
     Version List=NAVW19.00;
   }
   PROPERTIES
   {
-    Permissions=TableData 80=imd,
-                TableData 232=imd,
-                TableData 355=imd;
+    Permissions=TableData 21=r,
+                TableData 80=imd,
+                TableData 232=imd;
     OnRun=BEGIN
           END;
 

@@ -1,0 +1,805 @@
+OBJECT Codeunit 50038 temp
+{
+  OBJECT-PROPERTIES
+  {
+    Date=13/05/20;
+    Time=16:24:59;
+    Modified=Yes;
+    Version List=;
+  }
+  PROPERTIES
+  {
+    Permissions=TableData 112=rimd;
+    OnRun=BEGIN
+
+            EXIT;
+            Item.GET('A-TAXE-ECO');
+            Item."Cost is Adjusted" := TRUE;
+            Item.MODIFY;
+
+            AvgCostAdjmtEntryPoint.SETRANGE("Item No.",Item."No.");
+            AvgCostAdjmtEntryPoint.MODIFYALL("Cost Is Adjusted",TRUE);
+            MESSAGE('ok');
+
+            //MESSAGE('ok');
+            EXIT;
+            //ResetSalesInvHeader('FV300478'); cde exemple
+            //ResetSalesInvHeader('FV299503');
+
+            //ResetSalesInvHeader('FV299503');test OK
+            //ResetSalesInvHeader('FV299504');//OK
+            //ResetSalesInvHeader('FV299507');//OK
+            //MESSAGE('ok');
+            //EXIT;
+            ResetSalesInvHeader('FV299509');
+            ResetSalesInvHeader('FV299523');
+            ResetSalesInvHeader('FV299525');
+            ResetSalesInvHeader('FV299527');
+            ResetSalesInvHeader('FV299530');
+            ResetSalesInvHeader('FV299534');
+            ResetSalesInvHeader('FV299501');
+            ResetSalesInvHeader('FV299506');
+            ResetSalesInvHeader('FV299510');
+            ResetSalesInvHeader('FV299511');
+            ResetSalesInvHeader('FV299512');
+            ResetSalesInvHeader('FV299515');
+            ResetSalesInvHeader('FV299518');
+            ResetSalesInvHeader('FV299519');
+            ResetSalesInvHeader('FV299521');
+            ResetSalesInvHeader('FV299524');
+            ResetSalesInvHeader('FV299526');
+            ResetSalesInvHeader('FV299528');
+            ResetSalesInvHeader('FV299529');
+            ResetSalesInvHeader('FV299531');
+            ResetSalesInvHeader('FV299500');
+            ResetSalesInvHeader('FV299508');
+            ResetSalesInvHeader('FV299516');
+            ResetSalesInvHeader('FV299533');
+            ResetSalesInvHeader('FV299535');
+            ResetSalesInvHeader('FV299537');
+            ResetSalesInvHeader('FV299539');
+            ResetSalesInvHeader('FV299542');
+            ResetSalesInvHeader('FV299544');
+            ResetSalesInvHeader('FV299513');
+            ResetSalesInvHeader('FV299522');
+            ResetSalesInvHeader('FV299536');
+            ResetSalesInvHeader('FV299540');
+            ResetSalesInvHeader('FV299541');
+            ResetSalesInvHeader('FV299543');
+            ResetSalesInvHeader('FV299502');
+            ResetSalesInvHeader('FV299505');
+            ResetSalesInvHeader('FV299514');
+            ResetSalesInvHeader('FV299520');
+            ResetSalesInvHeader('FV299532');
+            //2e fichier
+            ResetSalesInvHeader('FV299538');
+            ResetSalesInvHeader('FV299629');
+            ResetSalesInvHeader('FV299633');
+            ResetSalesInvHeader('FV299640');
+            ResetSalesInvHeader('FV299643');
+            ResetSalesInvHeader('FV299654');
+            ResetSalesInvHeader('FV299665');
+            ResetSalesInvHeader('FV299671');
+            ResetSalesInvHeader('FV299677');
+            ResetSalesInvHeader('FV299647');
+            ResetSalesInvHeader('FV299652');
+            ResetSalesInvHeader('FV299631');
+            ResetSalesInvHeader('FV299635');
+            ResetSalesInvHeader('FV299650');
+            ResetSalesInvHeader('FV299649');
+            ResetSalesInvHeader('FV299657');
+            ResetSalesInvHeader('FV299674');
+            ResetSalesInvHeader('FV299669');
+            ResetSalesInvHeader('FV299632');
+            ResetSalesInvHeader('FV299636');
+            ResetSalesInvHeader('FV299648');
+            ResetSalesInvHeader('FV299662');
+            ResetSalesInvHeader('FV299660');
+            ResetSalesInvHeader('FV299666');
+            ResetSalesInvHeader('FV299678');
+            ResetSalesInvHeader('FV299638');
+            ResetSalesInvHeader('FV299630');
+            ResetSalesInvHeader('FV299641');
+            ResetSalesInvHeader('FV299634');
+            ResetSalesInvHeader('FV299646');
+            ResetSalesInvHeader('FV299659');
+            ResetSalesInvHeader('FV299663');
+            ResetSalesInvHeader('FV299667');
+            ResetSalesInvHeader('FV299676');
+            ResetSalesInvHeader('FV299679');
+            ResetSalesInvHeader('FV299639');
+            ResetSalesInvHeader('FV299637');
+            ResetSalesInvHeader('FV299642');
+            ResetSalesInvHeader('FV299651');
+            ResetSalesInvHeader('FV299655');
+            ResetSalesInvHeader('FV299658');
+            ResetSalesInvHeader('FV299661');
+            ResetSalesInvHeader('FV299673');
+            ResetSalesInvHeader('FV299675');
+            ResetSalesInvHeader('FV299656');
+            ResetSalesInvHeader('FV299664');
+            ResetSalesInvHeader('FV299672');
+
+            //3e fichier
+            ResetSalesInvHeader('FV300105');
+            ResetSalesInvHeader('FV300106');
+            ResetSalesInvHeader('FV300101');
+            ResetSalesInvHeader('FV300117');
+            ResetSalesInvHeader('FV300104');
+            ResetSalesInvHeader('FV300113');
+            ResetSalesInvHeader('FV300108');
+            ResetSalesInvHeader('FV300111');
+            ResetSalesInvHeader('FV300125');
+            ResetSalesInvHeader('FV300124');
+            ResetSalesInvHeader('FV300132');
+            ResetSalesInvHeader('FV300135');
+            ResetSalesInvHeader('FV300137');
+            ResetSalesInvHeader('FV300114');
+            ResetSalesInvHeader('FV300115');
+            ResetSalesInvHeader('FV300130');
+            ResetSalesInvHeader('FV300102');
+            ResetSalesInvHeader('FV300116');
+            ResetSalesInvHeader('FV300118');
+            ResetSalesInvHeader('FV300123');
+            ResetSalesInvHeader('FV300122');
+            ResetSalesInvHeader('FV300136');
+            ResetSalesInvHeader('FV300103');
+            ResetSalesInvHeader('FV300110');
+            ResetSalesInvHeader('FV300127');
+            ResetSalesInvHeader('FV300131');
+            ResetSalesInvHeader('FV300134');
+            ResetSalesInvHeader('FV300107');
+            ResetSalesInvHeader('FV300109');
+            ResetSalesInvHeader('FV300112');
+            ResetSalesInvHeader('FV300119');
+            ResetSalesInvHeader('FV300120');
+            ResetSalesInvHeader('FV300133');
+            ResetSalesInvHeader('FV300140');
+            ResetSalesInvHeader('FV300129');
+            ResetSalesInvHeader('FV300126');
+            ResetSalesInvHeader('FV300121');
+            ResetSalesInvHeader('FV300128');
+            ResetSalesInvHeader('FV300138');
+            ResetSalesInvHeader('FV300139');
+
+            //4e fichier
+            ResetSalesInvHeader('FV300266');
+            ResetSalesInvHeader('FV300278');
+            ResetSalesInvHeader('FV300289');
+            ResetSalesInvHeader('FV300290');
+            ResetSalesInvHeader('FV300299');
+            ResetSalesInvHeader('FV300308');
+            ResetSalesInvHeader('FV300309');
+            ResetSalesInvHeader('FV300315');
+            ResetSalesInvHeader('FV300321');
+            ResetSalesInvHeader('FV300323');
+            ResetSalesInvHeader('FV300324');
+            ResetSalesInvHeader('FV300275');
+            ResetSalesInvHeader('FV300272');
+            ResetSalesInvHeader('FV300269');
+            ResetSalesInvHeader('FV300281');
+            ResetSalesInvHeader('FV300296');
+            ResetSalesInvHeader('FV300288');
+            ResetSalesInvHeader('FV300292');
+            ResetSalesInvHeader('FV300306');
+            ResetSalesInvHeader('FV300300');
+            ResetSalesInvHeader('FV300313');
+            ResetSalesInvHeader('FV300267');
+            ResetSalesInvHeader('FV300273');
+            ResetSalesInvHeader('FV300286');
+            ResetSalesInvHeader('FV300285');
+            ResetSalesInvHeader('FV300295');
+            ResetSalesInvHeader('FV300294');
+            ResetSalesInvHeader('FV300304');
+            ResetSalesInvHeader('FV300305');
+            ResetSalesInvHeader('FV300316');
+            ResetSalesInvHeader('FV300326');
+            ResetSalesInvHeader('FV300330');
+            ResetSalesInvHeader('FV300331');
+            ResetSalesInvHeader('FV300334');
+            ResetSalesInvHeader('FV300340');
+            ResetSalesInvHeader('FV300344');
+            ResetSalesInvHeader('FV300355');
+            ResetSalesInvHeader('FV300353');
+            ResetSalesInvHeader('FV300360');
+            ResetSalesInvHeader('FV300366');
+            ResetSalesInvHeader('FV300367');
+            ResetSalesInvHeader('FV300378');
+            ResetSalesInvHeader('FV300381');
+            ResetSalesInvHeader('FV300387');
+            ResetSalesInvHeader('FV300276');
+            ResetSalesInvHeader('FV300274');
+            ResetSalesInvHeader('FV300271');
+            ResetSalesInvHeader('FV300287');
+            ResetSalesInvHeader('FV300277');
+            ResetSalesInvHeader('FV300297');
+            ResetSalesInvHeader('FV300303');
+            ResetSalesInvHeader('FV300307');
+            ResetSalesInvHeader('FV300311');
+            ResetSalesInvHeader('FV300317');
+            ResetSalesInvHeader('FV300318');
+            ResetSalesInvHeader('FV300325');
+            ResetSalesInvHeader('FV300335');
+            ResetSalesInvHeader('FV300341');
+            ResetSalesInvHeader('FV300357');
+            ResetSalesInvHeader('FV300362');
+            ResetSalesInvHeader('FV300373');
+            ResetSalesInvHeader('FV300384');
+            ResetSalesInvHeader('FV300390');
+            ResetSalesInvHeader('FV300391');
+            ResetSalesInvHeader('FV300388');
+            ResetSalesInvHeader('FV300270');
+            ResetSalesInvHeader('FV300279');
+            ResetSalesInvHeader('FV300283');
+            ResetSalesInvHeader('FV300291');
+            ResetSalesInvHeader('FV300314');
+            ResetSalesInvHeader('FV300310');
+            ResetSalesInvHeader('FV300312');
+            ResetSalesInvHeader('FV300328');
+            ResetSalesInvHeader('FV300336');
+            ResetSalesInvHeader('FV300333');
+            ResetSalesInvHeader('FV300338');
+            ResetSalesInvHeader('FV300343');
+            ResetSalesInvHeader('FV300345');
+            ResetSalesInvHeader('FV300351');
+            ResetSalesInvHeader('FV300354');
+            ResetSalesInvHeader('FV300359');
+            ResetSalesInvHeader('FV300361');
+            ResetSalesInvHeader('FV300369');
+            ResetSalesInvHeader('FV300375');
+            ResetSalesInvHeader('FV300386');
+            ResetSalesInvHeader('FV300392');
+            ResetSalesInvHeader('FV300284');
+            ResetSalesInvHeader('FV300282');
+            ResetSalesInvHeader('FV300293');
+            ResetSalesInvHeader('FV300302');
+            ResetSalesInvHeader('FV300298');
+            ResetSalesInvHeader('FV300301');
+            ResetSalesInvHeader('FV300319');
+            ResetSalesInvHeader('FV300322');
+            ResetSalesInvHeader('FV300339');
+            ResetSalesInvHeader('FV300348');
+            ResetSalesInvHeader('FV300352');
+            ResetSalesInvHeader('FV300356');
+            ResetSalesInvHeader('FV300371');
+            ResetSalesInvHeader('FV300365');
+            ResetSalesInvHeader('FV300377');
+            ResetSalesInvHeader('FV300380');
+            ResetSalesInvHeader('FV300385');
+            ResetSalesInvHeader('FV300320');
+            ResetSalesInvHeader('FV300327');
+            ResetSalesInvHeader('FV300329');
+            ResetSalesInvHeader('FV300337');
+            ResetSalesInvHeader('FV300342');
+            ResetSalesInvHeader('FV300347');
+            ResetSalesInvHeader('FV300350');
+            ResetSalesInvHeader('FV300363');
+            ResetSalesInvHeader('FV300364');
+            ResetSalesInvHeader('FV300372');
+            ResetSalesInvHeader('FV300376');
+            ResetSalesInvHeader('FV300382');
+            ResetSalesInvHeader('FV300389');
+            ResetSalesInvHeader('FV300332');
+            ResetSalesInvHeader('FV300346');
+            ResetSalesInvHeader('FV300349');
+            ResetSalesInvHeader('FV300358');
+            ResetSalesInvHeader('FV300368');
+            ResetSalesInvHeader('FV300370');
+            ResetSalesInvHeader('FV300379');
+            ResetSalesInvHeader('FV300374');
+            ResetSalesInvHeader('FV300383');
+            ResetSalesInvHeader('FV300393');
+            ResetSalesInvHeader('FV300474');
+            ResetSalesInvHeader('FV300478');
+            ResetSalesInvHeader('FV300475');
+            ResetSalesInvHeader('FV300477');
+
+            MESSAGE('ok');
+
+
+
+
+            EXIT;
+            IF COMPANYNAME = 'SCOOL' THEN BEGIN
+            // AccountingPeriod.DELETEALL;
+             MESSAGE('termin‚');
+            END
+            ELSE ERROR('soci‚t‚!');
+          END;
+
+  }
+  CODE
+  {
+    VAR
+      AccountingPeriod@1000000000 : Record 50;
+      SalesInvoiceHeader@1000000001 : Record 112;
+      AsciiStr@1000000004 : Text[250];
+      AnsiStr@1000000003 : Text[250];
+      CharVar@1000000002 : ARRAY [32] OF Char;
+      FromChar@1000000006 : TextConst 'ENU=??Ç¢²ƒ°Ú';
+      ToChar@1000000005 : TextConst 'ENU=aaaaeeee';
+      Item@1000000008 : Record 27;
+      AvgCostAdjmtEntryPoint@1000000007 : Record 5804;
+
+    LOCAL PROCEDURE ResetSalesInvHeader@1000000000(_No@1000000000 : Code[20]);
+    VAR
+      BatchCreateEDISalesInvtest@1000000001 : Report 50056;
+      EDIEntry@1000000002 : Record 50002;
+      LastEntryNo@1000000003 : Integer;
+    BEGIN
+      SalesInvoiceHeader.GET(_No);
+      SalesInvoiceHeader.VALIDATE(Exported,FALSE);
+      SalesInvoiceHeader.MODIFY(TRUE);
+
+      IF EDIEntry.FINDLAST THEN LastEntryNo := EDIEntry."Entry No.";
+
+
+      BatchCreateEDISalesInvtest.Initialize(_No,'CEA2');
+      BatchCreateEDISalesInvtest.USEREQUESTPAGE(FALSE);
+      BatchCreateEDISalesInvtest.RUN;
+      COMMIT;
+      EDIEntry.RESET;
+      EDIEntry.SETFILTER(EDIEntry."Entry No.",'>%1',LastEntryNo);
+
+      ExportRec(EDIEntry);
+    END;
+
+    LOCAL PROCEDURE ExportRec@1180210000(VAR EDIEntry@1180210000 : Record 50002);
+    VAR
+      SalesInvHdr@1180250022 : Record 112;
+      SalesCrMemoHdr@1180250023 : Record 114;
+      TmpEDIEntry@1180250020 : TEMPORARY Record 50002;
+      CurrFile@1180250003 : File;
+      FileOutStream@1180250002 : OutStream;
+      RecRef@1180250005 : RecordRef;
+      FldRef@1180250007 : FieldRef;
+      CarriageReturn@1180250010 : Char;
+      LineFeed@1180250008 : Char;
+      FieldVal@1180250012 : Text[1024];
+      LabelCode@1180250013 : Text[50];
+      FileName@1180250011 : Text[1024];
+      Line@1180250001 : Text[1024];
+      xLine@1180250017 : Text[1024];
+      Fields2Import@1180250004 : ARRAY [100] OF Text[250];
+      NewFile@1180250014 : Boolean;
+      EndFile@1180250016 : Boolean;
+      DocNo@1180250015 : Text[20];
+      NbrOfLine@1180250019 : Integer;
+      NbrOfHandledLine@1180250018 : Integer;
+      EntryNo@1180250021 : Integer;
+      i@1180250006 : Integer;
+      NbrOfInv@1180250024 : Integer;
+      NbrOfCrMemo@1180250025 : Integer;
+      EDISetup@1000000000 : Record 50000;
+    BEGIN
+      CarriageReturn := 13;
+      LineFeed := 10;
+      NewFile := TRUE;
+      NbrOfHandledLine := 0;
+      NbrOfInv := 0;
+      NbrOfCrMemo := 0;
+
+      CLEAR(FileOutStream);
+      CLEAR(Line);
+      CLEAR(Fields2Import);
+      CLEAR(RecRef);
+
+      EDISetup.GET('CEA2');
+
+      RecRef.GETTABLE(EDIEntry);
+
+
+
+      IF RecRef.FIND('-') THEN BEGIN
+        CLEAR(FldRef);
+
+        NbrOfLine := RecRef.COUNT;
+
+        REPEAT
+          Line := '';
+          FieldVal := '';
+          FOR i := 10 TO 36 DO BEGIN
+            CLEAR(FldRef);
+            FldRef := RecRef.FIELD(i);
+            IF i = 10 THEN BEGIN
+              LabelCode := FORMAT(FldRef.VALUE);
+              FieldVal := LabelCode;
+            END ELSE BEGIN
+              FieldVal := FORMAT(FldRef.VALUE);
+              FieldVal := Ascii2Ansi(FieldVal);
+            END;
+            FieldVal := ConvComa2Dot(FieldVal);
+
+            CASE LabelCode OF
+              'ENTMS':BEGIN
+                //NewFile := TRUE;
+                CASE i OF
+                  11:FieldVal := CompletedBy(FieldVal,35);//Code Emetteur
+                  12:FieldVal := CompletedBy(FieldVal,4);//Qualifiant
+                  13:FieldVal := CompletedBy(FieldVal,35);//Code destinataire
+                  14:FieldVal := CompletedBy(FieldVal,4);//Qualifiant
+                  15:FieldVal := CompletedBy(FieldVal,6);//Type de message
+                  16:FieldVal := CompletedBy(FieldVal,3);//Nom du document en code
+                  17:FieldVal := CompletedBy(FieldVal,35);//Nom du document
+                  18:BEGIN
+                    FieldVal := CompletedBy(FieldVal,17);//Nø de la facture ou avoir
+                    DocNo := FORMAT(FieldVal);
+                  END;
+                  19:FieldVal := CompletedBy(FieldVal,3);//Fonction du message en code
+                  20:FieldVal := CompletedBy(FieldVal,35);//Date de la facture ou avoir
+                  21:FieldVal := CompletedBy(FieldVal,35);//Nø de la commande de r‚f‚rence
+                  22:FieldVal := CompletedBy(FieldVal,35);//Date de la commande de r‚f‚rence
+                  23:FieldVal := CompletedBy(FieldVal,35);//Nø de la facture de r‚f‚rence
+                  24:FieldVal := CompletedBy(FieldVal,35);//Date de la facture de r‚f‚rence
+                  25:FieldVal := CompletedBy(FieldVal,35);//Nø de l'avis d'exp‚dition
+                  26:FieldVal := CompletedBy(FieldVal,35);//Date de l'avis d'exp‚dition
+                  27:FieldVal := CompletedBy(FieldVal,35);//Nø BL
+                  28:FieldVal := CompletedBy(FieldVal,35);//Date du BL
+                  29:FieldVal := CompletedBy(FieldVal,3);//Condition particuliŠre
+                  30:FieldVal := CompletedBy(FieldVal,3);//Type de taXE
+                  31:FieldVal := CompletedBy(FieldVal,6);//Indication du compte des droits ou taxes ou redevances
+                  32:FieldVal := CompletedBy(FieldVal,3);//Cat‚gorie des droits ou taxes ou redevance
+                  33:FieldVal := CompletedBy(FieldVal,3);//Code monnaie de facturation
+                  34:FieldVal := CompletedBy(FieldVal,2);//Moyen de paiement
+                  //BC6 - MM 21/12/18 >>
+                  35:FieldVal := CompletedBy(FieldVal,35);//Num‚ro d'engagement
+                  36:FieldVal := CompletedBy(FieldVal,35);//Code service ex‚cutant
+                  //BC6 - MM 21/12/18 <<
+                END;//CASE
+              END;
+              'DTLV1':BEGIN
+                CASE i OF
+                  11:FieldVal := CompletedBy(FieldVal,35);//Date d'exp‚dition
+                  12:FieldVal := CompletedBy(FieldVal,35);//Date r‚elle de livraison
+                  13:FieldVal := CompletedBy(FieldVal,35);//Date d'enlŠvement
+                END;//CASE
+              END;
+              'TXLB1':BEGIN
+                CASE i OF
+                  11:FieldVal := CompletedBy(FieldVal,70);//D‚nomination social
+                  12:FieldVal := CompletedBy(FieldVal,70);//Forme juridique
+                  13:FieldVal := CompletedBy(FieldVal,70);//Capital social et devise
+                END;//CASE
+              END;
+              //'TXLB2':BEGIN END;
+              'TXLB3':BEGIN
+                CASE i OF
+                  11:FieldVal := CompletedBy(FieldVal,70);//Informations g‚n‚rales
+                END;//CASE
+              END;
+                //'TXLB4':BEGIN END;
+                'TXLB5':BEGIN
+                CASE i OF
+                  11:FieldVal := CompletedBy(FieldVal,70);
+                  12:FieldVal := CompletedBy(FieldVal,70);
+                  13:FieldVal := CompletedBy(FieldVal,70);
+                  14:FieldVal := CompletedBy(FieldVal,70);
+                  15:FieldVal := CompletedBy(FieldVal,70);
+                END;//CASE
+                END;
+              //'TXLB6':BEGIN END;
+              'PARTN':BEGIN
+                CASE i OF
+                  11:FieldVal := CompletedBy(FieldVal,3);//Qualifiant de l'intervenant
+                  12:FieldVal := CompletedBy(FieldVal,35);//Code EAN Lieu Fonction du partenaire
+                  13:FieldVal := CompletedBy(FieldVal,35);//Code SIRET du partenaire
+                  14:FieldVal := CompletedBy(FieldVal,35);//Nom de l'intervenant (1) - D‚nomination sociale
+                  15:FieldVal := CompletedBy(FieldVal,35);//Nom de l'intervenant (2) - D‚nomination sociale
+                  16:FieldVal := CompletedBy(FieldVal,35);//Nom de l'intervenant (3) - D‚nomination sociale
+                  17:FieldVal := CompletedBy(FieldVal,35);//Nom de l'intervenant (4) - D‚nomination sociale
+                  18:FieldVal := CompletedBy(FieldVal,35);//Nom de l'intervenant (5) - D‚nomination sociale
+                  19:FieldVal := CompletedBy(ConvChar2Space(FieldVal),35);//Ligne adresse (1)
+                  20:FieldVal := CompletedBy(ConvChar2Space(FieldVal),35);//Ligne adresse (2)
+                  21:FieldVal := CompletedBy(ConvChar2Space(FieldVal),35);//Ligne adresse (3)
+                  22:FieldVal := CompletedBy(FieldVal,35);//Ville
+                  23:FieldVal := CompletedBy(FieldVal,9);//Code postal
+                  24:FieldVal := CompletedBy(FieldVal,3);//Pays
+                  25:FieldVal := CompletedBy(FieldVal,35);//Num‚ro d'identification … la TVA
+                  26:FieldVal := CompletedBy(FieldVal,35);//Num‚ro d'immatriculation au RCS
+                  27:FieldVal := CompletedBy(FieldVal,3);//Identification financiŠre - Qualifiant de l'intervenant
+                  28:FieldVal := CompletedBy(FieldVal,35);//Identification financiŠre - Num‚ro du compte du titulaire
+                  29:FieldVal := CompletedBy(FieldVal,35);//Identification financiŠre - Nom du titulaire du compte (1)
+                  30:FieldVal := CompletedBy(FieldVal,35);//Identification financiŠre - Nom du titulaire du compte (2)
+                  31:FieldVal := CompletedBy(FieldVal,35);//Identification financiŠre - Identification du nom de l'‚tablissement
+                  32:FieldVal := CompletedBy(FieldVal,35);//Identification financiŠre - Num‚ro d'agence de l'‚tablissement
+                  33:FieldVal := CompletedBy(FieldVal,35);//Identification financiŠre - Pays
+                END;//CASE
+              END;
+              'CDPAI':BEGIN
+                CASE i OF
+                  11:FieldVal := CompletedBy(FieldVal,3);//Qualifiant des conditions de paiement
+                  12:FieldVal := CompletedBy(FieldVal,35);//Date d'‚ch‚ance du rŠglement
+                  13:FieldVal := CompletedBy(FieldVal,2);//Conditions d'escompte encodables
+                  14:FieldVal := CompletedBy(FieldVal,3);//Nombre de jours (aprŠs la date de facture)
+                  15:FieldVal := CompletedBy(FieldVal,10);//Pourcentage d'escompte
+                  16:FieldVal := CompletedBy(FieldVal,18);//Montant - Valeur escompt‚e
+                  17:FieldVal := CompletedBy(FieldVal,2);//Conditions d'escompte simple
+                  18:FieldVal := CompletedBy(FieldVal,35);//Date limite
+                  19:FieldVal := CompletedBy(FieldVal,10);//Pourcentage d'escompte
+                  20:FieldVal := CompletedBy(FieldVal,18);//Montant - Valeur escompt‚e
+                  21:FieldVal := CompletedBy(FieldVal,2);//Conditions d'escompte simple
+                  22:FieldVal := CompletedBy(FieldVal,10);//Pourcentage d'escompte
+                  23:FieldVal := CompletedBy(FieldVal,2);//Conditions d'escompte dites "complexes" (non encodables)
+                  24:FieldVal := CompletedBy(FieldVal,2);//Conditions de p‚nalit‚s (non encodables)
+                END;//CASE
+              END;
+              //'RDCH1':BEGIN END;
+              'LINCD':BEGIN
+                CASE i OF
+                  11:FieldVal := CompletedBy(FieldVal,6);//Num‚ro de la ligne de facture
+                  12:FieldVal := CompletedBy(FieldVal,35);//Code EAN13 Article factur‚
+                  13:FieldVal := CompletedBy(FieldVal,35);//Code Article attribu‚ par l'acheteur
+                  14:FieldVal := CompletedBy(FieldVal,35);//Code Article du fournisseur
+                  15:FieldVal := CompletedBy(FieldVal,35);//Variante promotionnelle
+                  16:FieldVal := CompletedBy(FieldVal,35);//Num‚ro de s‚rie
+                  17:FieldVal := CompletedBy(ConvChar2Space(FieldVal),3);//Description de l'article, en code (***)
+                  18:FieldVal := CompletedBy(ConvChar2Space(FieldVal),35);//Description article en clair
+                  19:FieldVal := CompletedBy(ConvChar2Space(FieldVal),35);//Description article en clair
+                  20:FieldVal := CompletedBy(FieldVal,15);//Quantit‚ factur‚e
+                  21:FieldVal := CompletedBy(FieldVal,3);//Unit‚ de mesure de la quantit‚ factur‚e
+                  22:FieldVal := CompletedBy(FieldVal,15);//Nombre d'unit‚s consommateurs dans l'unit‚ de distribution (PCB)
+                  23:FieldVal := CompletedBy(FieldVal,3);//Unit‚ de mesure du PCB
+                  24:FieldVal := CompletedBy(FieldVal,15);//Quantit‚ retourn‚e (Avoir)
+                  25:FieldVal := CompletedBy(FieldVal,3);//Unit‚ de mesure de la quantit‚ retourn‚e
+                  26:FieldVal := CompletedBy(FieldVal,15);//Quantit‚ de marchandises gratuites
+                  27:FieldVal := CompletedBy(FieldVal,3);//Unit‚ de mesure de la quantit‚ gratuite
+                END;//CASE
+              END;
+              'DTLV2':BEGIN
+                CASE i OF
+                  11:FieldVal := CompletedBy(FieldVal,35);//Date d'exp‚dition
+                  12:FieldVal := CompletedBy(FieldVal,35);//Date r‚elle de livraison
+                  13:FieldVal := CompletedBy(FieldVal,35);//Date d'enlŠvement
+                END;//CASE
+              END;
+              'REF02':BEGIN
+                CASE i OF
+                  11:FieldVal := CompletedBy(FieldVal,35);//Nø de l'Aviexp
+                  12:FieldVal := CompletedBy(FieldVal,35);//Date de l'Aviexp
+                  13:FieldVal := CompletedBy(FieldVal,35);//Nø du BL
+                  14:FieldVal := CompletedBy(FieldVal,35);//Date du BL
+                  15:FieldVal := CompletedBy(FieldVal,35);//Nø de la Commande
+                  16:FieldVal := CompletedBy(FieldVal,35);//Date de la Commande
+                  17:FieldVal := CompletedBy(FieldVal,35);//Nø de la facture
+                  18:FieldVal := CompletedBy(FieldVal,35);//Date de la facture
+                  19:FieldVal := CompletedBy(FieldVal,35);//Nø de tarif des douanes
+                END;//CASE
+              END;
+              'MTPX1':BEGIN
+                CASE i OF
+                  11:FieldVal := CompletedBy(FieldVal,15);//Montant net HT de la ligne
+                  12:FieldVal := CompletedBy(FieldVal,15);//Prix net HT pour calcul de l'article
+                  13:FieldVal := CompletedBy(FieldVal,3);//Qualifiant du type de prix
+                  14:FieldVal := CompletedBy(FieldVal,10);//Base de prix unitaire
+                  15:FieldVal := CompletedBy(FieldVal,3);//Unit‚ de mesure de prix
+                  16:FieldVal := CompletedBy(FieldVal,15);//Prix Brut pour calcul de l'article
+                  17:FieldVal := CompletedBy(FieldVal,3);//Qualifiant du type de prix
+                  18:FieldVal := CompletedBy(FieldVal,10);//Base de prix unitaire
+                  19:FieldVal := CompletedBy(FieldVal,3);//Unit‚ de mesure de prix
+                  20:FieldVal := CompletedBy(FieldVal,15);//Prix public TTC pour information
+                  21:FieldVal := CompletedBy(FieldVal,3);//Qualifiant du type de prix
+                  22:FieldVal := CompletedBy(FieldVal,10);//Base de prix unitaire
+                  23:FieldVal := CompletedBy(FieldVal,3);//Unit‚ de mesure de prix
+                  24:FieldVal := CompletedBy(FieldVal,3);//Type de taxe
+                  25:FieldVal := CompletedBy(FieldVal,17);//Taux de taxe
+                END;//CASE
+              END;
+              //'RDCH2':BEGIN END;
+              'ENDOS':BEGIN
+                CASE i OF
+                  11:FieldVal := CompletedBy(FieldVal,18);//Montant taxable (Montant HT)
+                  12:FieldVal := CompletedBy(FieldVal,18);//Montant total (Montant TTC)
+                  13:FieldVal := CompletedBy(FieldVal,18);//Montant de la taxe (montant total de la TVA)
+                  14:FieldVal := CompletedBy(FieldVal,18);//Montant d–/montant payable
+                  15:FieldVal := CompletedBy(FieldVal,18);//Acompte
+                  16:FieldVal := CompletedBy(FieldVal,35);//Num‚ro de paiement de l'acompte
+                  17:FieldVal := CompletedBy(FieldVal,35);//Date de l'acompte
+                  //BCSYS 231118
+                  18:FieldVal := CompletedBy(FieldVal,18); //Montant net … payer
+                  //fin BCSYS 231118
+                END;//CASE
+              END;
+              'VTLTX':BEGIN
+                //EndFile := TRUE;
+                CASE i OF
+                  11:FieldVal := CompletedBy(FieldVal,3);//Type de taxe
+                  12:FieldVal := CompletedBy(FieldVal,17);//Taux de taxe
+                  13:FieldVal := CompletedBy(FieldVal,18);//Montant taxable
+                  14:FieldVal := CompletedBy(FieldVal,18);//Montant total des taxes
+                END;//CASE
+              END;
+              //'RDCH3':BEGIN END;
+              ELSE BEGIN
+                FieldVal := '';
+                Line := '';
+              END;
+            END;//CASE
+            IF (LabelCode <> 'BOF') OR
+               (LabelCode <> 'EOF') OR
+               (LabelCode <> '') THEN
+            Line := Line + FieldVal;
+          END;//FOR
+
+          IF LabelCode = 'BOF' THEN BEGIN
+            FldRef := RecRef.FIELD(11);
+            CLEAR(CurrFile);
+            CurrFile.WRITEMODE := TRUE;
+            CurrFile.TEXTMODE := TRUE;
+            FileName := 'D:\TEMP\' + STRSUBSTNO('%1.cea',FldRef.VALUE);
+            //EDISetup."Files Exp. Path" + '/' + STRSUBSTNO(EDISetup."Filename Filter",FldRef.VALUE);
+            CurrFile.CREATE(FileName);
+          END;
+
+          IF (LabelCode <> '') AND
+             ((LabelCode <> 'BOF') OR (LabelCode <> 'EOF')) AND
+             (Line <> '') THEN BEGIN
+            CurrFile.WRITE(Line);
+            Line := '';
+          END;
+
+          IF LabelCode = 'EOF' THEN BEGIN
+            CurrFile.CLOSE;
+            FldRef := RecRef.FIELD(11);
+            DocNo := FldRef.VALUE;
+            IF EDISetup."Sales Invoice" THEN BEGIN
+              IF SalesInvHdr.GET(DocNo) THEN BEGIN
+                SalesInvHdr.Exported := TRUE;
+                SalesInvHdr."Date Exported" := CURRENTDATETIME; //EDILog."Treatment Date";
+                SalesInvHdr."EDI Code" := 'CEA2';//EDILog."EDI Code";
+                SalesInvHdr."EDI No." := '';
+                SalesInvHdr.MODIFY;
+                NbrOfInv += 1;
+              END;
+            END;
+            IF EDISetup."Sales Cr. Memo" THEN BEGIN
+              IF SalesCrMemoHdr.GET(DocNo) THEN BEGIN
+                SalesCrMemoHdr.Exported := TRUE;
+                SalesCrMemoHdr."Date Exported" := CURRENTDATETIME; //EDILog."Treatment Date";
+                SalesCrMemoHdr."EDI Code" := 'CEA2'; //EDILog."EDI Code";
+                SalesCrMemoHdr."EDI No." := '';
+                SalesCrMemoHdr.MODIFY;
+                NbrOfCrMemo += 1;
+              END;
+            END;
+          END;
+
+          NbrOfHandledLine += 1;
+
+          FldRef := RecRef.FIELD(1);
+          FieldVal := FORMAT(FldRef.VALUE);
+          EVALUATE(EntryNo,FieldVal);
+          EDIEntry.GET(EntryNo);
+          TmpEDIEntry := EDIEntry;
+          TmpEDIEntry.Error := FALSE;
+          TmpEDIEntry.INSERT;
+
+        UNTIL RecRef.NEXT = 0;
+      END;
+
+      // IF NbrOfHandledLine <> NbrOfLine THEN
+      //  CreateEDILogEntry(EDILog."EDI Code",EDILog."Treatment Date",STRSUBSTNO(Text003,NbrOfHandledLine,NbrOfLine),2,0);
+      // IF EDISetup."Sales Invoice" THEN
+      //  CreateEDILogEntry(EDILog."EDI Code",EDILog."Treatment Date",STRSUBSTNO(Text004,NbrOfInv),0,0);
+      // IF EDISetup."Sales Cr. Memo" THEN
+      //  CreateEDILogEntry(EDILog."EDI Code",EDILog."Treatment Date",STRSUBSTNO(Text005,NbrOfCrMemo),0,0);
+
+      TmpEDIEntry.RESET;
+      TmpEDIEntry.SETRANGE("EDI Code",'CEA2');
+      TmpEDIEntry.SETRANGE("Imp./Exp. Date",CURRENTDATETIME);
+      TmpEDIEntry.SETRANGE(Error,FALSE);
+      IF EDIEntry.FIND('-') THEN
+        REPEAT
+          EDIEntry.Handled := TRUE;
+          EDIEntry.MODIFY;
+        UNTIL EDIEntry.NEXT = 0;
+    END;
+
+    PROCEDURE Ansi2Ascii@1180250005(_Text@1180250001 : Text[250]) : Text[250];
+    BEGIN
+      EXIT(CONVERTSTR(_Text, FromChar, ToChar));
+      MakeVars;
+      EXIT(CONVERTSTR(_Text,AnsiStr,AsciiStr));
+    END;
+
+    PROCEDURE Ascii2Ansi@1180250002(_Text@1180250001 : Text[250]) : Text[250];
+    BEGIN
+      EXIT(CONVERTSTR(_Text, FromChar, ToChar));
+      MakeVars;
+      EXIT(CONVERTSTR(_Text,AsciiStr,AnsiStr));
+    END;
+
+    PROCEDURE MakeVars@1180250004();
+    BEGIN
+      AsciiStr := '€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ ¡¢£¤¥¦§¨©ª«¬­®¯ÝÝÝÝÝµ¶·¸ÝÝ++½¾++--+-+ÆÇ++--Ý-+';
+      AsciiStr := AsciiStr +'ÏÐÑÒÓÔiÖ×Ø++Ý_ÝÞîàáâãäåæçèéêëìíîïðñ=óôõö÷øùúûüýÝÿ';
+      CharVar[1] := 196;
+      CharVar[2] := 197;
+      CharVar[3] := 201;
+      CharVar[4] := 242;
+      CharVar[5] := 220;
+      CharVar[6] := 186;
+      CharVar[7] := 191;
+      CharVar[8] := 188;
+      CharVar[9] := 187;
+      CharVar[10] := 193;
+      CharVar[11] := 194;
+      CharVar[12] := 192;
+      CharVar[13] := 195;
+      CharVar[14] := 202;
+      CharVar[15] := 203;
+      CharVar[16] := 200;
+      CharVar[17] := 205;
+      CharVar[18] := 206;
+      CharVar[19] := 204;
+      CharVar[20] := 175;
+      CharVar[21] := 223;
+      CharVar[22] := 213;
+      CharVar[23] := 254;
+      CharVar[24] := 218;
+      CharVar[25] := 219;
+      CharVar[26] := 217;
+      CharVar[27] := 180;
+      CharVar[28] := 177;
+      CharVar[29] := 176;
+      CharVar[30] := 185;
+      CharVar[31] := 179;
+      CharVar[32] := 178;
+      AnsiStr  := 'Çüéâäàåçêëèïîì'+FORMAT(CharVar[1])+FORMAT(CharVar[2])+FORMAT(CharVar[3])+ 'æÆôö'+FORMAT(CharVar[4]);
+      AnsiStr := AnsiStr + 'ûùÿÖ'+FORMAT(CharVar[5])+'ø£Ø×ƒáíóúñÑª'+FORMAT(CharVar[6])+FORMAT(CharVar[7]);
+      AnsiStr := AnsiStr + '®¬½'+FORMAT(CharVar[8])+'¡«'+FORMAT(CharVar[9])+'___¦¦' + FORMAT(CharVar[10])+FORMAT(CharVar[11]);
+      AnsiStr := AnsiStr + FORMAT(CharVar[12]) + '©¦¦++¢¥++--+-+ã' + FORMAT(CharVar[13]) + '++--¦-+¤ðÐ';
+      AnsiStr  :=  AnsiStr +FORMAT(CharVar[14])+FORMAT(CharVar[15])+FORMAT(CharVar[16])+'i'+FORMAT(CharVar[17])+FORMAT(CharVar[18]);
+      AnsiStr  :=  AnsiStr + 'Ï++__¦' + FORMAT(CharVar[19])+FORMAT(CharVar[20])+'Ó'+FORMAT(CharVar[21])+'ÔÒõ';
+      AnsiStr  :=  AnsiStr + FORMAT(CharVar[22]) + 'µ' + FORMAT(CharVar[23]) + 'Þ' + FORMAT(CharVar[24])+ FORMAT(CharVar[25]);
+      AnsiStr  :=  AnsiStr + FORMAT(CharVar[26]) + 'ýÝ¯' + FORMAT(CharVar[27]) + '­' + FORMAT(CharVar[28]) +'=¾¶§÷¸'+ FORMAT(CharVar[29]
+      );
+      AnsiStr  :=  AnsiStr + '¨·' + FORMAT(CharVar[30]) +FORMAT(CharVar[31]) +FORMAT(CharVar[32]) +'_ ';
+    END;
+
+    PROCEDURE ConvComa2Dot@1180250006(String@1180250001 : Text[1024]) NewString : Text[1024];
+    BEGIN
+      String := FORMAT(String);
+      NewString := CONVERTSTR(String,',','.');
+    END;
+
+    PROCEDURE ConvChar2Space@1180250007(String@1180250001 : Text[1024]) NewString : Text[1024];
+    BEGIN
+      String := FORMAT(String);
+      NewString := CONVERTSTR(String,'|',' ');
+
+      NewString := FORMAT(String);
+      NewString := CONVERTSTR(String,'_',' ');
+    END;
+
+    PROCEDURE CompletedBy@1180250001(String@1180250001 : Text[256];Len@1180250002 : Integer) StringCompleted : Text[70];
+    VAR
+      StringLen@1180250005 : Integer;
+      NbrOfLoop@1180250007 : Integer;
+      i@1180250003 : Integer;
+      Char2Substitute@1180250006 : Text[1];
+    BEGIN
+      Char2Substitute := ' ';
+
+      StringLen := STRLEN(FORMAT(String));
+      IF StringLen = 0 THEN
+        NbrOfLoop := Len
+      ELSE BEGIN
+        IF StringLen > Len THEN BEGIN
+          NbrOfLoop := 0;
+          String := COPYSTR(String,1,Len);
+        END ELSE
+          NbrOfLoop := Len - StringLen;
+      END;
+
+      StringCompleted := String;
+
+      IF NbrOfLoop > 0 THEN
+        FOR i := 1 TO NbrOfLoop DO
+          StringCompleted := StringCompleted + Char2Substitute;
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

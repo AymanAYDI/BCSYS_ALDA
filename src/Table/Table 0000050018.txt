@@ -1,0 +1,465 @@
+OBJECT Table 50018 Data Flow Step
+{
+  OBJECT-PROPERTIES
+  {
+    Date=11/05/16;
+    Time=12:33:41;
+    Modified=Yes;
+    Version List=BC6AUTOINV;
+  }
+  PROPERTIES
+  {
+    CaptionML=[ENU=Data Flow Step;
+               FRA=Etape flux de donn‚es];
+    LookupPageID=Page50032;
+    DrillDownPageID=Page50032;
+  }
+  FIELDS
+  {
+    { 1   ;   ;Data Flow Code      ;Code20        ;TableRelation="Data Flow";
+                                                   CaptionML=[ENU=Data Flow Code;
+                                                              FRA=Code flux de donn‚es];
+                                                   NotBlank=Yes }
+    { 2   ;   ;No.                 ;Integer       ;CaptionML=[ENU=No.;
+                                                              FRA=Nø] }
+    { 3   ;   ;Name                ;Text30        ;CaptionML=[ENU=Name;
+                                                              FRA=Nom] }
+    { 4   ;   ;Prev. Status No.    ;Integer       ;TableRelation="Data Flow Status".No. WHERE (Data Flow Code=FIELD(Data Flow Code));
+                                                   CaptionML=[ENU=Prev. Status No.;
+                                                              FRA=Statut pr‚c‚dent] }
+    { 5   ;   ;Next Status No.     ;Integer       ;TableRelation="Data Flow Status".No. WHERE (Data Flow Code=FIELD(Data Flow Code));
+                                                   CaptionML=[ENU=Next Status No.;
+                                                              FRA=Statut suivant] }
+    { 6   ;   ;Next Status Caption ;Text250       ;FieldClass=FlowField;
+                                                   CalcFormula=Lookup("Data Flow Status".Name WHERE (Data Flow Code=FIELD(Data Flow Code),
+                                                                                                     No.=FIELD(Next Status No.)));
+                                                   CaptionML=[ENU=Next Status Caption;
+                                                              FRA=L‚gende statut suiv.];
+                                                   Editable=No }
+    { 7   ;   ;Object Type to Run  ;Option        ;InitValue=Report;
+                                                   OnValidate=BEGIN
+                                                                IF "Object Type to Run" <> xRec."Object Type to Run" THEN
+                                                                  VALIDATE("Object ID to Run",0);
+                                                              END;
+
+                                                   CaptionML=[ENU=Object Type to Run;
+                                                              FRA=Type objet … ex‚cuter];
+                                                   OptionCaptionML=[ENU=,,,Report,,Codeunit;
+                                                                    FRA=,,,Report,,Codeunit];
+                                                   OptionString=,,,Report,,Codeunit }
+    { 8   ;   ;Object ID to Run    ;Integer       ;TableRelation=AllObjWithCaption."Object ID" WHERE (Object Type=FIELD(Object Type to Run),
+                                                                                                      Object ID=FILTER(50000..99999),
+                                                                                                      Object Name=FILTER(DF*));
+                                                   OnValidate=VAR
+                                                                Object@1000 : Record 2000000001;
+                                                              BEGIN
+                                                                IF "Object ID to Run" <> xRec."Object ID to Run" THEN BEGIN
+                                                                  CLEAR(Name);
+                                                                END;
+                                                                IF "Object ID to Run" = 0 THEN
+                                                                  EXIT;
+                                                                IF Object.GET("Object Type to Run",'',"Object ID to Run") THEN
+                                                                  Object.TESTFIELD(Compiled);
+
+                                                                CALCFIELDS("Object Caption to Run");
+                                                                IF Name = '' THEN
+                                                                  Name := COPYSTR("Object Caption to Run",1,MAXSTRLEN(Name));
+
+                                                                IF "Object Type to Run" <> "Object Type to Run"::Report THEN
+                                                                  EXIT;
+                                                              END;
+
+                                                   OnLookup=VAR
+                                                              NewObjectID@1000 : Integer;
+                                                            BEGIN
+                                                              IF LookupObjectID(NewObjectID) THEN
+                                                                VALIDATE("Object ID to Run",NewObjectID);
+                                                            END;
+
+                                                   CaptionML=[ENU=Object ID to Run;
+                                                              FRA=ID objet … ex‚cuter] }
+    { 9   ;   ;Object Caption to Run;Text250      ;FieldClass=FlowField;
+                                                   CalcFormula=Lookup(AllObjWithCaption."Object Caption" WHERE (Object Type=FIELD(Object Type to Run),
+                                                                                                                Object ID=FIELD(Object ID to Run)));
+                                                   CaptionML=[ENU=Object Caption to Run;
+                                                              FRA=L‚gende de l'objet … ex‚cuter];
+                                                   Editable=No }
+    { 10  ;   ;Source Table ID     ;Integer       ;TableRelation=AllObj."Object ID" WHERE (Object Type=CONST(Table));
+                                                   OnValidate=BEGIN
+                                                                CALCFIELDS("Source Table Name");
+                                                                IF xRec."Source Table ID" <> "Source Table ID" THEN
+                                                                  CLEAR("Table Filter");
+                                                              END;
+
+                                                   OnLookup=VAR
+                                                              NewObjectID@1000000000 : Integer;
+                                                            BEGIN
+                                                              IF LookupSourceTableID(NewObjectID) THEN
+                                                                VALIDATE("Source Table ID",NewObjectID);
+                                                            END;
+
+                                                   CaptionML=[ENU=Source Table ID;
+                                                              FRA=ID table source] }
+    { 11  ;   ;Source Table Name   ;Text249       ;FieldClass=FlowField;
+                                                   CalcFormula=Lookup(AllObjWithCaption."Object Caption" WHERE (Object Type=CONST(Table),
+                                                                                                                Object ID=FIELD(Source Table ID)));
+                                                   CaptionML=[ENU=Source Table Name;
+                                                              FRA=Nom table source] }
+    { 12  ;   ;Table Filter        ;TableFilter   ;TableIDExpr="Source Table ID";
+                                                   CaptionML=[ENU=Table Filter;
+                                                              FRA=Filtre donn‚es] }
+    { 13  ;   ;Status              ;Option        ;CaptionML=[ENU=Status;
+                                                              FRA=Statut];
+                                                   OptionCaptionML=[ENU=Ready,In Process,Error,On Hold,Finished;
+                                                                    FRA=Prˆt,En cours,Erreur,En attente,Termin‚];
+                                                   OptionString=Ready,In Process,Error,On Hold,Finished;
+                                                   Editable=No }
+    { 34  ;   ;Error Message       ;Text250       ;CaptionML=[ENU=Error Message;
+                                                              FRA=Message d'erreur] }
+    { 35  ;   ;Error Message 2     ;Text250       ;CaptionML=[ENU=Error Message 2;
+                                                              FRA=Message d'erreur 2] }
+    { 36  ;   ;Error Message 3     ;Text250       ;CaptionML=[ENU=Error Message 3;
+                                                              FRA=Message d'erreur 3] }
+    { 37  ;   ;Error Message 4     ;Text250       ;CaptionML=[ENU=Error Message 4;
+                                                              FRA=Message d'erreur 4] }
+    { 38  ;   ;Cross Data Flow     ;Boolean       ;CaptionML=[ENU=Cross Data Flow;
+                                                              FRA=Inter flux] }
+    { 39  ;   ;Manual              ;Boolean       ;CaptionML=[ENU=Manual;
+                                                              FRA=Manuel] }
+  }
+  KEYS
+  {
+    {    ;Data Flow Code,No.                      ;Clustered=Yes }
+  }
+  FIELDGROUPS
+  {
+  }
+  CODE
+  {
+    VAR
+      errNotTable@1000000000 : TextConst 'ENU=parmaters must be a record.;FRA=Le paramŠtre doit ˆtre un enregistrement.';
+      Text001@1000000001 : TextConst 'ENU=There is no error message.;FRA=Absence de message d''erreur.';
+      StampNotAllowed@1000000002 : TextConst 'ENU=Stamp is allowed only on Records.;FRA=Estampillage est autoris‚ unquement sur des enregistrements.';
+
+    PROCEDURE LookupObjectID@19(VAR NewObjectID@1000 : Integer) : Boolean;
+    VAR
+      AllObjWithCaption@1002 : Record 2000000058;
+      Objects@1001 : Page 358;
+    BEGIN
+      IF AllObjWithCaption.GET("Object Type to Run","Object ID to Run") THEN;
+      AllObjWithCaption.FILTERGROUP(2);
+      AllObjWithCaption.SETRANGE("Object Type","Object Type to Run");
+      AllObjWithCaption.SETFILTER("Object ID", '50000..99999');
+      AllObjWithCaption.SETFILTER("Object Name", 'DF*');
+      AllObjWithCaption.FILTERGROUP(0);
+      Objects.SETRECORD(AllObjWithCaption);
+      Objects.SETTABLEVIEW(AllObjWithCaption);
+      Objects.LOOKUPMODE := TRUE;
+      IF Objects.RUNMODAL = ACTION::LookupOK THEN BEGIN
+        Objects.GETRECORD(AllObjWithCaption);
+        NewObjectID := AllObjWithCaption."Object ID";
+        EXIT(TRUE);
+      END;
+      EXIT(FALSE);
+    END;
+
+    PROCEDURE LookupSourceTableID@1000000009(VAR NewObjectID@1000 : Integer) : Boolean;
+    VAR
+      AllObjWithCaption@1002 : Record 2000000058;
+      Objects@1001 : Page 358;
+    BEGIN
+      IF AllObjWithCaption.GET(AllObjWithCaption."Object Type"::Table,"Source Table ID") THEN;
+      AllObjWithCaption.FILTERGROUP(2);
+      AllObjWithCaption.SETRANGE("Object Type",AllObjWithCaption."Object Type");
+      AllObjWithCaption.FILTERGROUP(0);
+      Objects.SETRECORD(AllObjWithCaption);
+      Objects.SETTABLEVIEW(AllObjWithCaption);
+      Objects.LOOKUPMODE := TRUE;
+      IF Objects.RUNMODAL = ACTION::LookupOK THEN BEGIN
+        Objects.GETRECORD(AllObjWithCaption);
+        NewObjectID := AllObjWithCaption."Object ID";
+        EXIT(TRUE);
+      END;
+      EXIT(FALSE);
+    END;
+
+    PROCEDURE GetViewRestrictions@1000000002() ViewStr : Text;
+    VAR
+      TableFilter@1000000004 : Record 9805;
+      TableFilterPage@1000000003 : Page 9805;
+      RecRef@1000000002 : RecordRef;
+      FieldR@1000000005 : FieldRef;
+      TableFilterText@1000000000 : Text;
+      FieldNo@1000000001 : Integer;
+    BEGIN
+      IF "Source Table ID" < 1 THEN EXIT;
+      RecRef.OPEN("Source Table ID");
+      IF FORMAT("Table Filter") <> '' THEN BEGIN
+        TableFilterText := FORMAT("Table Filter");
+        TableFilterText := COPYSTR(TableFilterText, STRPOS(TableFilterText,':') + 2);
+        WHILE STRLEN(TableFilterText) > 0 DO BEGIN
+            FieldNo := ExtractFieldno(TableFilterText);
+            IF FieldNo <> 0 THEN BEGIN
+              FieldR := RecRef.FIELD(FieldNo);
+              FieldR.SETFILTER(ExtractFieldFilter(TableFilterText));
+            END;
+        END;
+      END;
+
+      IF RecRef.FIELDEXIST(60200) THEN
+        IF "Cross Data Flow" THEN BEGIN
+          IF RecRef.GETFILTERS = '' THEN BEGIN
+            FieldR := RecRef.FIELD(60200);
+            FieldR.SETRANGE("Data Flow Code");
+          END;
+        END ELSE BEGIN
+          FieldR := RecRef.FIELD(60200);
+          FieldR.SETRANGE("Data Flow Code");
+        END;
+
+      IF RecRef.FIELDEXIST(60201) THEN BEGIN
+        FieldR := RecRef.FIELD(60201);
+        FieldR.SETRANGE("Prev. Status No.");
+      END;
+
+      CASE "Source Table ID" OF
+        DATABASE::Customer:
+          IF RecRef.GETFILTERS = '' THEN BEGIN
+            FieldR := RecRef.FIELD(60200);
+            FieldR.SETRANGE("Data Flow Code");
+          END;
+
+        DATABASE::"Sales Invoice Header",
+        DATABASE::"Sales Cr.Memo Header":
+          BEGIN
+            FieldR := RecRef.FIELD(60200);
+            FieldR.SETRANGE("Data Flow Code");
+          END;
+      END;//CASE
+
+      ViewStr := RecRef.GETVIEW;
+      RecRef.CLOSE;
+    END;
+
+    LOCAL PROCEDURE ExtractFieldno@13(VAR TableFilterText@1000 : Text) : Integer;
+    VAR
+      FieldTable@1001 : Record 2000000041;
+      FieldName2@1002 : Text;
+    BEGIN
+      // If the first character s a double quote, extract the field name from the quotes,
+      // otherwise read it from the string until the equal sign:
+      IF STRPOS(COPYSTR(TableFilterText,1,1),'"') = 1 THEN
+        FieldName2 := GetQuotedValue(TableFilterText,'=')
+      ELSE
+        FieldName2 := GetValue(TableFilterText,'=');
+
+      FieldTable.RESET;
+      FieldTable.SETRANGE(TableNo,"Source Table ID");
+      FieldTable.SETRANGE("Field Caption",FieldName2);
+      IF NOT FieldTable.FINDFIRST THEN EXIT(0);
+      EXIT(FieldTable."No.");
+    END;
+
+    LOCAL PROCEDURE ExtractFieldFilter@14(VAR TableFilterText@1000 : Text) : Text;
+    VAR
+      FieldFilter2@1001 : Text;
+    BEGIN
+      // If the first character is a double quote, extract the field filter from the quotes,
+      // otherwise read it from the string until the comma:
+      IF STRPOS(COPYSTR(TableFilterText,1,1),'"') = 1 THEN
+        FieldFilter2 := GetQuotedValue(TableFilterText,',')
+      ELSE
+        FieldFilter2 := GetValue(TableFilterText,',');
+      EXIT(FieldFilter2);
+    END;
+
+    LOCAL PROCEDURE GetQuotedValue@6(VAR TextString@1000 : Text;Delimiter@1001 : Text) PartOfText : Text;
+    VAR
+      Position@1002 : Integer;
+      Length@1003 : Integer;
+      OneCharString@1004 : Text;
+      IsQuote@1005 : Boolean;
+      IsDelimiter@1006 : Boolean;
+      EvenQuote@1007 : Boolean;
+    BEGIN
+      // Remove the first quote:
+      TextString := COPYSTR(TextString,2,STRLEN(TextString) - 1);
+      Length := STRLEN(TextString);
+
+      EvenQuote := FALSE;
+      Position := 1;
+      WHILE Position <= Length DO BEGIN
+        OneCharString := COPYSTR(TextString,Position,1);
+
+        IsDelimiter := OneCharString = Delimiter;
+        IF IsDelimiter AND EvenQuote THEN BEGIN
+          PartOfText := COPYSTR(TextString,1,Position - 2);
+          PartOfText := UnescapeQuotedValue(PartOfText);
+          TextString := COPYSTR(TextString,Position + 1,STRLEN(TextString) - Position);
+          EXIT(PartOfText);
+        END;
+
+        IsQuote := STRPOS(OneCharString,'"') = 1;
+        IF IsQuote THEN
+          EvenQuote := NOT EvenQuote;
+
+        Position += 1;
+      END;
+
+      // If delimiter wasn't found read everything until the end of the string,excluding the closing quote:
+      PartOfText := COPYSTR(TextString,1,Position - 2);
+      PartOfText := UnescapeQuotedValue(PartOfText);
+      TextString := '';
+      EXIT(PartOfText);
+    END;
+
+    LOCAL PROCEDURE GetValue@5(VAR TextString@1000 : Text;Delimiter@1001 : Text) PartOfText : Text;
+    VAR
+      DelimiterPosition@1002 : Integer;
+    BEGIN
+      DelimiterPosition := STRPOS(TextString,Delimiter);
+      IF DelimiterPosition = 0 THEN BEGIN
+        // If delimiter wasn't found read everything until the end of the string:
+        PartOfText := COPYSTR(TextString,1,STRLEN(TextString));
+        TextString := '';
+      END ELSE BEGIN
+        PartOfText := COPYSTR(TextString,1,DelimiterPosition - 1);
+        TextString := COPYSTR(TextString,DelimiterPosition + 1,STRLEN(TextString) - DelimiterPosition);
+      END;
+
+      EXIT(PartOfText);
+    END;
+
+    LOCAL PROCEDURE UnescapeQuotedValue@7(TextValue@1000 : Text) : Text;
+    VAR
+      InnerQuotePosition@1001 : Integer;
+      TextValue2@1002 : Text;
+    BEGIN
+      InnerQuotePosition := STRPOS(TextValue,'""');
+      IF InnerQuotePosition = 0 THEN
+        EXIT(TextValue);
+
+      WHILE InnerQuotePosition > 0 DO BEGIN
+        TextValue2 += COPYSTR(TextValue,1,InnerQuotePosition);
+        TextValue := COPYSTR(TextValue,InnerQuotePosition + 2,STRLEN(TextValue) - InnerQuotePosition - 1);
+        InnerQuotePosition := STRPOS(TextValue,'""')
+      END;
+
+      TextValue2 += TextValue;
+      EXIT(TextValue2);
+    END;
+
+    PROCEDURE GetErrorMessage@1() : Text;
+    BEGIN
+      EXIT("Error Message" + "Error Message 2" + "Error Message 3" + "Error Message 4");
+    END;
+
+    PROCEDURE SetErrorMessage@2(ErrorText@1000 : Text);
+    BEGIN
+      "Error Message 2" := '';
+      "Error Message 3" := '';
+      "Error Message 4" := '';
+      "Error Message" := COPYSTR(ErrorText,1,250);
+      IF STRLEN(ErrorText) > 250 THEN
+        "Error Message 2" := COPYSTR(ErrorText,251,250);
+      IF STRLEN(ErrorText) > 500 THEN
+        "Error Message 3" := COPYSTR(ErrorText,501,250);
+      IF STRLEN(ErrorText) > 750 THEN
+        "Error Message 4" := COPYSTR(ErrorText,751,250);
+    END;
+
+    PROCEDURE ShowErrorMessage@8();
+    VAR
+      e@1000 : Text;
+    BEGIN
+      e := GetErrorMessage;
+      IF e = '' THEN
+        e := Text001;
+      MESSAGE('%1',e);
+    END;
+
+    PROCEDURE SetError@1000000001(ErrorText@1000 : Text);
+    BEGIN
+      LOCKTABLE;
+      GET("Data Flow Code", "No.");
+      SetErrorMessage(ErrorText);
+      SetStatusValue(Status::Error);
+      MODIFY;
+    END;
+
+    PROCEDURE SetStatus@3(NewStatus@1000 : Option);
+    BEGIN
+      LOCKTABLE;
+      GET("Data Flow Code", "No.");
+      SetStatusValue(NewStatus);
+      MODIFY;
+    END;
+
+    LOCAL PROCEDURE SetStatusValue@1000000000(NewStatus@1000 : Option);
+    VAR
+      JobQueueDispatcher@1001 : Codeunit 448;
+    BEGIN
+      Status := NewStatus;
+    END;
+
+    PROCEDURE ResetStep@1000000003();
+    BEGIN
+      SetStatusValue(Status::Ready);
+      CLEAR("Error Message");
+      CLEAR("Error Message 2");
+      CLEAR("Error Message 3");
+      CLEAR("Error Message 4");
+      MODIFY;
+    END;
+
+    PROCEDURE ShowLogEntries@1000000004();
+    VAR
+      DataFlow@1000000000 : Record 50014;
+      JobQueueLogEntry@1000000001 : Record 474;
+    BEGIN
+      DataFlow.GET("Data Flow Code");
+      DataFlow.TESTFIELD("Job Queue Entry ID");
+      JobQueueLogEntry.SETRANGE(ID, DataFlow."Job Queue Entry ID");
+      IF JobQueueLogEntry.FINDLAST THEN;
+      PAGE.RUN(PAGE::"Job Queue Log Entries", JobQueueLogEntry);
+    END;
+
+    PROCEDURE ShowRecInDataFlow@1000000005(InPage@1000000002 : Boolean) : Integer;
+    VAR
+      RecVariant@1000000000 : Variant;
+      RecRef@1000000001 : RecordRef;
+    BEGIN
+      IF "Source Table ID" = 0 THEN
+        EXIT;
+      TESTFIELD("Source Table ID");
+      RecRef.OPEN("Source Table ID");
+      RecRef.SETVIEW(GetViewRestrictions());
+      RecVariant := RecRef;
+      IF InPage THEN PAGE.RUN(0, RecVariant);
+      EXIT(RecRef.COUNT);
+    END;
+
+    PROCEDURE Stamp@1000000006(VAR RecVar@1000000000 : Variant);
+    VAR
+      RecRef@1000000001 : RecordRef;
+      FieldR@1000000002 : FieldRef;
+    BEGIN
+      IF NOT RecVar.ISRECORD THEN  ERROR(StampNotAllowed);
+      RecRef.GETTABLE(RecVar);
+      IF RecRef.FIELDEXIST(60200) THEN BEGIN
+        FieldR := RecRef.FIELD(60200);
+        FieldR.VALUE := "Data Flow Code";
+      END;
+
+      IF RecRef.FIELDEXIST(60201) THEN BEGIN
+        FieldR := RecRef.FIELD(60201);
+        FieldR.VALUE := "Next Status No.";
+      END;
+      RecVar := RecRef;
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

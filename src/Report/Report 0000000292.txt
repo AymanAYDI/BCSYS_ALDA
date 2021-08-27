@@ -2,8 +2,9 @@ OBJECT Report 292 Copy Sales Document
 {
   OBJECT-PROPERTIES
   {
-    Date=23/09/13;
-    Time=12:00:00;
+    Date=07/11/17;
+    Time=10:44:00;
+    Modified=Yes;
     Version List=NAVW17.10;
   }
   PROPERTIES
@@ -15,6 +16,7 @@ OBJECT Report 292 Copy Sales Document
                   SalesSetup.GET;
                   CopyDocMgt.SetProperties(
                     IncludeHeader,RecalculateLines,FALSE,FALSE,FALSE,SalesSetup."Exact Cost Reversing Mandatory",FALSE);
+                  CopyDocMgt.SetKeepSamePrice(KeepPrice); //BC6
                   CopyDocMgt.CopySalesDoc(DocType,DocNo,SalesHeader)
                 END;
 
@@ -133,6 +135,11 @@ OBJECT Report 292 Copy Sales Document
                              END;
                               }
 
+      { 1000000000;2;Field  ;
+                  CaptionML=[ENU=Keep Unit Price;
+                             FRA=Conserver prix unitaire];
+                  SourceExpr=KeepPrice }
+
     }
   }
   LABELS
@@ -157,6 +164,7 @@ OBJECT Report 292 Copy Sales Document
       Text001@1001 : TextConst 'ENU=Undo Shipment;FRA=Annuler exp‚dition';
       Text002@1002 : TextConst 'ENU=Undo Return Receipt;FRA=Annuler r‚ception retour';
       Text003@1004 : TextConst 'ENU=Quote,Blanket Order,Order,Invoice,Return Order,Credit Memo,Posted Shipment,Posted Invoice,Posted Return Receipt,Posted Credit Memo;FRA=Devis,Commande ouverte,Commande,Facture,Retour,Avoir,Exp‚dition enregistr‚e,Facture enregistr‚e,R‚ception retour enreg.,Avoir enregistr‚';
+      KeepPrice@1000000000 : Boolean;
 
     PROCEDURE SetSalesHeader@2(VAR NewSalesHeader@1000 : Record 36);
     BEGIN

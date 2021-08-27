@@ -2,9 +2,10 @@ OBJECT Page 134 Posted Sales Credit Memo
 {
   OBJECT-PROPERTIES
   {
-    Date=26/11/15;
-    Time=12:00:00;
-    Version List=NAVW19.00.00.43897;
+    Date=04/02/20;
+    Time=16:40:36;
+    Modified=Yes;
+    Version List=NAVW19.00.00.43897,AC1.00;
   }
   PROPERTIES
   {
@@ -30,6 +31,8 @@ OBJECT Page 134 Posted Sales Credit Memo
                            HasIncomingDocument := IncomingDocument.PostedDocExists("No.","Posting Date");
                            DocExchStatusStyle := GetDocExchStatusStyle;
                            CurrPage.IncomingDocAttachFactBox.PAGE.LoadDataFromRecord(Rec);
+                           //BC6 EABO 03.02.20 Integration of Chorus invoice status
+                           UpdateCommentFactbox;
                          END;
 
     ActionList=ACTIONS
@@ -150,6 +153,34 @@ OBJECT Page 134 Posted Sales Credit Memo
                                  Navigate;
                                END;
                                 }
+      { 1180250007;1 ;Separator  }
+      { 1180250005;1 ;Action    ;
+                      Name=<Action1180250004>;
+                      Ellipsis=Yes;
+                      CaptionML=[ENU=Create PDF File (PDF Creator);
+                                 FRA=Cr‚er un document PDF];
+                      Description=ALDA 040813D;
+                      Promoted=Yes;
+                      PromotedIsBig=Yes;
+                      Image=Print;
+                      PromotedCategory=Process;
+                      OnAction=BEGIN
+                                 CreatePDF;
+                               END;
+                                }
+      { 1180250006;1 ;Action    ;
+                      Name=<Action1180250005>;
+                      Ellipsis=Yes;
+                      CaptionML=[ENU=Send To Mail As PDF (PDF Creator);
+                                 FRA=Envoyer en tant que PDF];
+                      Description=ALDA 040813D;
+                      Promoted=Yes;
+                      Image=SendTo;
+                      PromotedCategory=Process;
+                      OnAction=BEGIN
+                                 SendToMailAsPDF;
+                               END;
+                                }
       { 15      ;1   ;Action    ;
                       Name=ActivityLog;
                       CaptionML=[ENU=Activity Log;
@@ -243,6 +274,9 @@ OBJECT Page 134 Posted Sales Credit Memo
                 SourceExpr="Sell-to Address 2";
                 Editable=FALSE }
 
+    { 1000000000;2;Field  ;
+                SourceExpr="Sell-to County" }
+
     { 6   ;2   ;Field     ;
                 SourceExpr="Sell-to Post Code";
                 Editable=FALSE }
@@ -294,10 +328,74 @@ OBJECT Page 134 Posted Sales Credit Memo
                 SourceExpr="No. Printed";
                 Editable=FALSE }
 
+    { 1180250002;2;Field  ;
+                SourceExpr="Order Reference Customer";
+                Editable=FALSE }
+
+    { 1180250003;2;Field  ;
+                SourceExpr="Applies-to Doc. Type";
+                Importance=Additional;
+                Editable=FALSE }
+
+    { 1180250001;2;Field  ;
+                SourceExpr="Applies-to Doc. No.";
+                Editable=False }
+
+    { 1000000011;2;Field  ;
+                SourceExpr="Acquitted by EDI";
+                Editable=FALSE }
+
     { 46  ;1   ;Part      ;
                 Name=SalesCrMemoLines;
                 SubPageLink=Document No.=FIELD(No.);
                 PagePartID=Page135 }
+
+    { 1000000006;1;Group  ;
+                CaptionML=[ENU=Defence Office;
+                           FRA=D‚fense Bureau];
+                GroupType=Group }
+
+    { 1000000005;2;Field  ;
+                CaptionML=[ENU=NUM_SUBSEQUENT;
+                           FRA=Nø du march‚ subs‚quent];
+                SourceExpr=NUM_SUBSEQUENT;
+                Editable=false }
+
+    { 1000000004;2;Field  ;
+                CaptionML=[ENU=REF_ENGAGEMENT;
+                           FRA=R‚f‚rence engagement];
+                SourceExpr=REF_ENGAGEMENT;
+                Editable=false }
+
+    { 1000000003;2;Field  ;
+                CaptionML=[ENU=NUM_EJ;
+                           FRA=Nø d'engagement juridique];
+                SourceExpr=NUM_EJ;
+                Editable=false }
+
+    { 1000000002;2;Field  ;
+                CaptionML=[ENU=NUM_EJ;
+                           FRA=Nø de transaction];
+                SourceExpr=TRS_ID;
+                Editable=false }
+
+    { 1000000001;2;Field  ;
+                CaptionML=[ENU=TRS_ID_AUTORISATION;
+                           FRA=Nø de paiement INGENICO];
+                SourceExpr=TRS_ID_AUTORISATION;
+                Editable=false }
+
+    { 1000000007;2;Field  ;
+                CaptionML=[ENU=CODE_WCP;
+                           FRA=Nø Client g‚n‚r‚ par le site];
+                SourceExpr=CODE_WCP;
+                Editable=false }
+
+    { 1000000008;2;Field  ;
+                CaptionML=[ENU=Market Nø;
+                           FRA=Code march‚];
+                SourceExpr=NUM_MARKET;
+                Editable=false }
 
     { 1905885101;1;Group  ;
                 CaptionML=[ENU=Invoicing;
@@ -314,6 +412,10 @@ OBJECT Page 134 Posted Sales Credit Memo
 
     { 22  ;2   ;Field     ;
                 SourceExpr="Bill-to Name";
+                Editable=FALSE }
+
+    { 1180250004;2;Field  ;
+                SourceExpr="Bill-to Name 2";
                 Editable=FALSE }
 
     { 24  ;2   ;Field     ;
@@ -336,6 +438,14 @@ OBJECT Page 134 Posted Sales Credit Memo
                 SourceExpr="Bill-to Contact";
                 Editable=FALSE }
 
+    { 1000000010;2;Field  ;
+                SourceExpr="Registration No.";
+                Editable=FALSE }
+
+    { 1000000009;2;Field  ;
+                SourceExpr="Executing Service Code";
+                Editable=FALSE }
+
     { 7   ;2   ;Field     ;
                 SourceExpr="Shortcut Dimension 1 Code";
                 Editable=FALSE }
@@ -345,11 +455,13 @@ OBJECT Page 134 Posted Sales Credit Memo
                 Editable=FALSE }
 
     { 14  ;2   ;Field     ;
+                Name=Applies-to Doc. Type_2;
                 SourceExpr="Applies-to Doc. Type";
                 Importance=Promoted;
                 Editable=FALSE }
 
     { 16  ;2   ;Field     ;
+                Name=Applies-to Doc. No._2;
                 SourceExpr="Applies-to Doc. No.";
                 Importance=Promoted;
                 Editable=FALSE }
@@ -367,6 +479,9 @@ OBJECT Page 134 Posted Sales Credit Memo
                            FRA=Num‚ro de carte de cr‚dit (4ÿderniers chiffres)];
                 SourceExpr=GetCreditcardNumber;
                 Editable=FALSE }
+
+    { 1180250009;2;Field  ;
+                SourceExpr="Validated by" }
 
     { 1906801201;1;Group  ;
                 CaptionML=[ENU=Shipping;
@@ -427,6 +542,10 @@ OBJECT Page 134 Posted Sales Credit Memo
                 SourceExpr="EU 3-Party Trade";
                 Editable=FALSE }
 
+    { 1180250008;2;Field  ;
+                SourceExpr="VAT Registration No.";
+                Editable=FALSE }
+
     { 1900000007;0;Container;
                 ContainerType=FactBoxArea }
 
@@ -435,6 +554,13 @@ OBJECT Page 134 Posted Sales Credit Memo
                 PagePartID=Page193;
                 PartType=Page;
                 ShowFilter=No }
+
+    { 1000000012;1;Part   ;
+                SubPageLink=Document Type=CONST(Posted Credit Memo),
+                            No.=FIELD(No.);
+                PagePartID=Page50033;
+                Visible=IsAcquittedByEDIPlatform;
+                PartType=Page }
 
     { 1900383207;1;Part   ;
                 Visible=FALSE;
@@ -454,8 +580,54 @@ OBJECT Page 134 Posted Sales Credit Memo
       ChangeExchangeRate@1001 : Page 511;
       HasIncomingDocument@1002 : Boolean;
       DocExchStatusStyle@1003 : Text;
+      IsAcquittedByEDIPlatform@1000000000 : Boolean INDATASET;
+
+    PROCEDURE CreatePDF@1180250004();
+    VAR
+      PDFCreatorMgt@1180250002 : Codeunit 50014;
+    BEGIN
+      CLEAR(PDFCreatorMgt);
+
+      SalesCrMemoHeader.COPY(Rec);
+      CurrPage.SETSELECTIONFILTER(SalesCrMemoHeader);
+
+      PDFCreatorMgt.SaveCrMemoAsPDF(SalesCrMemoHeader,TRUE);
+    END;
+
+    PROCEDURE SendToMailAsPDF@1180250003();
+    VAR
+      PDFCreatorMgt@1180250003 : Codeunit 50014;
+      DocumentType@1180250001 : 'Quote,Blanket Order,Order,Invoice,Return Order,Credit Memo,Posted Shipment,Posted Invoice,Posted Return Receipt,Posted Credit Memo';
+    BEGIN
+      CLEAR(PDFCreatorMgt);
+
+      SalesCrMemoHeader.COPY(Rec);
+      CurrPage.SETSELECTIONFILTER(SalesCrMemoHeader);
+
+      IF NOT PDFCreatorMgt.ExistRecordLink(SalesCrMemoHeader."No.",TABLENAME) THEN BEGIN
+        PDFCreatorMgt.SaveCrMemoAsPDF(SalesCrMemoHeader,TRUE);
+        COMMIT;
+      END;
+
+      PDFCreatorMgt.CreateSalesDocToSend(DocumentType::"Posted Credit Memo",SalesCrMemoHeader."No.",
+        SalesCrMemoHeader."Bill-to Customer No.",FALSE);
+
+      PDFCreatorMgt.SendCrMemoAsPDF(SalesCrMemoHeader);
+    END;
+
+    LOCAL PROCEDURE UpdateCommentFactbox@1000000000();
+    BEGIN
+      IsAcquittedByEDIPlatform := "Acquitted by EDI";
+    END;
 
     BEGIN
+    {
+      AC1.00 Ajout Field "Order Reference Customer"
+      BC6 EABO 03.02.20 Integration of Chorus invoice status
+        - Add field "Acquitted by EDI"
+        - add factbox <Sales Comment ListPart>
+        - Add function UpdateCommentFactbox to update visibility of factbox
+    }
     END.
   }
 }

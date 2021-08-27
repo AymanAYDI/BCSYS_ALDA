@@ -4,7 +4,8 @@ OBJECT Table 5109 Purchase Header Archive
   {
     Date=23/10/15;
     Time=12:00:00;
-    Version List=NAVW19.00.00.43402;
+    Modified=Yes;
+    Version List=NAVW19.00.00.43402,AC1.00;
   }
   PROPERTIES
   {
@@ -487,6 +488,9 @@ OBJECT Table 5109 Purchase Header Archive
     { 9000;   ;Assigned User ID    ;Code50        ;TableRelation="User Setup";
                                                    CaptionML=[ENU=Assigned User ID;
                                                               FRA=Code utilisateur affect‚] }
+    { 50002;  ;Order Reference Customer;Text35    ;CaptionML=[ENU=Order Reference Customer;
+                                                              FRA=R‚f‚rence commande client];
+                                                   Description=AC1.00 }
   }
   KEYS
   {
@@ -520,6 +524,9 @@ OBJECT Table 5109 Purchase Header Archive
     END;
 
     BEGIN
+    {
+      AC1.00 Ajout Field "Order Reference Customer"
+    }
     END.
   }
 }

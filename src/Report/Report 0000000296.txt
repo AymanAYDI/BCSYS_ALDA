@@ -2,9 +2,10 @@ OBJECT Report 296 Batch Post Sales Orders
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
-    Version List=NAVW19.00;
+    Date=04/03/16;
+    Time=16:56:37;
+    Modified=Yes;
+    Version List=NAVW19.00,TAH.002;
   }
   PROPERTIES
   {
@@ -25,7 +26,11 @@ OBJECT Report 296 Batch Post Sales Orders
                                  ERROR(Text000);
 
                                CounterTotal := COUNT;
-                               Window.OPEN(Text001);
+
+                               //AC BDU OPTI 1.00
+                               IF GUIALLOWED THEN
+                               //AC BDU OPTI 1.00
+                                 Window.OPEN(Text001);
                              END;
 
                OnAfterGetRecord=VAR
@@ -38,12 +43,27 @@ OBJECT Report 296 Batch Post Sales Orders
                                     CalculateInvoiceDiscount;
 
                                   Counter := Counter + 1;
-                                  Window.UPDATE(1,"No.");
-                                  Window.UPDATE(2,ROUND(Counter / CounterTotal * 10000,1));
+
+                                  //AC BDU OPTI 1.00 BEGIN
+                                  IF GUIALLOWED THEN BEGIN
+                                  //AC BDU OPTI 1.00 END
+                                    Window.UPDATE(1,"No.");
+                                    Window.UPDATE(2,ROUND(Counter / CounterTotal * 10000,1));
+                                  //AC BDU OPTI 1.00 END
+                                  END;
+                                  //AC BDU OPTI 1.00 END
+
                                   Ship := ShipReq;
                                   Invoice := InvReq;
                                   CLEAR(SalesPost);
                                   SalesPost.SetPostingDate(ReplacePostingDate,ReplaceDocumentDate,PostingDateReq);
+
+
+                                  //AB6.TAH.002
+                                  IF InclureExpedPartielle THEN
+                                     SalesPost.SetPartielShipping;
+                                  //AB6.TAH.002
+
                                   IF IsApprovedForPostingBatch THEN
                                     IF SalesPost.RUN("Sales Header") THEN BEGIN
                                       CounterOK := CounterOK + 1;
@@ -53,8 +73,12 @@ OBJECT Report 296 Batch Post Sales Orders
                                 END;
 
                OnPostDataItem=BEGIN
-                                Window.CLOSE;
-                                MESSAGE(Text002,CounterOK,CounterTotal);
+                                //AC BDU OPTI 1.00 BEGIN
+                                IF GUIALLOWED THEN
+                                  Window.CLOSE;
+                                IF ShowEndMsg THEN
+                                //AC 1.00Window.CLOSE;
+                                  MESSAGE(Text002,CounterOK,CounterTotal);
                               END;
 
                ReqFilterFields=No.,Status }
@@ -151,6 +175,9 @@ OBJECT Report 296 Batch Post Sales Orders
       ReplacePostingDate@1016 : Boolean;
       ReplaceDocumentDate@1017 : Boolean;
       CalcInvDisc@1018 : Boolean;
+      SendShipNotif@1000000002 : Boolean;
+      InclureExpedPartielle@1000000001 : Boolean;
+      ShowEndMsg@1000000000 : Boolean;
 
     LOCAL PROCEDURE CalculateInvoiceDiscount@1();
     BEGIN
@@ -172,6 +199,21 @@ OBJECT Report 296 Batch Post Sales Orders
       ReplacePostingDate := ReplacePostingDateParam;
       ReplaceDocumentDate := ReplaceDocumentDateParam;
       CalcInvDisc := CalcInvDiscParam;
+    END;
+
+    PROCEDURE InitReport@1180250001(ForShipReq@1180250001 : Boolean;ForInvReq@1180250002 : Boolean;ForPostingDateReq@1180250003 : Date;ForReplacePostingDate@1180250004 : Boolean;ForReplaceDocumentDate@1180250005 : Boolean;ForCalcInvDisc@1180250006 : Boolean;ForSendShipNotif@1180250007 : Boolean;ForInclureExpedPartielle@1180250008 : Boolean;ForShowEndMsg@1180250009 : Boolean);
+    BEGIN
+      //AC1.00 BEGIN
+      ShipReq := ForShipReq;
+      InvReq := ForInvReq;
+      PostingDateReq := ForPostingDateReq;
+      ReplacePostingDate := ForReplacePostingDate;
+      ReplaceDocumentDate := ForReplaceDocumentDate;
+      CalcInvDisc := ForCalcInvDisc;
+      SendShipNotif := ForSendShipNotif;
+      InclureExpedPartielle := ForInclureExpedPartielle;
+      ShowEndMsg := ForShowEndMsg;
+      //AC1.00 END
     END;
 
     BEGIN

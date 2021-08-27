@@ -1,0 +1,46 @@
+OBJECT Table 80109 Initial Fields Setup
+{
+  OBJECT-PROPERTIES
+  {
+    Date=05/02/16;
+    Time=09:51:03;
+    Modified=Yes;
+    Version List=Data Transfer Wizard;
+  }
+  PROPERTIES
+  {
+  }
+  FIELDS
+  {
+    { 1   ;   ;IntegerF            ;Integer        }
+    { 2   ;   ;BooleanF            ;Boolean        }
+    { 3   ;   ;DateF               ;Date           }
+    { 4   ;   ;TimeF               ;Time           }
+    { 5   ;   ;BinaryF             ;Text30         }
+    { 6   ;   ;BLOBF               ;BLOB           }
+    { 7   ;   ;DateFormulaF        ;DateFormula    }
+    { 8   ;   ;TableFilterF        ;Text30         }
+    { 9   ;   ;BigIntegerF         ;BigInteger     }
+    { 10  ;   ;DurationF           ;Duration       }
+    { 11  ;   ;GUIDF               ;GUID           }
+    { 12  ;   ;RecordIDF           ;RecordID       }
+    { 13  ;   ;DateTimeF           ;DateTime       }
+  }
+  KEYS
+  {
+    {    ;IntegerF                                ;Clustered=Yes }
+  }
+  FIELDGROUPS
+  {
+  }
+  CODE
+  {
+
+    BEGIN
+    {
+      Data Transfer Wizard 4.0 (Navision) Eduard Sanosian, The Netherlands, 08-2006
+    }
+    END.
+  }
+}
+

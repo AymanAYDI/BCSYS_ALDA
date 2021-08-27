@@ -2,8 +2,9 @@ OBJECT Page 6641 Purchase Return Order Subform
 {
   OBJECT-PROPERTIES
   {
-    Date=22/12/15;
-    Time=12:00:00;
+    Date=20/10/17;
+    Time=12:59:35;
+    Modified=Yes;
     Version List=NAVW19.00.00.44365;
   }
   PROPERTIES
@@ -202,6 +203,9 @@ OBJECT Page 6641 Purchase Return Order Subform
 
     { 1   ;1   ;Group     ;
                 GroupType=Repeater }
+
+    { 1000000000;2;Field  ;
+                SourceExpr="Line No." }
 
     { 2   ;2   ;Field     ;
                 SourceExpr=Type;

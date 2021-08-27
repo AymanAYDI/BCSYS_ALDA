@@ -4,7 +4,8 @@ OBJECT Page 51 Purchase Invoice
   {
     Date=15/09/15;
     Time=12:00:00;
-    Version List=NAVW19.00;
+    Modified=Yes;
+    Version List=NAVW19.00,ALDA;
   }
   PROPERTIES
   {
@@ -194,6 +195,21 @@ OBJECT Page 51 Purchase Invoice
                                  ReleasePurchDoc@1001 : Codeunit 415;
                                BEGIN
                                  ReleasePurchDoc.PerformManualReopen(Rec);
+                               END;
+                                }
+      { 1180250001;2 ;Separator  }
+      { 1180250002;2 ;Action    ;
+                      Name=<Action1901652204>;
+                      Ellipsis=Yes;
+                      CaptionML=[ENU=&Get Receipt Lines;
+                                 FRA=Extraire lignes r‚ce&ption];
+                      Promoted=Yes;
+                      PromotedIsBig=Yes;
+                      Image=GetLines;
+                      PromotedCategory=Process;
+                      OnAction=BEGIN
+                                 //This functionality was copied from page #51. Unsupported part was commented. Please check it.
+                                 CurrPage.PurchLines.PAGE.GetReceipt;
                                END;
                                 }
       { 60      ;1   ;ActionGroup;
@@ -565,6 +581,9 @@ OBJECT Page 51 Purchase Invoice
                              ShortcutDimension2CodeOnAfterV;
                            END;
                             }
+
+    { 1180250003;2;Field  ;
+                SourceExpr="Country Dimension Code" }
 
     { 28  ;2   ;Field     ;
                 SourceExpr="Payment Terms Code";

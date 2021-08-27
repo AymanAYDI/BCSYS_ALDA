@@ -2,8 +2,9 @@ OBJECT Table 5717 Item Cross Reference
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
+    Date=09/02/16;
+    Time=12:11:52;
+    Modified=Yes;
     Version List=NAVW19.00;
   }
   PROPERTIES
@@ -87,6 +88,23 @@ OBJECT Table 5717 Item Cross Reference
 
                                                    CaptionML=[ENU=Discontinue Bar Code;
                                                               FRA=Code barre obsolŠte] }
+    { 50000;  ;Last Date Modified  ;Date          ;TableRelation=Manufacturer;
+                                                   CaptionML=[ENU=Last Date Modified;
+                                                              FRA=Date dern. modification];
+                                                   Description=AC1.00 }
+    { 50001;  ;Bar Code            ;Code20        ;CaptionML=[ENU=Bar Code;
+                                                              FRA=Code barre];
+                                                   Description=AC1.00 }
+    { 50002;  ;Alternative Cross-Ref. No.;Code20  ;TableRelation="Item Cross Reference"."Cross-Reference No." WHERE (Item No.=FIELD(Item No.),
+                                                                                                                     Variant Code=FIELD(Variant Code),
+                                                                                                                     Cross-Reference Type=FIELD(Cross-Reference Type),
+                                                                                                                     Cross-Reference Type No.=FIELD(Cross-Reference Type No.));
+                                                   CaptionML=[ENU=Alternative Cross-Reference No.;
+                                                              FRA=R‚f‚rence externe de remplacement];
+                                                   Description=AC1.00 }
+    { 50003;  ;Vendor Traide Item No.;Code20      ;CaptionML=[ENU=Vendor Traide Item No.;
+                                                              FRA=R‚f‚rence commerciale fournisseur];
+                                                   Description=AC1.00 }
   }
   KEYS
   {

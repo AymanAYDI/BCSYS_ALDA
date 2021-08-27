@@ -1,0 +1,40 @@
+OBJECT Table 80107 Conflict Log
+{
+  OBJECT-PROPERTIES
+  {
+    Date=12/08/06;
+    Time=12:00:00;
+    Version List=Data Transfer Wizard;
+  }
+  PROPERTIES
+  {
+  }
+  FIELDS
+  {
+    { 1   ;   ;Table No.           ;Integer        }
+    { 2   ;   ;Field No.           ;Integer        }
+    { 3   ;   ;Conflict            ;Text30         }
+    { 4   ;   ;Table Name          ;Text30        ;FieldClass=FlowField;
+                                                   CalcFormula=Lookup(Field.TableName WHERE (TableNo=FIELD(Table No.))) }
+    { 5   ;   ;Field Name          ;Text30        ;FieldClass=FlowField;
+                                                   CalcFormula=Lookup(Field.FieldName WHERE (TableNo=FIELD(Table No.),
+                                                                                             No.=FIELD(Field No.))) }
+  }
+  KEYS
+  {
+    {    ;Table No.,Field No.,Conflict            ;Clustered=Yes }
+  }
+  FIELDGROUPS
+  {
+  }
+  CODE
+  {
+
+    BEGIN
+    {
+      Data Transfer Wizard 4.0 (Navision) Eduard Sanosian, The Netherlands, 08-2006
+    }
+    END.
+  }
+}
+

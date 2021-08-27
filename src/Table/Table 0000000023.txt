@@ -2,9 +2,10 @@ OBJECT Table 23 Vendor
 {
   OBJECT-PROPERTIES
   {
-    Date=26/11/15;
-    Time=12:00:00;
-    Version List=NAVW19.00.00.43897,NAVFR9.00.00.43897;
+    Date=09/02/16;
+    Time=16:46:08;
+    Modified=Yes;
+    Version List=NAVW19.00.00.43897,NAVFR9.00.00.43897,AC1.00;
   }
   PROPERTIES
   {
@@ -1086,6 +1087,13 @@ OBJECT Table 23 Vendor
                                                    CaptionML=[ENU=Payment in progress (LCY);
                                                               FRA=RŠglement en cours DS];
                                                    Editable=No }
+    { 50000;  ;Bar Code            ;Code20        ;CaptionML=[ENU=Bar Code;
+                                                              FRA=Code barre];
+                                                   Description=AC1.00 }
+    { 50001;  ;One Order by Micro Order No.;Boolean;
+                                                   CaptionML=[ENU=One Order by Micro Order No.;
+                                                              FRA=Une commande par nø commande micro];
+                                                   Description=ALDA 061215D }
   }
   KEYS
   {
@@ -1287,6 +1295,9 @@ OBJECT Table 23 Vendor
     END;
 
     BEGIN
+    {
+      AC1.00 ajout champ "Bar Code"
+    }
     END.
   }
 }

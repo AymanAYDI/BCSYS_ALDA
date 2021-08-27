@@ -2,13 +2,17 @@ OBJECT Table 18 Customer
 {
   OBJECT-PROPERTIES
   {
-    Date=26/11/15;
-    Time=12:00:00;
-    Version List=NAVW19.00.00.43897,NAVFR9.00.00.43897;
+    Date=04/03/19;
+    Time=16:59:09;
+    Modified=Yes;
+    Version List=NAVW19.00.00.43897,NAVFR9.00.00.43897,AC1.00,BC6AUTOINV;
   }
   PROPERTIES
   {
-    Permissions=TableData 21=r;
+    Permissions=TableData 21=r,
+                TableData 36=r,
+                TableData 37=r,
+                TableData 379=r;
     DataCaptionFields=No.,Name;
     OnInsert=BEGIN
                IF "No." = '' THEN BEGIN
@@ -25,10 +29,20 @@ OBJECT Table 18 Customer
                DimMgt.UpdateDefaultDim(
                  DATABASE::Customer,"No.",
                  "Global Dimension 1 Code","Global Dimension 2 Code");
+               //AC1.00 BEGIN
+               CompanyInfo.GET();
+               "Dim. Shipping Method Filter" := CompanyInfo."Dim. Shipping Method Code";
+               "Dim. Cust. Category Filter" := CompanyInfo."Dim. Cust. Category Code";
+               "Dim. Selling Point Filter" := CompanyInfo."Dim. Selling Point Code";
+               //AC1.00 END
+               //AC2.00
+               "Dim. Cust. Grp. Code" := CompanyInfo."Dim. Cust. Grp. Code";
              END;
 
     OnModify=BEGIN
                "Last Date Modified" := TODAY;
+               //AC1.00
+               "Last Time Modified" := TIME;
 
                IF (Name <> xRec.Name) OR
                   ("Search Name" <> xRec."Search Name") OR
@@ -208,6 +222,8 @@ OBJECT Table 18 Customer
     OnRename=BEGIN
                ApprovalsMgmt.RenameApprovalEntries(xRec.RECORDID,RECORDID);
                "Last Date Modified" := TODAY;
+               //AC1.00
+               "Last Time Modified" := TIME;
              END;
 
     CaptionML=[ENU=Customer;
@@ -1257,6 +1273,143 @@ OBJECT Table 18 Customer
                                                    CaptionML=[ENU=Payment in progress (LCY);
                                                               FRA=RŠglement en cours DS];
                                                    Editable=No }
+    { 50000;  ;Bar Code            ;Code20        ;CaptionML=[ENU=Bar Code;
+                                                              FRA=Code barre];
+                                                   Description=AC1.00 }
+    { 50001;  ;Last Date Sending to MAJUSCULE;Date;CaptionML=[ENU=Last Date Sending to MAJUSCULE;
+                                                              FRA=DerniŠre date d'envoi … MAJUSCULE];
+                                                   Description=AC1.00;
+                                                   Editable=No }
+    { 50002;  ;Dim. Shipping Method Filter;Code20 ;TableRelation=Dimension;
+                                                   CaptionML=[ENU=Dim. Shipping Method Filter;
+                                                              FRA=Filtre axe mode d'exp‚dition];
+                                                   Description=AC1.00;
+                                                   Editable=No }
+    { 50003;  ;Dim. Shipping Method Code;Code20   ;FieldClass=FlowField;
+                                                   CalcFormula=Lookup("Default Dimension"."Dimension Value Code" WHERE (Table ID=CONST(18),
+                                                                                                                        No.=FIELD(No.),
+                                                                                                                        Dimension Code=FIELD(Dim. Shipping Method Filter)));
+                                                   CaptionML=[ENU=Dim. Shipping Method Code;
+                                                              FRA=Code axe mode d'exp‚dition];
+                                                   Description=AC1.00;
+                                                   Editable=No }
+    { 50004;  ;Dim. Cust. Category Filter;Code20  ;TableRelation=Dimension;
+                                                   CaptionML=[ENU=Dim. Cust. Category Filter;
+                                                              FRA=Filtre axe cat‚gorie client];
+                                                   Description=AC1.00;
+                                                   Editable=No }
+    { 50005;  ;Dim. Cust. Category Code;Code20    ;FieldClass=FlowField;
+                                                   CalcFormula=Lookup("Default Dimension"."Dimension Value Code" WHERE (Table ID=CONST(18),
+                                                                                                                        No.=FIELD(No.),
+                                                                                                                        Dimension Code=FIELD(Dim. Cust. Category Filter)));
+                                                   CaptionML=[ENU=Dim. Cust. Category Code;
+                                                              FRA=Code axe cat‚gorie client];
+                                                   Description=AC1.00;
+                                                   Editable=No }
+    { 50006;  ;Dim. Selling Point Filter;Code20   ;TableRelation=Dimension;
+                                                   CaptionML=[ENU=Dim. Selling Point Filter;
+                                                              FRA=Filtre axe point de vente];
+                                                   Description=AC1.00;
+                                                   Editable=No }
+    { 50007;  ;Dim. Selling Point Code;Code20     ;FieldClass=FlowField;
+                                                   CalcFormula=Lookup("Default Dimension"."Dimension Value Code" WHERE (Table ID=CONST(18),
+                                                                                                                        No.=FIELD(No.),
+                                                                                                                        Dimension Code=FIELD(Dim. Selling Point Filter)));
+                                                   CaptionML=[ENU=Dim. Selling Point Code;
+                                                              FRA=Code axe point de vente];
+                                                   Description=AC1.00;
+                                                   Editable=No }
+    { 50008;  ;Direct Inv. Posted  ;Boolean       ;CaptionML=[ENU=Direct Inv. Posted;
+                                                              FRA=Facturation direct];
+                                                   Description=AC1.00 }
+    { 50009;  ;Ship. Agent Instruction Line;Text35;CaptionML=[ENU=Shipping Agent Instruction Line;
+                                                              FRA=Ligne d'instruction de livraison transporteur];
+                                                   Description=AC1.00 }
+    { 50010;  ;Ship. Agent Instruction Line 2;Text35;
+                                                   CaptionML=[ENU=Shipping Agent Instruction Line 2;
+                                                              FRA=Ligne d'instruction de livraison transporteur 2];
+                                                   Description=AC1.00 }
+    { 50011;  ;Last Time Modified  ;Time          ;CaptionML=[ENU=Last Time Modified;
+                                                              FRA=Hure dern. modification];
+                                                   Description=AC1.00;
+                                                   Editable=No }
+    { 50012;  ;Last Time Sending to MAJUSCULE;Time;CaptionML=[ENU=Last Time Sending to MAJUSCULE;
+                                                              FRA=DerniŠre heure d'envoi … MAJUSCULE];
+                                                   Description=AC1.00;
+                                                   Editable=No }
+    { 50013;  ;Registration No.o   ;Text20        ;CaptionML=[ENU=Registration No.;
+                                                              FRA=Nø SIRET];
+                                                   Description=AC1.00 }
+    { 50014;  ;Bank Acc. No. for Cash Receipt;Code20;
+                                                   TableRelation="Bank Account";
+                                                   CaptionML=[ENU=Bank Acc. No. for Cash Receipt;
+                                                              FRA=Nø compte banc. pour r‚glement] }
+    { 50015;  ;Auto. Post Invoice  ;Boolean       ;OnLookup=BEGIN
+                                                              IF "Auto. Post Invoice" = FALSE THEN BEGIN
+                                                                "Inv./Cr Memo Type" := "Inv./Cr Memo Type"::Report;
+                                                                "Auto. Post Invoice" := FALSE;
+                                                              END;
+                                                            END;
+
+                                                   CaptionML=[ENU=Auto. Post Invoice;
+                                                              FRA=Valider facture automatiquement] }
+    { 50016;  ;Inv./Cr Memo Type   ;Option        ;InitValue=Report;
+                                                   OnValidate=BEGIN
+                                                                IF "Inv./Cr Memo Type" = "Inv./Cr Memo Type"::File THEN
+                                                                  TESTFIELD("Auto. Post Invoice",TRUE)
+                                                                ELSE
+                                                                  "Automatic Sending" := FALSE;
+                                                              END;
+
+                                                   CaptionML=[ENU=Inv./Cr Memo Type;
+                                                              FRA=Type fact./avoir];
+                                                   OptionCaptionML=[ENU=Report,File;
+                                                                    FRA=Edition,Fichier];
+                                                   OptionString=Report,File;
+                                                   Description=ALDA 040813D }
+    { 50017;  ;Automatic Sending   ;Boolean       ;OnValidate=BEGIN
+                                                                IF "Automatic Sending" = TRUE THEN BEGIN
+                                                                  TESTFIELD("Auto. Post Invoice",TRUE);
+                                                                  TESTFIELD("Inv./Cr Memo Type","Inv./Cr Memo Type"::File);
+                                                                END;
+                                                              END;
+
+                                                   CaptionML=[ENU=Automatic Sending;
+                                                              FRA=Envoi automatique];
+                                                   Description=ALDA 040813D }
+    { 50018;  ;Cost Center Code    ;Code20        ;CaptionML=[ENU=Cost Center Code;
+                                                              FRA=Code centre de co–t];
+                                                   Description=ACBDU 100314D }
+    { 50019;  ;Dim. Cust. Grp. Filter;Code20      ;TableRelation=Dimension;
+                                                   CaptionML=[ENU=Dim. Cust. Grrp. Filter;
+                                                              FRA=Filtre axe Groupe client];
+                                                   Description=AC2.00 }
+    { 50020;  ;Dim. Cust. Grp. Code;Code20        ;FieldClass=FlowField;
+                                                   CalcFormula=Lookup("Default Dimension"."Dimension Value Code" WHERE (Table ID=CONST(18),
+                                                                                                                        No.=FIELD(No.),
+                                                                                                                        Dimension Code=FIELD(Dim. Cust. Grp. Filter)));
+                                                   CaptionML=[ENU=Dim. Cust. Grp. Code;
+                                                              FRA=Code axe groupe client];
+                                                   Description=AC2.00;
+                                                   Editable=No }
+    { 50021;  ;Area Code           ;Code20        ;TableRelation="Dynamic Field".Code WHERE (Table No.=CONST(18),
+                                                                                             Field No.=CONST(50021));
+                                                   CaptionML=[ENU=Area Code;
+                                                              FRA=Code site];
+                                                   Description=ACBDU 160414D }
+    { 50022;  ;Validated by        ;Text50        ;CaptionML=[ENU=Validated by;
+                                                              FRA=Valid‚ par];
+                                                   Description=ALDA 031114D }
+    { 50023;  ;Grouping Code       ;Code20        ;CaptionML=[ENU=Grouping Code;
+                                                              FRA=Code regroupement];
+                                                   Description=ALDA 040116D }
+    { 50024;  ;Use Shipment Address;Boolean       ;CaptionML=[ENU=Use Shipment Address;
+                                                              FRA=Utiliser adresse livraison] }
+    { 50025;  ;Executing Service Code;Code100     ;CaptionML=[ENU=Executing Service Code;
+                                                              FRA=Code service ‚xecutant] }
+    { 60200;  ;Data Flow Code      ;Code20        ;TableRelation="Data Flow";
+                                                   CaptionML=[ENU=Data Flow Code;
+                                                              FRA=Code flux de donn‚es] }
   }
   KEYS
   {
@@ -1276,7 +1429,7 @@ OBJECT Table 18 Customer
   }
   FIELDGROUPS
   {
-    { 1   ;DropDown            ;No.,Name,City,Post Code,Phone No.,Contact }
+    { 1   ;DropDown            ;No.,Name,Address,Address 2,County,City,Post Code,Contact }
     { 2   ;Brick               ;No.,Name,Balance (LCY),Contact,Balance Due (LCY) }
   }
   CODE
@@ -1300,6 +1453,7 @@ OBJECT Table 18 Customer
       ServContract@1026 : Record 5965;
       ServHeader@1034 : Record 5900;
       ServiceItem@1027 : Record 5940;
+      CompanyInfo@1180250001 : Record 79;
       PaymentToleranceMgt@1038 : Codeunit 426;
       NoSeriesMgt@1011 : Codeunit 396;
       MoveEntries@1012 : Codeunit 361;
@@ -1607,6 +1761,12 @@ OBJECT Table 18 Customer
     END;
 
     BEGIN
+    {
+      AC1.00 Ajout Champ "Bar Code" "Dim. Shipping Method Filter" "Dim. Cust. Category Filter" "Dim. Shipping Method Code"
+                         "Direct Inv. Posted"
+                         "Dim. Cust. Category Code" "Dim. Selling Point Filter" "Dim. Selling Point Code"
+                         "Ship. Agent Instruction Line" "Ship. Agent Instruction Line 2"
+    }
     END.
   }
 }

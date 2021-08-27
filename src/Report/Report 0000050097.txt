@@ -1,0 +1,86 @@
+OBJECT Report 50097 Batch : Update Item Cross Ref.
+{
+  OBJECT-PROPERTIES
+  {
+    Date=22/04/16;
+    Time=11:30:01;
+    Modified=Yes;
+    Version List=AC1.00,2016;
+  }
+  PROPERTIES
+  {
+    Permissions=TableData 122=rm,
+                TableData 123=rm;
+    CaptionML=[ENU=Batch : Update Item Cross Ref.;
+               FRA=TPL : mise … jour ref. ext. article];
+    ShowPrintStatus=No;
+    ProcessingOnly=Yes;
+    OnPreReport=BEGIN
+                  Window.OPEN(
+                    Text000 + '\' +
+                    '@1@@@@@@@@@@@@@@@@@@@@@');
+                  Window.UPDATE(1,0);
+                END;
+
+    OnPostReport=BEGIN
+                   Window.CLOSE;
+                   MESSAGE(Text001,RecCount);
+                 END;
+
+    UseRequestPage=No;
+  }
+  DATASET
+  {
+    { 5291;    ;DataItem;                    ;
+               DataItemTable=Table5717;
+               DataItemTableView=SORTING(Item No.,Variant Code,Unit of Measure,Cross-Reference Type,Cross-Reference Type No.,Cross-Reference No.)
+                                 WHERE(Cross-Reference Type=CONST(Customer),
+                                       Cross-Reference Type No.=CONST(0174));
+               OnPreDataItem=BEGIN
+                               CurrRec := 0;
+                               RecCount := COUNT;
+                               Window.UPDATE(1,0);
+                             END;
+
+               OnAfterGetRecord=BEGIN
+                                  CurrRec += 1;
+
+                                  ItemCrossRef := "Item Cross Reference";
+                                  ItemCrossRef."Cross-Reference Type No." := '';
+                                  ItemCrossRef.MODIFY;
+
+                                  Window.UPDATE(1,ROUND(CurrRec / RecCount * 10000,1));
+                                END;
+                                 }
+
+  }
+  REQUESTPAGE
+  {
+    PROPERTIES
+    {
+    }
+    CONTROLS
+    {
+    }
+  }
+  LABELS
+  {
+  }
+  CODE
+  {
+    VAR
+      ItemCrossRef@1180250001 : Record 5717;
+      Window@1180250003 : Dialog;
+      Text000@1180250004 : TextConst 'ENU=Batch in process...;FRA=Traitement en cours...';
+      RecCount@1180250005 : Integer;
+      CurrRec@1180250006 : Integer;
+      Text001@1180250009 : TextConst 'FRA=%1 enregistement(s) mis â€¦ jour.';
+
+    BEGIN
+    END.
+  }
+  RDLDATA
+  {
+  }
+}
+

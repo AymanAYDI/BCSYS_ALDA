@@ -2,12 +2,14 @@ OBJECT Table 37 Sales Line
 {
   OBJECT-PROPERTIES
   {
-    Date=22/12/15;
-    Time=12:00:00;
-    Version List=NAVW19.00.00.44365;
+    Date=12/02/20;
+    Time=10:19:10;
+    Modified=Yes;
+    Version List=NAVW19.00.00.44365,AC2.00,ALDA,BC6.001;
   }
   PROPERTIES
   {
+    Permissions=TableData 37=r;
     OnInsert=BEGIN
                TestStatusOpen;
                IF Quantity <> 0 THEN
@@ -19,6 +21,8 @@ OBJECT Table 37 Sales Line
                    ERROR(Text056,SalesHeader."Shipping Advice");
                IF ("Deferral Code" <> '') AND (GetDeferralAmount <> 0) THEN
                  UpdateDeferralAmounts;
+               //AC1.00
+               "Line No. Reference Customer" := "Line No.";
              END;
 
     OnModify=BEGIN
@@ -38,6 +42,10 @@ OBJECT Table 37 Sales Line
 
                IF ((Quantity <> 0) OR (xRec.Quantity <> 0)) AND ItemExists(xRec."No.") AND NOT FullReservedQtyIsForAsmToOrder THEN
                  ReserveSalesLine.VerifyChange(Rec,xRec);
+
+               //AC1.00
+               //if "Exported Line" := FALSE then;
+               "Line No. Reference Customer" := "Line No.";
              END;
 
     OnDelete=VAR
@@ -128,7 +136,6 @@ OBJECT Table 37 Sales Line
 
     CaptionML=[ENU=Sales Line;
                FRA=Ligne vente];
-    PasteIsValid=No;
     LookupPageID=Page516;
     DrillDownPageID=Page516;
   }
@@ -286,13 +293,19 @@ OBJECT Table 37 Sales Line
                                                                     "Shipping Agent Code",
                                                                     "Shipping Agent Service Code",
                                                                     FALSE);
+                                                                //AC1.00
+                                                                "Order Reference Customer" := SalesHeader."Order Reference Customer";
+                                                                //AC2.00
+                                                                "Order Source Type" := SalesHeader."Order Source Type";
+                                                                // ALDA 121015D
+                                                                "Micro Order No." := SalesHeader."Micro Order No.";
                                                                 UpdateDates;
 
                                                                 CASE Type OF
                                                                   Type::" ":
                                                                     BEGIN
                                                                       StdTxt.GET("No.");
-                                                                      Description := StdTxt.Description;
+                                                                     Description := StdTxt.Description;
                                                                       "Allow Item Charge Assignment" := FALSE;
                                                                     END;
                                                                   Type::"G/L Account":
@@ -330,12 +343,27 @@ OBJECT Table 37 Sales Line
                                                                       "Product Group Code" := Item."Product Group Code";
                                                                       Nonstock := Item."Created From Nonstock Item";
                                                                       "Profit %" := Item."Profit %";
+                                                                      //AC1.00
+                                                                      "Sending of EDI Sales OrderType" := Item."Sending of EDI Sales OrderType";
                                                                       "Allow Item Charge Assignment" := TRUE;
+                                                                      // ACBDU 130614D.Begin
+                                                                      "Account No. (DPAM)" := Item."Account No. (DPAM)";
+                                                                      "Typology Code (DPAM)" := Item."Typology Code (DPAM)";
+                                                                      Item.CALCFIELDS("Typology Description (DPAM)");
+                                                                      "Typology Description (DPAM)" := Item."Typology Description (DPAM)";
+                                                                      // ACBDU 130614D.End
                                                                       PrepaymentMgt.SetSalesPrepaymentPct(Rec,SalesHeader."Posting Date");
+                                                                      // ALDA 301214D
+                                                                      "HS Code" := Item."HS Code";
+                                                                      // ALDA 080115D.Begin
+                                                                      "Length (meter)" := Item."Length (meter)";
+                                                                      "Width (meter)" := Item."Width (meter)";
+                                                                      "Height (meter)" := Item."Height (meter)";
+                                                                      "Volume (m3)" := Item."Volume (m3)";
+                                                                      // ALDA 080115D.End
 
                                                                       IF SalesHeader."Language Code" <> '' THEN
                                                                         GetItemTranslation;
-
                                                                       IF Item.Reserve = Item.Reserve::Optional THEN
                                                                         Reserve := SalesHeader.Reserve
                                                                       ELSE
@@ -422,6 +450,12 @@ OBJECT Table 37 Sales Line
                                                                 END;
 
                                                                 UpdateItemCrossRef;
+                                                                //AC1.00
+                                                                GetItemCrossRefOfVendor(FIELDNO("No."));
+                                                                //AB6.TAH.001 <<
+                                                                IF (Type = Type ::Item) THEN
+                                                                   VALIDATE("Ecotaxe Unitaire",Item.Ecotaxe);
+                                                                //AB6.TAH.001 >>
                                                               END;
 
                                                    CaptionML=[ENU=No.;
@@ -522,9 +556,11 @@ OBJECT Table 37 Sales Line
 
                                                                   IF ("Shipment Date" < WORKDATE) AND (Type <> Type::" ") THEN
                                                                     IF NOT (HideValidationDialog OR HasBeenShown) AND GUIALLOWED THEN BEGIN
-                                                                      MESSAGE(
-                                                                        Text014,
-                                                                        FIELDCAPTION("Shipment Date"),"Shipment Date",WORKDATE);
+                                                                      //AC1.00 BEGIN
+                                                                      //MESSAGE(
+                                                                      //  Text014,
+                                                                      //  FIELDCAPTION("Shipment Date"),"Shipment Date",WORKDATE);
+                                                                      //AC1.00 END
                                                                       HasBeenShown := TRUE;
                                                                     END;
                                                                 END;
@@ -639,11 +675,32 @@ OBJECT Table 37 Sales Line
                                                                 END;
 
                                                                 UpdatePrePaymentAmounts;
+                                                                //AB6.TAH.001 <<
+                                                                "Montant Ecotaxe" :=ROUND("Ecotaxe Unitaire"* Quantity,
+                                                                Currency."Amount Rounding Precision");
+                                                                //AB6.TAH.001 >>
 
-                                                                CheckWMS;
+                                                                GetSalesHeader;
+                                                                //SH 12022020
+                                                                //IF SalesHeader."Document Type" = SalesHeader."Document Type"::Order THEN
+                                                                IF SalesHeader."Document Type" IN [SalesHeader."Document Type"::Order, SalesHeader."Document Type"::Quote, SalesHeader."Document Type"::"Return Order"] THEN
+                                                                  IF Type = Type::Item THEN BEGIN
+                                                                    CASE SalesHeader."Order Type" OF
+                                                                      SalesHeader."Order Type"::AA:VALIDATE("Vendor No. for EDI Sending",'');
+                                                                      ELSE
+                                                                        VALIDATE("Vendor No. for EDI Sending",'0174');
+                                                                    END;//CASE
+                                                                  END;
+
+                                                                //ACBDU 280513
+                                                                CheckInv4ALDA();
 
                                                                 CALCFIELDS("Reserved Qty. (Base)");
                                                                 VALIDATE("Reserved Qty. (Base)");
+
+                                                                //BCSYS - MM >>
+                                                                "Total Cost (LCY)" := "Unit Cost (LCY)" * Quantity;
+                                                                //BCSYS - MM <<
                                                               END;
 
                                                    CaptionML=[ENU=Quantity;
@@ -729,6 +786,9 @@ OBJECT Table 37 Sales Line
                                                                 TestJobPlanningLine;
                                                                 TestStatusOpen;
                                                                 VALIDATE("Line Discount %");
+                                                                //BCSYS - MM >>
+                                                                CalculateGrossProfit;
+                                                                //BCSYS - MM <<
                                                               END;
 
                                                    CaptionML=[ENU=Unit Price;
@@ -1962,7 +2022,7 @@ OBJECT Table 37 Sales Line
     { 5416;   ;Outstanding Qty. (Base);Decimal    ;CaptionML=[ENU=Outstanding Qty. (Base);
                                                               FRA=Quantit‚ ouverte (base)];
                                                    DecimalPlaces=0:5;
-                                                   Editable=No }
+                                                   Editable=Yes }
     { 5417;   ;Qty. to Invoice (Base);Decimal     ;OnValidate=BEGIN
                                                                 TESTFIELD("Qty. per Unit of Measure",1);
                                                                 VALIDATE("Qty. to Invoice","Qty. to Invoice (Base)");
@@ -1970,7 +2030,8 @@ OBJECT Table 37 Sales Line
 
                                                    CaptionML=[ENU=Qty. to Invoice (Base);
                                                               FRA=Qt‚ … facturer (base)];
-                                                   DecimalPlaces=0:5 }
+                                                   DecimalPlaces=0:5;
+                                                   Editable=Yes }
     { 5418;   ;Qty. to Ship (Base) ;Decimal       ;OnValidate=BEGIN
                                                                 TESTFIELD("Qty. per Unit of Measure",1);
                                                                 VALIDATE("Qty. to Ship","Qty. to Ship (Base)");
@@ -1978,16 +2039,17 @@ OBJECT Table 37 Sales Line
 
                                                    CaptionML=[ENU=Qty. to Ship (Base);
                                                               FRA=Qt‚ … exp‚dier (base)];
-                                                   DecimalPlaces=0:5 }
+                                                   DecimalPlaces=0:5;
+                                                   Editable=Yes }
     { 5458;   ;Qty. Shipped Not Invd. (Base);Decimal;
                                                    CaptionML=[ENU=Qty. Shipped Not Invd. (Base);
                                                               FRA=Qt‚ livr‚e non factur‚e (base)];
                                                    DecimalPlaces=0:5;
-                                                   Editable=No }
+                                                   Editable=Yes }
     { 5460;   ;Qty. Shipped (Base) ;Decimal       ;CaptionML=[ENU=Qty. Shipped (Base);
                                                               FRA=Qt‚ exp‚di‚e (base)];
                                                    DecimalPlaces=0:5;
-                                                   Editable=No }
+                                                   Editable=Yes }
     { 5461;   ;Qty. Invoiced (Base);Decimal       ;CaptionML=[ENU=Qty. Invoiced (Base);
                                                               FRA=Quantit‚ factur‚e (base)];
                                                    DecimalPlaces=0:5;
@@ -2526,10 +2588,187 @@ OBJECT Table 37 Sales Line
 
                                                    CaptionML=[ENU=Customer Disc. Group;
                                                               FRA=Groupe rem. client] }
+    { 50000;  ;Exported Line       ;Boolean       ;OnValidate=BEGIN
+                                                                IF "Exported Line" = FALSE THEN BEGIN
+                                                                  "Date Exported" := 0DT;
+                                                                  "EDI Code" := '';
+                                                                  "EDI No." := '';
+                                                                END;
+                                                              END;
+
+                                                   CaptionML=[ENU=Exported Line;
+                                                              FRA=Ligne export‚e];
+                                                   Description=AC1.00;
+                                                   Editable=No }
+    { 50001;  ;Date Exported       ;DateTime      ;CaptionML=[ENU=Date Exported;
+                                                              FRA=Date export‚];
+                                                   Description=AC1.00;
+                                                   Editable=No }
+    { 50002;  ;EDI Code            ;Code10        ;TableRelation="E.D.I. Setup";
+                                                   CaptionML=[ENU=E.D.I. Code;
+                                                              FRA=Code E.D.I.];
+                                                   Description=AC1.00;
+                                                   Editable=No }
+    { 50003;  ;EDI No.             ;Code20        ;CaptionML=[ENU=EDI No.;
+                                                              FRA=Nø EDI];
+                                                   Description=AC1.00;
+                                                   Editable=No }
+    { 50004;  ;Vendor No. for EDI Sending;Code20  ;TableRelation=Vendor;
+                                                   OnValidate=VAR
+                                                                Vend@1180250001 : Record 23;
+                                                              BEGIN
+                                                                //AC1.00 BEGIN
+                                                                GetSalesHeader;
+                                                                IF ("Vendor No. for EDI Sending" <> '') AND
+                                                                  (SalesHeader."Order Type" = SalesHeader."Order Type"::AA) THEN
+                                                                   SalesHeader.FIELDERROR("Order Type",STRSUBSTNO(Text043,FORMAT(SalesHeader."Order Type"::AA)));
+                                                                GetItemCrossRefOfVendor(FIELDNO("No."));
+                                                                //IF "Vendor No. for EDI Sending" <> '' THEN
+                                                                //  CheckDouboonItem();
+                                                                //AC1.00 END
+                                                                // ALDA 061215D.Begin
+                                                                IF NOT Vend.GET('0174') THEN
+                                                                  Vend.INIT;
+                                                                IF (SalesHeader."Micro Order No." <> '') AND
+                                                                   ("Vendor No. for EDI Sending" = '0174') AND
+                                                                   (Vend."One Order by Micro Order No." = TRUE) THEN BEGIN
+                                                                  ERROR(STRSUBSTNO(Text50002,"Vendor No. for EDI Sending",SalesHeader.FIELDCAPTION("Micro Order No."),
+                                                                    SalesHeader."Micro Order No."));
+                                                                END;
+                                                                // ALDA 061215.End
+                                                              END;
+
+                                                   CaptionML=FRA=Nø fournisseur pour envoi EDI;
+                                                   Description=AC1.00 }
+    { 50005;  ;Cross-Reference No. of Vendor;Code20;
+                                                   OnValidate=VAR
+                                                                ReturnedCrossRef@1000 : Record 5717;
+                                                              BEGIN
+                                                                GetItemFromCrossRef(FIELDNO("Cross-Reference No. of Vendor"));
+                                                                VALIDATE("Qty. to Ship",0);
+                                                              END;
+
+                                                   CaptionML=[ENU=Cross-Reference No. of Vendor;
+                                                              FRA=R‚f. ext. du fournisseur pour l'EDI];
+                                                   Description=AC1.00;
+                                                   Editable=No }
+    { 50006;  ;Order Reference Customer;Text35    ;CaptionML=[ENU=Order Reference Customer;
+                                                              FRA=R‚f‚rence commande client];
+                                                   Description=AC1.00;
+                                                   Editable=No }
+    { 50007;  ;Sending of EDI Sales OrderType;Option;
+                                                   CaptionML=[ENU=Sending of EDI Sales OrderType;
+                                                              FRA=Type d'envoi de commade vente EDI];
+                                                   OptionCaptionML=[ENU=Majuscule,Paper,No EDI,auther EDI;
+                                                                    FRA=Majuscule,Papier,Non EDI,Autre EDI];
+                                                   OptionString=Majuscule,Paper,No EDI,auther EDI;
+                                                   Description=AC1.00 }
+    { 50010;  ;Ecotaxe Unitaire    ;Decimal       ;OnValidate=BEGIN
+                                                                //AB6.TAH.001 <<
+                                                                "Montant Ecotaxe" :=ROUND("Ecotaxe Unitaire"* Quantity,
+                                                                Currency."Amount Rounding Precision");
+                                                                //AB6.TAH.001 >>
+                                                              END;
+
+                                                   BlankZero=Yes;
+                                                   Description=AB6.TAH.001;
+                                                   AutoFormatType=2 }
+    { 50011;  ;Montant Ecotaxe     ;Decimal       ;OnValidate=BEGIN
+                                                                //AB6.TAH.001 <<
+                                                                IF "Montant Ecotaxe" <> xRec."Montant Ecotaxe" THEN
+                                                                   IF Quantity <> 0 THEN
+                                                                      "Ecotaxe Unitaire" :=  ROUND("Montant Ecotaxe" / Quantity,
+                                                                      Currency."Amount Rounding Precision");
+                                                                //AB6.TAH.001 >>
+                                                              END;
+
+                                                   BlankZero=Yes;
+                                                   Description=AB6.TAH.001;
+                                                   AutoFormatType=2 }
+    { 50013;  ;Line No. Reference Customer;Integer;CaptionML=[ENU=Line No. Reference Customer;
+                                                              FRA=Nø ligne r‚f‚rence commande client];
+                                                   Description=AC1.00 }
+    { 50014;  ;Anomaly Code        ;Code10        ;CaptionML=[ENU=Anomaly Code;
+                                                              FRA=Code anomalie];
+                                                   Description=AC1.00 }
+    { 50015;  ;External Line No.   ;Integer       ;CaptionML=[ENU=External Line No.;
+                                                              FRA=Nø ligne externe];
+                                                   Description=AC1.00 }
+    { 50016;  ;Reliquat            ;Decimal       ;CaptionML=FRA=Reliquat;
+                                                   Description=AB6.JME.001 }
+    { 50019;  ;Country Dimension Code;Code20      ;TableRelation=Country/Region;
+                                                   CaptionML=[ENU=Country Dimension Code;
+                                                              FRA=Code axe pays];
+                                                   Description=ALDA 171214D }
+    { 50020;  ;HS Code             ;Code20        ;TableRelation="Dynamic Field".Code WHERE (Table No.=CONST(27),
+                                                                                             Field No.=CONST(50017));
+                                                   CaptionML=[ENU=HS Code;
+                                                              FRA=Code HS];
+                                                   Description=ALDA 301214D }
+    { 50023;  ;Order Source Type   ;Option        ;CaptionML=[ENU=Order Source Type;
+                                                              FRA=Type origine commande];
+                                                   OptionCaptionML=[ENU=" ,Mail,Fax,Phone,Web,Quote";
+                                                                    FRA=" ,Mail,Fax,T‚l‚phone,Internet,Devis"];
+                                                   OptionString=[ ,Mail,Fax,Phone,Web,Quote];
+                                                   Description=ACBDU 100314D }
+    { 50025;  ;Area Code           ;Code20        ;TableRelation="Dynamic Field".Code WHERE (Table No.=CONST(18),
+                                                                                             Field No.=CONST(50021));
+                                                   CaptionML=[ENU=Area Code;
+                                                              FRA=Code site];
+                                                   Description=ACBDU 160414D }
+    { 50026;  ;Account No. (DPAM)  ;Code20        ;TableRelation="Dynamic Field".Code WHERE (Table No.=CONST(27),
+                                                                                             Field No.=CONST(50013));
+                                                   CaptionML=[ENU=Account No. (DPAM);
+                                                              FRA=Nø compte (DPAM)];
+                                                   Description=ACBDU 130614D;
+                                                   Editable=No }
+    { 50027;  ;Typology Code (DPAM);Code20        ;TableRelation="Dynamic Field".Code WHERE (Table No.=CONST(27),
+                                                                                             Field No.=CONST(50014));
+                                                   CaptionML=[ENU=Typology Code (DPAM);
+                                                              FRA=Code typologie (DPAM)];
+                                                   Description=ACBDU 130614D;
+                                                   Editable=No }
+    { 50028;  ;Typology Description (DPAM);Text50 ;CaptionML=[ENU=Typology Description (DPAM);
+                                                              FRA=Description typologie (DPAM)];
+                                                   Description=ACBDU 130614D;
+                                                   Editable=No }
+    { 50029;  ;Length (meter)      ;Decimal       ;CaptionML=[ENU=Length (meter);
+                                                              FRA=Longueur (mŠtre)];
+                                                   Description=ALDA 080115D }
+    { 50030;  ;Width (meter)       ;Decimal       ;CaptionML=[ENU=Width (meter);
+                                                              FRA=Largeur (mŠtre)];
+                                                   Description=ALDA 080115D }
+    { 50031;  ;Height (meter)      ;Decimal       ;CaptionML=[ENU=Height (meter);
+                                                              FRA=Hauteur (mŠtre)];
+                                                   Description=ALDA 080115D }
+    { 50032;  ;Volume (m3)         ;Decimal       ;CaptionML=[ENU=Volume (m3);
+                                                              FRA=Volume (m3)];
+                                                   Description=ALDA 080115D }
+    { 50033;  ;Micro Order No.     ;Code20        ;CaptionML=[ENU=Micro Order No.;
+                                                              FRA=Nø commande micro];
+                                                   Description=ALDA 061015D }
+    { 50050;  ;Gross Profit %      ;Decimal       ;CaptionML=[ENU=Gross Profit %;
+                                                              FRA=% marge brute];
+                                                   Editable=No }
+    { 50051;  ;Total Cost (LCY)    ;Decimal       ;CaptionML=[ENU=Total Cost (LCY);
+                                                              FRA=Co–t total DS];
+                                                   Editable=No }
+    { 60043;  ;Salesperson Code    ;Code10        ;FieldClass=FlowField;
+                                                   CalcFormula=Lookup("Sales Header"."Salesperson Code" WHERE (Document Type=FIELD(Document Type),
+                                                                                                               No.=FIELD(Document No.)));
+                                                   TableRelation=Salesperson/Purchaser;
+                                                   OnValidate=VAR
+                                                                ApprovalEntry@1001 : Record 454;
+                                                              BEGIN
+                                                              END;
+
+                                                   CaptionML=[ENU=Salesperson Code;
+                                                              FRA=Code vendeur];
+                                                   Editable=No }
   }
   KEYS
   {
-    {    ;Document Type,Document No.,Line No.     ;SumIndexFields=Amount,Amount Including VAT,Outstanding Amount,Shipped Not Invoiced,Outstanding Amount (LCY),Shipped Not Invoiced (LCY);
+    {    ;Document Type,Document No.,Line No.     ;SumIndexFields=Amount,Amount Including VAT,Outstanding Amount,Shipped Not Invoiced,Outstanding Amount (LCY),Shipped Not Invoiced (LCY),Line Amount;
                                                    Clustered=Yes }
     {    ;Document No.,Line No.,Document Type      }
     {    ;Document Type,Type,No.,Variant Code,Drop Shipment,Location Code,Shipment Date;
@@ -2550,6 +2789,7 @@ OBJECT Table 37 Sales Line
     {    ;Job Contract Entry No.                   }
     {    ;Document Type,Document No.,Qty. Shipped Not Invoiced }
     {    ;Document Type,Document No.,Type,No.      }
+    {    ;Document No.,Sell-to Customer No.       ;SumIndexFields=Outstanding Quantity }
   }
   FIELDGROUPS
   {
@@ -2665,6 +2905,10 @@ OBJECT Table 37 Sales Line
       SalesLineCompletelyShippedErr@1053 : TextConst 'ENU=You cannot change the purchasing code for a sales line that has been completely shipped.;FRA=Vous ne pouvez pas modifier le code achat d''une ligne vente qui a ‚t‚ entiŠrement exp‚di‚e.';
       SalesSetupRead@1067 : Boolean;
       DeferralPostDate@1069 : Date;
+      Text50000@1180250001 : TextConst 'FRA="Il existe d‚j… une ligne avec %1=%2, cela peut provoquer des erreurs dans l''EDI.\Voulez-vous continuer ?"';
+      Text50001@1180250002 : TextConst 'FRA=L''article %1  %2 a un stock de %3.';
+      Text50002@1180250003 : TextConst 'FRA=Vous ne pouvez pas ajouter de ligne pour le nø fournisseur %1, (%2 : %3).';
+      Text043@1000000000 : TextConst 'ENU=cannot be %1;FRA=ne peut pas ˆtre %1';
 
     PROCEDURE InitOutstanding@16();
     BEGIN
@@ -2730,6 +2974,10 @@ OBJECT Table 37 Sales Line
       END ELSE
         IF "Qty. to Ship" <> 0 THEN
           "Qty. to Ship (Base)" := CalcBaseQty("Qty. to Ship");
+
+      //AB6.JME.001--<<
+      //Reliquat := Quantity - "Quantity Shipped";
+      //AB6.JME.001-->>
 
       CheckServItemCreation;
 
@@ -3501,6 +3749,11 @@ OBJECT Table 37 Sales Line
       TESTFIELD("No.");
       GetItem;
       "Qty. per Unit of Measure" := UOMMgt.GetQtyPerUnitOfMeasure(Item,"Unit of Measure Code");
+      // ACBDU 160414D.Begin
+      IF Item."Not Valued Cost on Sales Line" THEN
+        VALIDATE("Unit Cost (LCY)",0)
+      ELSE
+      // ACBDU 160414D.End
       IF GetSKU THEN
         VALIDATE("Unit Cost (LCY)",SKU."Unit Cost" * "Qty. per Unit of Measure")
       ELSE
@@ -4625,6 +4878,9 @@ OBJECT Table 37 Sales Line
       "Qty. to Ship (Base)" := "Outstanding Qty. (Base)";
 
       ATOLink.UpdateQtyToAsmFromSalesLine(Rec);
+      //AB6.JME.001--<<
+      //Reliquat := Quantity - "Quantity Shipped";
+      //AB6.JME.001-->>
 
       CheckServItemCreation;
 
@@ -5234,7 +5490,79 @@ OBJECT Table 37 Sales Line
       EXIT("Document Type" IN ["Document Type"::"Return Order","Document Type"::"Credit Memo"]);
     END;
 
+    PROCEDURE GetItemCrossRefOfVendor@1180250001(CalledByFieldNo@1180250001 : Integer);
     BEGIN
+      //AC1.00
+
+      IF CalledByFieldNo <> 0 THEN
+        DistIntegration.GetPurchItemCrossRefFromSales(Rec);
+    END;
+
+    PROCEDURE GetItemFromCrossRef@1180250002(CalledByFieldNo@1180250001 : Integer);
+    BEGIN
+      //AC1.00
+
+      IF CalledByFieldNo <> 0 THEN
+        DistIntegration.GetItemFromItemCrossRefVendor(Rec,"Vendor No. for EDI Sending","Cross-Reference No. of Vendor");
+    END;
+
+    PROCEDURE CheckDouboonItem@1180250003();
+    VAR
+      SalesLine@1180250001 : Record 37;
+    BEGIN
+      //AC1.00
+      IF GUIALLOWED THEN BEGIN
+        SalesLine.RESET;
+        SalesLine.SETRANGE("Document Type","Document Type");
+        SalesLine.SETRANGE("Document No.","Document No.");
+        SalesLine.SETFILTER("Line No.",'<>%1',"Line No.");
+        SalesLine.SETRANGE("No.","No.");
+        IF SalesLine.FINDSET(FALSE,FALSE) THEN
+          IF NOT CONFIRM(STRSUBSTNO(Text50000,FIELDCAPTION("No."),"No.")) THEN BEGIN
+            "Vendor No. for EDI Sending" := '';
+            EXIT;
+          END;
+      END;
+    END;
+
+    PROCEDURE CheckInv4ALDA@1180250004();
+    VAR
+      SalesInfoPaneMgt@1180250001 : Codeunit 7171;
+      CompanyInfo@1180250002 : Record 79;
+    BEGIN
+      //ACBDU 280513.Begin
+      CompanyInfo.GET;
+      IF (Type = Type::Item) AND
+         ("Sell-to Customer No." = CompanyInfo."Customer No. for MAJUSCULE") THEN BEGIN
+        CLEAR(SalesInfoPaneMgt);
+        IF SalesInfoPaneMgt.CalcInventory(Rec) > 0 THEN
+          MESSAGE(STRSUBSTNO(Text50001,FIELDCAPTION("No."),"No.",SalesInfoPaneMgt.CalcInventory(Rec)));
+      END;
+      //ACBDU 280513.End
+    END;
+
+    LOCAL PROCEDURE CalculateGrossProfit@1000000000();
+    BEGIN
+      //BCSYS - MM
+      IF "Unit Price" <> 0 THEN
+        "Gross Profit %" := (("Unit Price" - "Unit Cost (LCY)") / "Unit Price") * 100
+      ELSE
+        "Gross Profit %" := 0;
+    END;
+
+    BEGIN
+    {
+      //AC1.00 Ajout champ "Exported Line" "Date Exported" "EDI Code" "EDI No." "Vendor No. for EDI Sending" Order Reference Customer
+                           "Cross-Reference No. of Vendor" "Sending of EDI Sales OrderType"
+                     C/AL onModify()
+                     Function GetItemCrossRefOfVendor() GetItemFromCrossRef() CheckDouboonItem()
+      AB6.TAH.001 05/09/2012
+       -Ajout du champ 50010 - 50011
+
+      // 22/10/12 Ajout du Correctif MS
+
+      //AB6.JME.001   22/10/12    Ajout du champ reliquat
+    }
     END.
   }
 }

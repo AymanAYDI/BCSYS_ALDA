@@ -1,0 +1,44 @@
+OBJECT Page 50031 Data Flow Status
+{
+  OBJECT-PROPERTIES
+  {
+    Date=11/05/16;
+    Time=17:14:09;
+    Modified=Yes;
+    Version List=BC6AUTOINV;
+  }
+  PROPERTIES
+  {
+    SourceTable=Table50019;
+    DelayedInsert=Yes;
+    PageType=List;
+  }
+  CONTROLS
+  {
+    { 1000000000;0;Container;
+                ContainerType=ContentArea }
+
+    { 1000000001;1;Group  ;
+                Name=Group;
+                GroupType=Repeater }
+
+    { 1000000002;2;Field  ;
+                SourceExpr="Data Flow Code";
+                Visible=FALSE;
+                Editable=FALSE }
+
+    { 1000000003;2;Field  ;
+                SourceExpr="No." }
+
+    { 1000000004;2;Field  ;
+                SourceExpr=Name }
+
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

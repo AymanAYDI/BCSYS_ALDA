@@ -1,0 +1,99 @@
+OBJECT Codeunit 50018 DF Sales Invoice by CustRef
+{
+  OBJECT-PROPERTIES
+  {
+    Date=19/05/16;
+    Time=17:24:47;
+    Modified=Yes;
+    Version List=BC6AUTOINV;
+  }
+  PROPERTIES
+  {
+    TableNo=50018;
+    OnRun=VAR
+            DataFlowMgt@1000000000 : Codeunit 50013;
+            Cust@1000000001 : Record 18;
+            TempSalesShptLine@1000000003 : TEMPORARY Record 111;
+            SalesHeader@1000000004 : Record 36;
+            SalesLine@1000000005 : Record 37;
+            TempSalesOrder@1000000002 : TEMPORARY Record 36;
+            SalesOrderLine@1000000006 : Record 37;
+            TempSalesShptLine2@1000000007 : TEMPORARY Record 111;
+            CounterOK@1000000008 : Integer;
+          BEGIN
+            TESTFIELD("Source Table ID", DATABASE::Customer);
+            TESTFIELD("Data Flow Code");
+            DataFlowMgt.SetDataFlowStep(Rec);
+
+            Cust.SETVIEW(GetViewRestrictions());
+            SalesHeader.SetHideValidationDialog(TRUE);
+            SalesLine.SetHideValidationDialog(TRUE);
+            StateIndicator.Open();
+            StateIndicator.Start();
+            StateIndicator.UpdateDataFlowStep(Rec);
+            DataFlowMgt.SetGroupCode(GroupMode::ByCustReference, GroupSubMode::" ");
+            StateIndicator.InsertLogEntry(Rec);
+            IF Cust.FINDSET THEN
+              REPEAT
+                IF DataFlowMgt.FindSalesShptLines(TempSalesShptLine, Cust, StateIndicator) THEN BEGIN
+                  TempSalesShptLine2.RESET;
+                  TempSalesShptLine2.DELETEALL;
+
+                  IF TempSalesShptLine.FINDSET THEN
+                    REPEAT
+                      IF (TempSalesShptLine."Group Code Level 1" <> TempSalesShptLine2."Group Code Level 1") OR
+                         (TempSalesShptLine."Group Code Level 2" <> TempSalesShptLine2."Group Code Level 2")
+                        THEN BEGIN
+                        IF NOT TempSalesShptLine2.ISEMPTY THEN BEGIN
+                          SalesHeader.INIT;
+                          SalesHeader."No." := '';
+                          SalesHeader."Document Type" := SalesHeader."Document Type"::Invoice;
+                          SalesHeader.INSERT(TRUE);
+                          CounterOK := CounterOK + 1;
+                          SalesHeader.VALIDATE("Sell-to Customer No.", Cust."No.");
+                          DataFlowMgt.StampSalesHeader(SalesHeader, Rec);
+                          SalesHeader.MODIFY(TRUE);
+                          DataFlowMgt.CreateInvLines(TempSalesShptLine2, SalesLine, SalesHeader, StateIndicator);
+                          SalesHeader.MODIFY(TRUE);
+                          TempSalesShptLine2.RESET;
+                          TempSalesShptLine2.DELETEALL;
+                        END;
+                      END;
+                      TempSalesShptLine2 := TempSalesShptLine;
+                      TempSalesShptLine2.INSERT;
+                    UNTIL TempSalesShptLine.NEXT = 0;
+
+                    IF NOT TempSalesShptLine2.ISEMPTY THEN BEGIN
+                      SalesHeader.INIT;
+                      SalesHeader."No." := '';
+                      SalesHeader."Document Type" := SalesHeader."Document Type"::Invoice;
+                      SalesHeader.INSERT(TRUE);
+                      CounterOK := CounterOK + 1;
+                      SalesHeader.VALIDATE("Sell-to Customer No.", Cust."No.");
+                      DataFlowMgt.StampSalesHeader(SalesHeader, Rec);
+                      SalesHeader.MODIFY(TRUE);
+                      DataFlowMgt.CreateInvLines(TempSalesShptLine2, SalesLine, SalesHeader, StateIndicator);
+                      SalesHeader.MODIFY(TRUE);
+                      TempSalesShptLine2.RESET;
+                      TempSalesShptLine2.DELETEALL;
+                    END;
+                END;
+              UNTIL Cust.NEXT = 0;
+            StateIndicator.EndUpdateDataFlowStep(Rec);
+            StateIndicator.UpdateLogEntry(Rec, STRSUBSTNO(Text002, CounterOK, Cust.COUNT));
+          END;
+
+  }
+  CODE
+  {
+    VAR
+      GroupMode@1000000001 : 'ByOrders,BySellToCust,ByCustReference,ShipmentCount';
+      GroupSubMode@1000000000 : ' ,ByYourReference';
+      StateIndicator@1000000002 : TEMPORARY Record 50005;
+      Text002@1000000003 : TextConst 'ENU=%1 invoices out of a total of %2 customers have been created.;FRA=%1 facture(s) ont ‚t‚ cr‚e(s) pour %2 Client(s).';
+
+    BEGIN
+    END.
+  }
+}
+

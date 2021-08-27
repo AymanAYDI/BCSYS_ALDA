@@ -1,0 +1,230 @@
+OBJECT Report 50043 Batch Create EDI Sales Inv DB
+{
+  OBJECT-PROPERTIES
+  {
+    Date=19/04/17;
+    Time=14:41:05;
+    Modified=Yes;
+    Version List=AC1.00,ALDA,2016;
+  }
+  PROPERTIES
+  {
+    Permissions=TableData 112=rm;
+    CaptionML=[ENU=Batch Create EDI Sales Inv DB;
+               FRA=TPL cr�er facture vente EDI DB];
+    ShowPrintStatus=No;
+    ProcessingOnly=Yes;
+    OnInitReport=BEGIN
+                   GLSetup.GET();
+                   CompanyInfo.GET();
+                 END;
+
+    OnPreReport=BEGIN
+                  IF GUIALLOWED THEN
+                    Window.OPEN(Text000);
+                END;
+
+    OnPostReport=BEGIN
+                   IF GUIALLOWED THEN
+                     Window.CLOSE;
+                 END;
+
+    UseRequestPage=No;
+  }
+  DATASET
+  {
+    { 5290;    ;DataItem;                    ;
+               DataItemTable=Table50001;
+               MaxIteration=1;
+               OnPreDataItem=BEGIN
+                               EDIEntry.RESET;
+                               IF EDIEntry.FINDLAST THEN
+                                 EntryNo := EDIEntry."Entry No."
+                               ELSE
+                                 EntryNo := 1;
+
+                               CompanyInfo.TESTFIELD("Follower No. for CEA");
+                             END;
+
+               OnAfterGetRecord=BEGIN
+
+                                  EDISetup.RESET;
+                                  EDISetup.GET("EDI Code");
+                                  //EDISetup.TESTFIELD("Bill-to Customer Filter");
+                                END;
+                                 }
+
+    { 5291;    ;DataItem;Sales Invoice Header;
+               DataItemTable=Table112;
+               DataItemTableView=SORTING(No.)
+                                 WHERE(Exported=CONST(No),
+                                       Amount=FILTER(<>0),
+                                       TRS_ID_AUTORISATION=FILTER(<>0));
+               OnPreDataItem=BEGIN
+                               IF EDISetup."Bill-to Customer Filter" <> '' THEN
+                                 SETFILTER("Bill-to Customer No.",EDISetup."Bill-to Customer Filter");
+                             END;
+
+               OnAfterGetRecord=BEGIN
+                                  ShipmentInvoiced.RESET;
+                                  ShipmentInvoiced.SETCURRENTKEY("Invoice No.","Invoice Line No.","Shipment No.","Shipment Line No.");
+                                  ShipmentInvoiced.SETRANGE("Invoice No.","No.");
+                                  IF NOT ShipmentInvoiced.FINDFIRST THEN
+                                    ShipmentInvoiced.INIT;
+
+                                  IF NOT ShipHeader.GET(ShipmentInvoiced."Shipment No.") THEN
+                                    ShipHeader.INIT;
+
+
+                                  // SalesInvLine.RESET;
+                                  // SalesInvLine.SETRANGE("Document No.","No.");
+                                  // SalesInvLine.FINDSET;
+                                  // SalesInvLine.CalcVATAmountLines("Sales Invoice Header",TempVATAmountLine);
+                                  //
+
+                                  IF NOT PaymentMethod.GET("Payment Method Code") THEN
+                                    PaymentMethod.INIT;
+                                  PaymentMethod.TESTFIELD("Code for EDI (EDICOT)");
+
+
+                                  Sell2Cust.GET("Sell-to Customer No.");
+                                  Bill2Cust.GET("Bill-to Customer No.");
+
+                                  //BCSYS 180417
+                                  CreateEDIEntry('');
+
+                                  // CreateEDIEntry('BOF');
+                                  //
+                                  // CreateEDIEntry('ENTMS');
+                                  // CreateEDIEntry('DTLV1');
+                                  // CreateEDIEntry('TXLB1');
+                                  // //CreateEDIEntry('TXLB2');
+                                  // CreateEDIEntry('TXLB3');
+                                  // //CreateEDIEntry('TXLB4');
+                                  // CreateEDIEntry('TXLB5');
+                                  // //CreateEDIEntry('TXLB6');
+                                  // CreateEDIEntry('PARTNSE');
+                                  // CreateEDIEntry('PARTNBY');
+                                  // CreateEDIEntry('PARTNIV');
+                                  // CreateEDIEntry('CDPAI');
+                                  // //CreateEDIEntry('RDCH1');
+
+                                  SalesInvHdr := "Sales Invoice Header";
+                                END;
+
+               CalcFields=Amount }
+
+    { 5297;1   ;DataItem;                    ;
+               DataItemTable=Table113;
+               DataItemTableView=SORTING(Document No.,Line No.)
+                                 ORDER(Ascending)
+                                 WHERE(Type=FILTER(Item),
+                                       Quantity=FILTER(<>0));
+               OnAfterGetRecord=BEGIN
+                                  //BCSYS 180417
+                                  //CreateEDIEntry('');
+                                END;
+
+               DataItemLink=Document No.=FIELD(No.) }
+
+  }
+  REQUESTPAGE
+  {
+    PROPERTIES
+    {
+    }
+    CONTROLS
+    {
+    }
+  }
+  LABELS
+  {
+  }
+  CODE
+  {
+    VAR
+      GLSetup@1180250012 : Record 98;
+      EDISetup@1180250034 : Record 50000;
+      CompanyInfo@1180250004 : Record 79;
+      PaymentMethod@1180250013 : Record 289;
+      VATAmountLine@1180250018 : TEMPORARY Record 290;
+      CurrExchRate@1180250031 : Record 330;
+      Sell2Cust@1180250014 : Record 18;
+      Bill2Cust@1180250015 : Record 18;
+      ItemCrossRef@1180250016 : Record 5717;
+      SalesHeader@1180250035 : Record 36;
+      ShipHeader@1180250007 : Record 110;
+      SalesInvLine@1180250008 : Record 113;
+      SalesInvHdr@1180250033 : Record 112;
+      ShipmentInvoiced@1180250006 : Record 10825;
+      TempVATAmountLine@1180250009 : TEMPORARY Record 290;
+      EDIEntry@1180250003 : Record 50002;
+      Window@1180250001 : Dialog;
+      Text000@1180250002 : TextConst 'ENU=Batch in process...;FRA=Traitement en cours...';
+      EntryNo@1180250005 : Integer;
+      ExemptTax@1180250010 : Boolean;
+      CurrCode@1180250011 : Code[10];
+      ItemNoOrCrossRefNo@1180250036 : Code[20];
+      GetTotalLineAmount@1180250022 : Decimal;
+      GetTotalInvDiscAmount@1180250021 : Decimal;
+      GetTotalAmount@1180250020 : Decimal;
+      GetTotalAmountIncVAT@1180250019 : Decimal;
+      TotalSubTotal@1180250028 : Decimal;
+      TotalAmount@1180250027 : Decimal;
+      TotalAmountInclVAT@1180250026 : Decimal;
+      TotalAmountVAT@1180250025 : Decimal;
+      TotalInvoiceDiscountAmount@1180250024 : Decimal;
+      TotalPaymentDiscountOnVAT@1180250023 : Decimal;
+      VALVATBaseLCY@1180250030 : Decimal;
+      VALVATAmountLCY@1180250029 : Decimal;
+      TotalVatAmount@1180250032 : Decimal;
+
+    PROCEDURE InitReport@1180250001(EDICodeFrom@1180250002 : Code[10];EDILogDTfrom@1180250001 : DateTime);
+    BEGIN
+    END;
+
+    PROCEDURE CreateEDIEntry@1180250008(LabelCode@1180250001 : Code[10]);
+    BEGIN
+      EntryNo += 1;
+      EDIEntry.INIT;
+      EDIEntry."Entry No." := EntryNo;
+      EDIEntry."User ID" := USERID;
+      EDIEntry."Imp./Exp. Date" := "E.D.I. Log"."Treatment Date";
+      EDIEntry."EDI Code" := "E.D.I. Log"."EDI Code";
+      EDIEntry.Error := TRUE;
+      EDIEntry.Handled := FALSE;
+      EDIEntry.INSERT;
+
+
+      EDIEntry."Field 1" := FORMAT("Sales Invoice Header"."No.");
+      EDIEntry."Field 2" := FORMAT("Sales Invoice Header".TRS_ID_AUTORISATION);
+
+      //CODE COMMENTAIRE 041116
+      {
+      CASE LabelCode OF
+        'BOF','EOF':BEGIN
+          EDIEntry."Field 2" := FORMAT("Sales Invoice Header"."No.");
+        END;
+        'RDCH3':BEGIN
+          EDIEntry."Field 2" := '';//Qualifiant de r‚duction ou charge
+          EDIEntry."Field 3" := '';//Num‚ro de charge
+          EDIEntry."Field 4" := '';//Service, en code
+          EDIEntry."Field 5" := '';//Libell‚ de la taxe parafiscale et assimil‚e
+          EDIEntry."Field 6" := '';//Montant de la taxe
+        END;
+      END;//CASE
+      }
+      EDIEntry.MODIFY;
+    END;
+
+    BEGIN
+    {
+      Rudy VILAIN 11/01/13 : Ajout de la mention INDEMNITE FORFAITAIRE DE 40 EUROS POUR FRAIS DE RECOUVREMENT
+    }
+    END.
+  }
+  RDLDATA
+  {
+  }
+}
+

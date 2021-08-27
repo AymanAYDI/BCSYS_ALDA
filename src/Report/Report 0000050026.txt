@@ -1,0 +1,87 @@
+OBJECT Report 50026 Batch Cancel Exported Cr.Memo
+{
+  OBJECT-PROPERTIES
+  {
+    Date=22/04/16;
+    Time=11:27:07;
+    Modified=Yes;
+    Version List=,2016;
+  }
+  PROPERTIES
+  {
+    CaptionML=[ENU=Batch Cancel Exported Cr.Memo;
+               FRA=TPL Annuler avoir export‚];
+    ShowPrintStatus=No;
+    ProcessingOnly=Yes;
+    OnPreReport=BEGIN
+                  Window.OPEN(
+                    Text000 + '\' +
+                    '@1@@@@@@@@@@@@@@@@@@@@@');
+                  Window.UPDATE(1,0);
+                END;
+
+    OnPostReport=BEGIN
+                   Window.CLOSE;
+                   MESSAGE(Text001,i);
+                 END;
+
+  }
+  DATASET
+  {
+    { 5290;    ;DataItem;                    ;
+               DataItemTable=Table114;
+               DataItemTableView=SORTING(No.)
+                                 WHERE(Exported=CONST(Yes));
+               OnPreDataItem=BEGIN
+                               CurrRec := 0;
+                               RecCount := COUNT;
+                               Window.UPDATE(1,0);
+                               i := 0;
+                             END;
+
+               OnAfterGetRecord=BEGIN
+                                  CurrRec += 1;
+
+                                  T114 := "Sales Cr.Memo Header";
+                                  T114.Exported := FALSE;
+                                  T114."Date Exported" := CURRENTDATETIME;
+                                  T114.MODIFY;
+                                  i += 1;
+
+                                  Window.UPDATE(1,ROUND(CurrRec / RecCount * 10000,1));
+                                END;
+
+               ReqFilterFields=No.,Sell-to Customer No. }
+
+  }
+  REQUESTPAGE
+  {
+    PROPERTIES
+    {
+    }
+    CONTROLS
+    {
+    }
+  }
+  LABELS
+  {
+  }
+  CODE
+  {
+    VAR
+      T114@1180250001 : Record 114;
+      i@1180250002 : Integer;
+      Text000@1180250004 : TextConst 'ENU=Batch in process...;FRA=Traitement en cours...';
+      Text001@1180250003 : TextConst 'FRA=%1 avoir(s) vente(s) annulâ€š(s).';
+      Window@1180250007 : Dialog;
+      RecCount@1180250006 : Integer;
+      CurrRec@1180250005 : Integer;
+
+    BEGIN
+    END.
+  }
+  RDLDATA
+  {
+  }
+}
+

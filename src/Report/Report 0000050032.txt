@@ -1,0 +1,118 @@
+OBJECT Report 50032 Combine Sales Doc. to Send
+{
+  OBJECT-PROPERTIES
+  {
+    Date=22/04/16;
+    Time=11:23:45;
+    Modified=Yes;
+    Version List=ALDA,2016;
+  }
+  PROPERTIES
+  {
+    CaptionML=[ENU=Combine Sales Doc. to Send;
+               FRA=Regrouper doc. vente … envoyer];
+    ShowPrintStatus=No;
+    ProcessingOnly=Yes;
+  }
+  DATASET
+  {
+    { 5290;    ;DataItem;                    ;
+               DataItemTable=Table472;
+               DataItemTableView=SORTING(ID);
+               MaxIteration=1 }
+
+    { 5291;    ;DataItem;                    ;
+               DataItemTable=Table18;
+               DataItemTableView=SORTING(No.)
+                                 WHERE(Inv./Cr Memo Type=CONST(File));
+               OnPreDataItem=BEGIN
+                               IF GUIALLOWED THEN
+                                 Window.OPEN(Text000);
+                             END;
+
+               OnPostDataItem=BEGIN
+                                IF GUIALLOWED THEN
+                                  Window.CLOSE;
+                              END;
+                               }
+
+    { 5292;1   ;DataItem;                    ;
+               DataItemTable=Table112;
+               DataItemTableView=SORTING(No.)
+                                 WHERE(Posting Date=FILTER(01/08/13..));
+               OnPreDataItem=BEGIN
+                               SourceType := 112;
+                             END;
+
+               OnAfterGetRecord=BEGIN
+                                  CLEAR(PDFCreatorMgt);
+                                  IF NOT PDFCreatorMgt.ExistRecordLink("No.",TABLENAME) THEN BEGIN
+                                    PDFCreatorMgt.SaveInvoiceAsPDF("Sales Invoice Header",TRUE);
+                                    COMMIT;
+                                  END;
+
+                                  PDFCreatorMgt.CreateSalesDocToSend(DocumentType::"Posted Invoice","No.","Bill-to Customer No.",TRUE);
+                                END;
+
+               DataItemLink=Bill-to Customer No.=FIELD(No.) }
+
+    { 5293;1   ;DataItem;                    ;
+               DataItemTable=Table114;
+               DataItemTableView=SORTING(No.)
+                                 WHERE(Posting Date=FILTER(01/08/13..));
+               OnAfterGetRecord=BEGIN
+                                  CLEAR(PDFCreatorMgt);
+                                  IF NOT PDFCreatorMgt.ExistRecordLink("No.",TABLENAME) THEN BEGIN
+                                    PDFCreatorMgt.SaveCrMemoAsPDF("Sales Cr.Memo Header",TRUE);
+                                    COMMIT;
+                                  END;
+
+                                  PDFCreatorMgt.CreateSalesDocToSend(DocumentType::"Posted Credit Memo","No.","Bill-to Customer No.",TRUE);
+                                END;
+
+               DataItemLink=Bill-to Customer No.=FIELD(No.) }
+
+  }
+  REQUESTPAGE
+  {
+    PROPERTIES
+    {
+    }
+    CONTROLS
+    {
+      { 1180250004;0;Container;
+                  ContainerType=ContentArea }
+
+      { 1180250003;1;Group  ;
+                  CaptionML=[ENU=Options;
+                             FRA=Options] }
+
+      { 1180250001;2;Field  ;
+                  CaptionML=[ENU=Date to Sent;
+                             FRA=Date â€¦ envoyer];
+                  SourceExpr=Date2Send }
+
+    }
+  }
+  LABELS
+  {
+  }
+  CODE
+  {
+    VAR
+      Text000@1180250005 : TextConst 'ENU=Process in batch...;FRA=Traitement en cours...';
+      PDFCreatorMgt@1180250004 : Codeunit 50014;
+      DocumentType@1180250001 : 'Quote,Blanket Order,Order,Invoice,Return Order,Credit Memo,Posted Shipment,Posted Invoice,Posted Return Receipt,Posted Credit Memo';
+      Window@1180250020 : Dialog;
+      EntryNo@1180250002 : Integer;
+      SourceType@1180250007 : Integer;
+      Date2Send@1180250003 : Date;
+
+    BEGIN
+    END.
+  }
+  RDLDATA
+  {
+  }
+}
+

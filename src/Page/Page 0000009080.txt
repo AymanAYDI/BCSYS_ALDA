@@ -4,10 +4,12 @@ OBJECT Page 9080 Sales Hist. Sell-to FactBox
   {
     Date=15/09/15;
     Time=12:00:00;
+    Modified=Yes;
     Version List=NAVW19.00;
   }
   PROPERTIES
   {
+    Permissions=TableData 36=r;
     CaptionML=[ENU=Sell-to Customer Sales History;
                FRA=Historique des ventes - donneur d'ordre];
     SourceTable=Table18;
@@ -37,6 +39,7 @@ OBJECT Page 9080 Sales Hist. Sell-to FactBox
                 CaptionML=[ENU=Blanket Orders;
                            FRA=Commandes ouvertes];
                 SourceExpr="No. of Blanket Orders";
+                Visible=FALSE;
                 DrillDownPageID=Blanket Sales Orders }
 
     { 7   ;1   ;Field     ;

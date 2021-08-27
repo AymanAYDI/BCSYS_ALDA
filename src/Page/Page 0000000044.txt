@@ -2,9 +2,10 @@ OBJECT Page 44 Sales Credit Memo
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
-    Version List=NAVW19.00;
+    Date=18/12/18;
+    Time=14:35:37;
+    Modified=Yes;
+    Version List=NAVW19.00,AB6.JME.001;
   }
   PROPERTIES
   {
@@ -105,6 +106,7 @@ OBJECT Page 44 Sales Credit Memo
                       CaptionML=[ENU=Approvals;
                                  FRA=Approbations];
                       Promoted=Yes;
+                      Visible=FALSE;
                       Image=Approvals;
                       PromotedCategory=Category9;
                       OnAction=VAR
@@ -125,6 +127,7 @@ OBJECT Page 44 Sales Credit Memo
                       RunPageLink=Document Type=FIELD(Document Type),
                                   Document No.=FIELD(No.),
                                   Customer No.=FIELD(Bill-to Customer No.);
+                      Visible=FALSE;
                       Image=CreditCardLog }
       { 1900000004;0 ;ActionContainer;
                       ActionContainerType=ActionItems }
@@ -536,6 +539,9 @@ OBJECT Page 44 Sales Credit Memo
                 SourceExpr="Sell-to Address 2";
                 Importance=Additional }
 
+    { 1000000000;2;Field  ;
+                SourceExpr="Sell-to County" }
+
     { 70  ;2   ;Field     ;
                 SourceExpr="Sell-to Post Code";
                 Importance=Additional }
@@ -574,15 +580,18 @@ OBJECT Page 44 Sales Credit Memo
 
     { 104 ;2   ;Field     ;
                 SourceExpr="Campaign No.";
-                Importance=Additional }
+                Importance=Additional;
+                Visible=FALSE }
 
     { 107 ;2   ;Field     ;
                 SourceExpr="Responsibility Center";
-                Importance=Additional }
+                Importance=Additional;
+                Visible=FALSE }
 
     { 119 ;2   ;Field     ;
                 SourceExpr="Assigned User ID";
-                Importance=Additional }
+                Importance=Additional;
+                Visible=FALSE }
 
     { 5   ;2   ;Field     ;
                 SourceExpr="Job Queue Status";
@@ -592,11 +601,62 @@ OBJECT Page 44 Sales Credit Memo
                 SourceExpr=Status;
                 Importance=Promoted }
 
+    { 1180250001;2;Field  ;
+                Name=Applies-to Doc. Type-2;
+                SourceExpr="Applies-to Doc. Type";
+                Importance=Additional;
+                Editable=FALSE }
+
+    { 1180250002;2;Field  ;
+                Name=Applies-to Doc. No._2;
+                SourceExpr="Applies-to Doc. No.";
+                Editable=False }
+
     { 48  ;1   ;Part      ;
                 Name=SalesLines;
                 SubPageLink=Document No.=FIELD(No.);
                 PagePartID=Page96;
                 UpdatePropagation=Both }
+
+    { 1000000006;1;Group  ;
+                CaptionML=[ENU=Defence Office;
+                           FRA=D‚fense Bureau];
+                GroupType=Group }
+
+    { 1000000005;2;Field  ;
+                CaptionML=[ENU=NUM_SUBSEQUENT;
+                           FRA=Nø du march‚ subs‚quent];
+                SourceExpr="EDI Add. Info. 1" }
+
+    { 1000000004;2;Field  ;
+                CaptionML=[ENU=REF_ENGAGEMENT;
+                           FRA=R‚f‚rence engagement];
+                SourceExpr="EDI Add. Info. 2" }
+
+    { 1000000003;2;Field  ;
+                CaptionML=[ENU=NUM_EJ;
+                           FRA=Nø d'engagement juridique];
+                SourceExpr="EDI Add. Info. 3" }
+
+    { 1000000002;2;Field  ;
+                CaptionML=[ENU=NUM_EJ;
+                           FRA=Nø de transaction];
+                SourceExpr="EDI Add. Info. 4" }
+
+    { 1000000001;2;Field  ;
+                CaptionML=[ENU=TRS_ID_AUTORISATION;
+                           FRA=Nø de paiement INGENICO];
+                SourceExpr=TRS_ID_AUTORISATION }
+
+    { 1000000007;2;Field  ;
+                CaptionML=[ENU=CODE_WCP;
+                           FRA=Nø Client g‚n‚r‚ par le site];
+                SourceExpr="EDI Add. Info. 5" }
+
+    { 1000000008;2;Field  ;
+                CaptionML=[ENU=Market Nø;
+                           FRA=Code march‚];
+                SourceExpr="EDI Add. Info. 6" }
 
     { 1905885101;1;Group  ;
                 CaptionML=[ENU=Invoicing;
@@ -635,6 +695,12 @@ OBJECT Page 44 Sales Credit Memo
                 SourceExpr="Bill-to Contact";
                 Importance=Additional }
 
+    { 1000000010;2;Field  ;
+                SourceExpr="Registration No." }
+
+    { 1000000009;2;Field  ;
+                SourceExpr="Executing Service Code" }
+
     { 74  ;2   ;Field     ;
                 SourceExpr="Shortcut Dimension 1 Code";
                 OnValidate=BEGIN
@@ -658,11 +724,13 @@ OBJECT Page 44 Sales Credit Memo
                 Importance=Promoted }
 
     { 135 ;2   ;Field     ;
-                SourceExpr="Payment Discount %" }
+                SourceExpr="Payment Discount %";
+                Visible=FALSE }
 
     { 137 ;2   ;Field     ;
                 SourceExpr="Pmt. Discount Date";
-                Importance=Additional }
+                Importance=Additional;
+                Visible=FALSE }
 
     { 142 ;2   ;Field     ;
                 SourceExpr="Payment Method Code" }
@@ -678,12 +746,17 @@ OBJECT Page 44 Sales Credit Memo
                 SourceExpr="VAT Bus. Posting Group" }
 
     { 146 ;2   ;Field     ;
-                SourceExpr="Credit Card No." }
+                SourceExpr="Credit Card No.";
+                Visible=FALSE }
 
     { 148 ;2   ;Field     ;
                 CaptionML=[ENU=Cr. Card Number (Last 4 Digits);
                            FRA=Num‚ro de carte de cr‚dit (4ÿderniers chiffres)];
-                SourceExpr=GetCreditcardNumber }
+                SourceExpr=GetCreditcardNumber;
+                Visible=FALSE }
+
+    { 1180250004;2;Field  ;
+                SourceExpr="Validated by" }
 
     { 1906801201;1;Group  ;
                 CaptionML=[ENU=Shipping;
@@ -717,11 +790,13 @@ OBJECT Page 44 Sales Credit Memo
 
     { 96  ;2   ;Field     ;
                 SourceExpr="Shipment Date";
-                Importance=Promoted }
+                Importance=Promoted;
+                Visible=FALSE }
 
     { 1907468901;1;Group  ;
                 CaptionML=[ENU=Foreign Trade;
-                           FRA=International] }
+                           FRA=International];
+                Visible=FALSE }
 
     { 91  ;2   ;Field     ;
                 SourceExpr="Currency Code";
@@ -763,9 +838,14 @@ OBJECT Page 44 Sales Credit Memo
     { 87  ;2   ;Field     ;
                 SourceExpr=Area }
 
+    { 1180250003;2;Field  ;
+                SourceExpr="VAT Registration No.";
+                Editable=FALSE }
+
     { 1904409301;1;Group  ;
                 CaptionML=[ENU=Application;
-                           FRA=Lettrage] }
+                           FRA=Lettrage];
+                Visible=FALSE }
 
     { 14  ;2   ;Field     ;
                 SourceExpr="Applies-to Doc. Type" }
@@ -817,7 +897,6 @@ OBJECT Page 44 Sales Credit Memo
                             Line No.=FIELD(Line No.);
                 PagePartID=Page9087;
                 ProviderID=48;
-                Visible=FALSE;
                 PartType=Page }
 
     { 1906354007;1;Part   ;

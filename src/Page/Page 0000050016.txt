@@ -1,0 +1,230 @@
+OBJECT Page 50016 Document to Send List
+{
+  OBJECT-PROPERTIES
+  {
+    Date=02/02/16;
+    Time=14:25:16;
+    Modified=Yes;
+    Version List=ALDA;
+  }
+  PROPERTIES
+  {
+    CaptionML=[ENU=Document to Send List;
+               FRA=Liste document … envoyer];
+    InsertAllowed=No;
+    SourceTable=Table50006;
+    SourceTableView=SORTING(Handled,Creation Date)
+                    ORDER(Ascending);
+    PageType=Card;
+    OnInit=BEGIN
+             SETRANGE(Handled,FALSE);
+           END;
+
+    ActionList=ACTIONS
+    {
+      { 1900000003;0 ;ActionContainer;
+                      ActionContainerType=RelatedInformation }
+      { 1120021 ;1   ;ActionGroup;
+                      CaptionML=[ENU=&Line;
+                                 FRA=&Ligne] }
+      { 1120069 ;2   ;Action    ;
+                      ShortCutKey=Shift+F5;
+                      CaptionML=FRA=Afficher document;
+                      OnAction=VAR
+                                 SalesHeader@1120000 : Record 36;
+                                 SalesShipHeader@1120001 : Record 110;
+                                 SalesInvHeader@1120002 : Record 112;
+                                 SalesCrMemoHeader@1120003 : Record 114;
+                                 ReturnRcptHeader@1120004 : Record 6660;
+                               BEGIN
+                                 CASE "Document Type" OF
+                                   "Document Type"::Quote:
+                                     BEGIN
+                                       SalesHeader.GET("Document Type"::Quote,"Document No.");
+                                       PAGE.RUNMODAL(PAGE::"Sales Quote",SalesHeader);
+                                     END;
+                                   "Document Type"::"Blanket Order":
+                                     BEGIN
+                                       SalesHeader.GET("Document Type"::"Blanket Order","Document No.");
+                                       PAGE.RUNMODAL(PAGE::"Blanket Sales Order",SalesHeader);
+                                     END;
+                                   "Document Type"::Order:
+                                     BEGIN
+                                       SalesHeader.GET("Document Type"::Order,"Document No.");
+                                       PAGE.RUNMODAL(PAGE::"Sales Order",SalesHeader);
+                                     END;
+                                   "Document Type"::Invoice:
+                                     BEGIN
+                                       SalesHeader.GET("Document Type"::Invoice,"Document No.");
+                                       PAGE.RUNMODAL(PAGE::"Sales Invoice",SalesHeader);
+                                     END;
+                                   "Document Type"::"Return Order":
+                                     BEGIN
+                                       SalesHeader.GET("Document Type"::"Return Order","Document No.");
+                                       PAGE.RUNMODAL(PAGE::"Sales Return Order",SalesHeader);
+                                     END;
+                                   "Document Type"::"Credit Memo":
+                                     BEGIN
+                                       SalesHeader.GET("Document Type"::"Credit Memo","Document No.");
+                                       PAGE.RUNMODAL(PAGE::"Sales Credit Memo",SalesHeader);
+                                     END;
+                                   "Document Type"::"Posted Shipment":
+                                     BEGIN
+                                       SalesShipHeader.GET("Document No.");
+                                       PAGE.RUNMODAL(PAGE::"Posted Sales Shipment",SalesShipHeader)
+                                     END;
+                                   "Document Type"::"Posted Invoice":
+                                     BEGIN
+                                       SalesInvHeader.GET("Document No.");
+                                       PAGE.RUNMODAL(PAGE::"Posted Sales Invoice",SalesInvHeader)
+                                     END;
+                                   "Document Type"::"Posted Return Receipt":
+                                     BEGIN
+                                       ReturnRcptHeader.GET("Document No.");
+                                       PAGE.RUNMODAL(PAGE::"Posted Return Receipt",ReturnRcptHeader)
+                                     END;
+                                   "Document Type"::"Posted Credit Memo":
+                                     BEGIN
+                                       SalesCrMemoHeader.GET("Document No.");
+                                       PAGE.RUNMODAL(PAGE::"Posted Sales Credit Memo",SalesCrMemoHeader)
+                                     END;
+                                 END;//CASE
+                               END;
+                                }
+      { 1900000004;0 ;ActionContainer;
+                      ActionContainerType=ActionItems }
+      { 1120020 ;1   ;ActionGroup;
+                      CaptionML=[ENU=F&unctions;
+                                 FRA=Fonction&s] }
+      { 1120068 ;2   ;Action    ;
+                      ShortCutKey=F9;
+                      CaptionML=FRA=Envoyer;
+                      OnAction=VAR
+                                 DocumentByMail@1120007 : Record 50006;
+                                 SalesHeader@1120005 : Record 36;
+                                 SalesShipHeader@1120004 : Record 110;
+                                 SalesInvHeader@1120003 : Record 112;
+                                 SalesCrMemoHeader@1120002 : Record 114;
+                                 ReturnRcptHeader@1120001 : Record 6660;
+                                 PDFCreatorMgt@1120006 : Codeunit 50014;
+                               BEGIN
+                                 CurrPage.SETSELECTIONFILTER(DocumentByMail);
+
+                                 WITH DocumentByMail DO BEGIN
+                                   COPY(Rec);
+                                   IF FIND('-') THEN
+                                     REPEAT
+                                       CLEAR(PDFCreatorMgt);
+                                       CASE "Document Type" OF
+                                         "Document Type"::Quote:
+                                           BEGIN
+                                             SalesHeader.GET("Document Type"::Quote,"Document No.");
+                                           END;
+                                         "Document Type"::"Blanket Order":
+                                           BEGIN
+                                             SalesHeader.GET("Document Type"::"Blanket Order","Document No.");
+                                           END;
+                                         "Document Type"::Order:
+                                           BEGIN
+                                             SalesHeader.GET("Document Type"::Order,"Document No.");
+                                           END;
+                                         "Document Type"::Invoice:
+                                           BEGIN
+                                             SalesHeader.GET("Document Type"::Invoice,"Document No.");
+                                           END;
+                                         "Document Type"::"Return Order":
+                                           BEGIN
+                                             SalesHeader.GET("Document Type"::"Return Order","Document No.");
+                                           END;
+                                         "Document Type"::"Credit Memo":
+                                           BEGIN
+                                             SalesHeader.GET("Document Type"::"Credit Memo","Document No.");
+                                           END;
+                                         "Document Type"::"Posted Shipment":
+                                           BEGIN
+                                             SalesShipHeader.GET("Document No.");
+                                           END;
+                                         "Document Type"::"Posted Invoice":
+                                           BEGIN
+                                             SalesInvHeader.GET("Document No.");
+                                             IF NOT PDFCreatorMgt.ExistRecordLink(SalesInvHeader."No.",SalesInvHeader.TABLENAME) THEN BEGIN
+                                               PDFCreatorMgt.SaveInvoiceAsPDF(SalesInvHeader,TRUE);
+                                               SLEEP(500);
+                                               COMMIT;
+                                             END;
+                                             PDFCreatorMgt.SendInvoiceAsPDF(SalesInvHeader);
+                                           END;
+                                         "Document Type"::"Posted Return Receipt":
+                                           BEGIN
+                                             ReturnRcptHeader.GET("Document No.");
+                                           END;
+                                         "Document Type"::"Posted Credit Memo":
+                                           BEGIN
+                                             SalesCrMemoHeader.GET("Document No.");
+                                             IF NOT PDFCreatorMgt.ExistRecordLink(SalesCrMemoHeader."No.",SalesCrMemoHeader.TABLENAME) THEN BEGIN
+                                               PDFCreatorMgt.SaveCrMemoAsPDF(SalesCrMemoHeader,TRUE);
+                                               SLEEP(500);
+                                               COMMIT;
+                                             END;
+                                             PDFCreatorMgt.SendCrMemoAsPDF(SalesCrMemoHeader);
+                                           END;
+                                       END;//CASE
+                                     UNTIL NEXT = 0;
+                                 END;//WITH
+                               END;
+                                }
+    }
+  }
+  CONTROLS
+  {
+    { 1900000001;0;Container;
+                ContainerType=ContentArea }
+
+    { 1120000;1;Group     ;
+                GroupType=Repeater }
+
+    { 1120001;2;Field     ;
+                SourceExpr="Creation Date";
+                Editable=FALSE }
+
+    { 1120003;2;Field     ;
+                SourceExpr="Created By";
+                Visible=FALSE;
+                Editable=FALSE }
+
+    { 1120022;2;Field     ;
+                SourceExpr=System;
+                Visible=FALSE }
+
+    { 1120005;2;Field     ;
+                SourceExpr="Document Type";
+                Editable=FALSE }
+
+    { 1120007;2;Field     ;
+                SourceExpr="Document No.";
+                Editable=FALSE }
+
+    { 1120009;2;Field     ;
+                SourceExpr="E-Mail 1" }
+
+    { 1120011;2;Field     ;
+                SourceExpr="E-Mail 2" }
+
+    { 1120013;2;Field     ;
+                SourceExpr=Handled;
+                Editable=FALSE }
+
+    { 1120015;2;Field     ;
+                SourceExpr="Handled By";
+                Visible=FALSE;
+                Editable=FALSE }
+
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

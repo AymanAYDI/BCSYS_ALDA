@@ -2,9 +2,10 @@ OBJECT Page 144 Posted Sales Credit Memos
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
-    Version List=NAVW19.00;
+    Date=04/02/20;
+    Time=16:40:46;
+    Modified=Yes;
+    Version List=NAVW19.00,BC6AUTOINV;
   }
   PROPERTIES
   {
@@ -27,6 +28,8 @@ OBJECT Page 144 Posted Sales Credit Memos
     OnAfterGetCurrRecord=BEGIN
                            DocExchStatusStyle := GetDocExchStatusStyle;
                            CurrPage.IncomingDocAttachFactBox.PAGE.LoadDataFromRecord(Rec);
+                           //BC6 EABO 03.02.20 Integration of Chorus invoice status
+                           UpdateCommentFactbox;
                          END;
 
     ActionList=ACTIONS
@@ -146,6 +149,7 @@ OBJECT Page 144 Posted Sales Credit Memos
                       CaptionML=[ENU=&Navigate;
                                  FRA=Na&viguer];
                       Promoted=Yes;
+                      Visible=FALSE;
                       PromotedIsBig=Yes;
                       Image=Navigate;
                       PromotedCategory=Category4;
@@ -177,6 +181,9 @@ OBJECT Page 144 Posted Sales Credit Memos
     { 2   ;2   ;Field     ;
                 SourceExpr="No." }
 
+    { 1180250001;2;Field  ;
+                SourceExpr="External Document No." }
+
     { 4   ;2   ;Field     ;
                 SourceExpr="Sell-to Customer No." }
 
@@ -184,7 +191,8 @@ OBJECT Page 144 Posted Sales Credit Memos
                 SourceExpr="Sell-to Customer Name" }
 
     { 37  ;2   ;Field     ;
-                SourceExpr="Currency Code" }
+                SourceExpr="Currency Code";
+                Visible=FALSE }
 
     { 13  ;2   ;Field     ;
                 SourceExpr=Amount;
@@ -255,8 +263,7 @@ OBJECT Page 144 Posted Sales Credit Memos
                 Visible=FALSE }
 
     { 97  ;2   ;Field     ;
-                SourceExpr="Posting Date";
-                Visible=FALSE }
+                SourceExpr="Posting Date" }
 
     { 65  ;2   ;Field     ;
                 SourceExpr="Salesperson Code";
@@ -272,10 +279,11 @@ OBJECT Page 144 Posted Sales Credit Memos
 
     { 91  ;2   ;Field     ;
                 SourceExpr="Location Code";
-                Visible=TRUE }
+                Visible=FALSE }
 
     { 8   ;2   ;Field     ;
-                SourceExpr="No. Printed" }
+                SourceExpr="No. Printed";
+                Visible=FALSE }
 
     { 1102601003;2;Field  ;
                 SourceExpr="Document Date";
@@ -285,6 +293,9 @@ OBJECT Page 144 Posted Sales Credit Memos
                 SourceExpr="Applies-to Doc. Type";
                 Visible=FALSE }
 
+    { 1000000001;2;Field  ;
+                SourceExpr="Data Flow Status Caption" }
+
     { 11  ;2   ;Field     ;
                 SourceExpr="Document Exchange Status";
                 StyleExpr=DocExchStatusStyle;
@@ -292,6 +303,10 @@ OBJECT Page 144 Posted Sales Credit Memos
                               DocExchStatusDrillDown;
                             END;
                              }
+
+    { 1000000000;2;Field  ;
+                SourceExpr="Acquitted by EDI";
+                Editable=FALSE }
 
     { 1900000007;0;Container;
                 ContainerType=FactBoxArea }
@@ -301,6 +316,13 @@ OBJECT Page 144 Posted Sales Credit Memos
                 PagePartID=Page193;
                 PartType=Page;
                 ShowFilter=No }
+
+    { 1000000002;1;Part   ;
+                SubPageLink=Document Type=CONST(Posted Credit Memo),
+                            No.=FIELD(No.);
+                PagePartID=Page50033;
+                Visible=IsAcquittedByEDIPlatform;
+                PartType=Page }
 
     { 1900383207;1;Part   ;
                 Visible=FALSE;
@@ -317,8 +339,20 @@ OBJECT Page 144 Posted Sales Credit Memos
   {
     VAR
       DocExchStatusStyle@1111 : Text;
+      IsAcquittedByEDIPlatform@1000000000 : Boolean INDATASET;
+
+    LOCAL PROCEDURE UpdateCommentFactbox@1000000000();
+    BEGIN
+      IsAcquittedByEDIPlatform := "Acquitted by EDI";
+    END;
 
     BEGIN
+    {
+      BC6 EABO 03.02.20 Integration of Chorus invoice status
+        - Add field "Acquitted by EDI"
+        - add factbox <Sales Comment ListPart>
+        - Add function UpdateCommentFactbox to update visibility of factbox
+    }
     END.
   }
 }

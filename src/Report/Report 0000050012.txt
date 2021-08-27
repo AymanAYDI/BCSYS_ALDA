@@ -1,0 +1,1626 @@
+OBJECT Report 50012 ALDA - Etiquette livraison
+{
+  OBJECT-PROPERTIES
+  {
+    Date=03/05/17;
+    Time=17:23:20;
+    Modified=Yes;
+    Version List=NAVW19.00;
+  }
+  PROPERTIES
+  {
+    CaptionML=[ENU=ALDA - Etiquette livraison;
+               FRA=ALDA - Etiquette livraison];
+    OnInitReport=BEGIN
+                   GLSetup.GET;
+
+                   SalesSetup.GET;
+                 END;
+
+    PreviewMode=PrintLayout;
+  }
+  DATASET
+  {
+    { 6640;    ;DataItem;                    ;
+               DataItemTable=Table36;
+               DataItemTableView=SORTING(Document Type,No.)
+                                 WHERE(Document Type=CONST(Order));
+               ReqFilterHeadingML=[ENU=Sales Order;
+                                   FRA=Commande vente];
+               OnPreDataItem=BEGIN
+                               Print := Print OR NOT CurrReport.PREVIEW;
+                               AsmInfoExistsForLine := FALSE;
+                             END;
+
+               OnAfterGetRecord=BEGIN
+                                  CompanyInfo.GET;
+                                  CompanyInfo.CALCFIELDS(Picture);
+                                  //AB6.JME.001--<<
+                                  G_NbEtiquette := 0;
+                                  //AB6.JME.001-->>
+
+                                  CurrReport.LANGUAGE := Language.GetLanguageID("Language Code");
+
+                                  IF RespCenter.GET("Responsibility Center") THEN BEGIN
+                                    FormatAddr.RespCenter(CompanyAddr,RespCenter);
+                                    CompanyInfo."Phone No." := RespCenter."Phone No.";
+                                    CompanyInfo."Fax No." := RespCenter."Fax No.";
+                                  END ELSE
+                                    FormatAddr.Company(CompanyAddr,CompanyInfo);
+
+                                  DimSetEntry1.SETRANGE("Dimension Set ID","Dimension Set ID");
+
+                                  IF "Salesperson Code" = '' THEN BEGIN
+                                    CLEAR(SalesPurchPerson);
+                                    SalesPersonText := '';
+                                  END ELSE BEGIN
+                                    SalesPurchPerson.GET("Salesperson Code");
+                                    SalesPersonText := Text000;
+                                  END;
+                                  IF "Your Reference" = '' THEN
+                                    ReferenceText := ''
+                                  ELSE
+                                    ReferenceText := FIELDCAPTION("Your Reference");
+                                  IF "VAT Registration No." = '' THEN
+                                    VATNoText := ''
+                                  ELSE
+                                    VATNoText := FIELDCAPTION("VAT Registration No.");
+                                  IF "Currency Code" = '' THEN BEGIN
+                                    GLSetup.TESTFIELD("LCY Code");
+                                    TotalText := STRSUBSTNO(Text001,GLSetup."LCY Code");
+                                    TotalInclVATText := STRSUBSTNO(Text002,GLSetup."LCY Code");
+                                    TotalExclVATText := STRSUBSTNO(Text006,GLSetup."LCY Code");
+                                  END ELSE BEGIN
+                                    TotalText := STRSUBSTNO(Text001,"Currency Code");
+                                    TotalInclVATText := STRSUBSTNO(Text002,"Currency Code");
+                                    TotalExclVATText := STRSUBSTNO(Text006,"Currency Code");
+                                  END;
+                                  FormatAddr.SalesHeaderBillTo(CustAddr,"Sales Header");
+
+                                  IF "Payment Terms Code" = '' THEN
+                                    PaymentTerms.INIT
+                                  ELSE BEGIN
+                                    PaymentTerms.GET("Payment Terms Code");
+                                    PaymentTerms.TranslateDescription(PaymentTerms,"Language Code");
+                                  END;
+                                  IF "Prepmt. Payment Terms Code" = '' THEN
+                                    PrepmtPaymentTerms.INIT
+                                  ELSE BEGIN
+                                    PrepmtPaymentTerms.GET("Prepmt. Payment Terms Code");
+                                    PrepmtPaymentTerms.TranslateDescription(PrepmtPaymentTerms,"Language Code");
+                                  END;
+                                  IF "Prepmt. Payment Terms Code" = '' THEN
+                                    PrepmtPaymentTerms.INIT
+                                  ELSE BEGIN
+                                    PrepmtPaymentTerms.GET("Prepmt. Payment Terms Code");
+                                    PrepmtPaymentTerms.TranslateDescription(PrepmtPaymentTerms,"Language Code");
+                                  END;
+                                  IF "Shipment Method Code" = '' THEN
+                                    ShipmentMethod.INIT
+                                  ELSE BEGIN
+                                    ShipmentMethod.GET("Shipment Method Code");
+                                    ShipmentMethod.TranslateDescription(ShipmentMethod,"Language Code");
+                                  END;
+
+                                  FormatAddr.SalesHeaderShipTo(ShipToAddr,"Sales Header");
+                                  ShowShippingAddr := "Sell-to Customer No." <> "Bill-to Customer No.";
+                                  FOR i := 1 TO ARRAYLEN(ShipToAddr) DO
+                                    IF ShipToAddr[i] <> CustAddr[i] THEN
+                                      ShowShippingAddr := TRUE;
+
+                                  IF Print THEN BEGIN
+                                    IF ArchiveDocument THEN
+                                      ArchiveManagement.StoreSalesDocument("Sales Header",LogInteraction);
+
+                                    IF LogInteraction THEN BEGIN
+                                      CALCFIELDS("No. of Archived Versions");
+                                      IF "Bill-to Contact No." <> '' THEN
+                                        SegManagement.LogDocument(
+                                          3,"No.","Doc. No. Occurrence",
+                                          "No. of Archived Versions",DATABASE::Contact,"Bill-to Contact No."
+                                          ,"Salesperson Code","Campaign No.","Posting Description","Opportunity No.")
+                                      ELSE
+                                        SegManagement.LogDocument(
+                                          3,"No.","Doc. No. Occurrence",
+                                          "No. of Archived Versions",DATABASE::Customer,"Bill-to Customer No.",
+                                          "Salesperson Code","Campaign No.","Posting Description","Opportunity No.");
+                                    END;
+                                  END;
+                                END;
+
+               ReqFilterFields=No.,Sell-to Customer No.,No. Printed }
+
+    { 256 ;1   ;Column  ;DocType_SalesHeader ;
+               SourceExpr="Document Type" }
+
+    { 257 ;1   ;Column  ;No_SalesHeader      ;
+               SourceExpr="No." }
+
+    { 1000000000;1;Column;ALDA___VAR_____SalesHeader;
+               SourceExpr=ALDA___VAR_____ }
+
+    { 1000000001;1;Column;CustOrderNoCaption ;
+               SourceExpr=CustOrderNoCaptionLbl }
+
+    { 1000000002;1;Column;CustOrderRefCaption;
+               SourceExpr=CustOrderRefCaptionLbl }
+
+    { 1000000003;1;Column;CustNoCaption      ;
+               SourceExpr=CustNoCaptionLbl }
+
+    { 1000000016;1;Column;ShipToAddressCaption;
+               SourceExpr=ShipToAddressCaptionLbl }
+
+    { 142 ;1   ;Column  ;CompanyInfoPicture  ;
+               SourceExpr=CompanyInfo.Picture }
+
+    { 1000000018;1;Column;NUM_SUBSEQUENT_SalesHeader;
+               SourceExpr="Sales Header"."EDI Add. Info. 1" }
+
+    { 1000000019;1;Column;REF_ENGAGEMENT_SalesHeader;
+               SourceExpr="Sales Header"."EDI Add. Info. 2" }
+
+    { 1000000020;1;Column;NUM_EJ_SalesHeader ;
+               SourceExpr="Sales Header"."EDI Add. Info. 3" }
+
+    { 1000000021;1;Column;TRS_ID_SalesHeader ;
+               SourceExpr="Sales Header"."EDI Add. Info. 4" }
+
+    { 1000000022;1;Column;TRS_ID_AUTORISATION_SalesHeader;
+               SourceExpr="Sales Header".TRS_ID_AUTORISATION }
+
+    { 1000000023;1;Column;NUM_MARKET_SalesHeader;
+               SourceExpr="Sales Header"."EDI Add. Info. 6" }
+
+    { 5701;1   ;DataItem;CopyLoop            ;
+               DataItemTable=Table2000000026;
+               DataItemTableView=SORTING(Number);
+               OnPreDataItem=BEGIN
+                               //NoOfLoops := ABS(NoOfCopies) + 1;
+
+                               //AB6.JME.001--<<
+                               IF "Sales Header"."Nbr. of Package per Pallet" > 0 THEN
+                                 G_NbEtiquette := "Sales Header"."Nbr. of Package per Pallet"
+                               ELSE
+                                 G_NbEtiquette := 1;
+
+                               SETRANGE(Number,1,G_NbEtiquette);
+
+                               G_Compteur := 0;
+                               //AB6.JME.001-->>
+
+                               CopyText := '';
+                               //SETRANGE(Number,1,NoOfLoops);
+                               OutputNo := 1;
+                             END;
+
+               OnAfterGetRecord=VAR
+                                  PrepmtSalesLine@1002 : TEMPORARY Record 37;
+                                  SalesPost@1000 : Codeunit 80;
+                                  TempSalesLine@1003 : TEMPORARY Record 37;
+                                BEGIN
+
+                                  //AB6.JME.001--<<
+                                  IF "Sales Header"."Nbr. of Package per Pallet" >0 THEN
+                                    G_Compteur := G_Compteur + 1
+                                  ELSE
+                                    G_Compteur := 0;
+                                  //AB6.JME.001-->>
+
+                                  CLEAR(SalesLine);
+                                  CLEAR(SalesPost);
+                                  VATAmountLine.DELETEALL;
+                                  SalesLine.DELETEALL;
+                                  SalesPost.GetSalesLines("Sales Header",SalesLine,0);
+                                  SalesLine.CalcVATAmountLines(0,"Sales Header",SalesLine,VATAmountLine);
+                                  SalesLine.UpdateVATOnLines(0,"Sales Header",SalesLine,VATAmountLine);
+                                  VATAmount := VATAmountLine.GetTotalVATAmount;
+                                  VATBaseAmount := VATAmountLine.GetTotalVATBase;
+                                  VATDiscountAmount :=
+                                    VATAmountLine.GetTotalVATDiscount("Sales Header"."Currency Code","Sales Header"."Prices Including VAT");
+                                  TotalAmountInclVAT := VATAmountLine.GetTotalAmountInclVAT;
+
+                                  PrepmtInvBuf.DELETEALL;
+                                  SalesPostPrepmt.GetSalesLines("Sales Header",0,PrepmtSalesLine);
+
+                                  IF NOT PrepmtSalesLine.ISEMPTY THEN BEGIN
+                                    SalesPostPrepmt.GetSalesLinesToDeduct("Sales Header",TempSalesLine);
+                                    IF NOT TempSalesLine.ISEMPTY THEN
+                                      SalesPostPrepmt.CalcVATAmountLines("Sales Header",TempSalesLine,PrepmtVATAmountLineDeduct,1);
+                                  END;
+                                  SalesPostPrepmt.CalcVATAmountLines("Sales Header",PrepmtSalesLine,PrepmtVATAmountLine,0);
+                                  PrepmtVATAmountLine.DeductVATAmountLine(PrepmtVATAmountLineDeduct);
+                                  SalesPostPrepmt.UpdateVATOnLines("Sales Header",PrepmtSalesLine,PrepmtVATAmountLine,0);
+                                  SalesPostPrepmt.BuildInvLineBuffer2("Sales Header",PrepmtSalesLine,0,PrepmtInvBuf);
+                                  PrepmtVATAmount := PrepmtVATAmountLine.GetTotalVATAmount;
+                                  PrepmtVATBaseAmount := PrepmtVATAmountLine.GetTotalVATBase;
+                                  PrepmtTotalAmountInclVAT := PrepmtVATAmountLine.GetTotalAmountInclVAT;
+
+                                  IF Number > 1 THEN BEGIN
+                                    CopyText := Text003;
+                                    OutputNo += 1;
+                                  END;
+                                  CurrReport.PAGENO := 1;
+
+                                  NNCTotalLCY := 0;
+                                  NNCTotalExclVAT := 0;
+                                  NNCVATAmt := 0;
+                                  NNCTotalInclVAT := 0;
+                                  NNCPmtDiscOnVAT := 0;
+                                  NNCTotalInclVAT2 := 0;
+                                  NNCVATAmt2 := 0;
+                                  NNCTotalExclVAT2 := 0;
+                                  NNCSalesLineLineAmt := 0;
+                                  NNCSalesLineInvDiscAmt := 0;
+                                END;
+
+               OnPostDataItem=BEGIN
+                                IF Print THEN
+                                  SalesCountPrinted.RUN("Sales Header");
+                              END;
+                               }
+
+    { 6455;2   ;DataItem;PageLoop            ;
+               DataItemTable=Table2000000026;
+               DataItemTableView=SORTING(Number)
+                                 WHERE(Number=CONST(1)) }
+
+    { 1000000017;3;Column;G_Compteur         ;
+               SourceExpr=G_Compteur }
+
+    { 1000000004;3;Column;PalletCounter      ;
+               SourceExpr=FORMAT(G_Compteur) +' / ' +FORMAT("Sales Header"."Nbr. of Package per Pallet") }
+
+    { 1000000005;3;Column;ExtDocNo_SalesHeader;
+               SourceExpr="Sales Header"."External Document No." }
+
+    { 1000000006;3;Column;SellToCustNo_SalesHeader;
+               SourceExpr="Sales Header"."Sell-to Customer No." }
+
+    { 1000000007;3;Column;OrderRefCust_SalesHeader;
+               SourceExpr=COPYSTR("Sales Header"."Order Reference Customer",10) }
+
+    { 1000000008;3;Column;ShipToAddr_1_SalesHeader;
+               SourceExpr=ShipToAddr[1] }
+
+    { 1000000009;3;Column;ShipToAddr_2_SalesHeader;
+               SourceExpr=ShipToAddr[2] }
+
+    { 1000000010;3;Column;ShipToAddr_3_SalesHeader;
+               SourceExpr=ShipToAddr[3] }
+
+    { 1000000011;3;Column;ShipToAddr_4_SalesHeader;
+               SourceExpr=ShipToAddr[4] }
+
+    { 1000000012;3;Column;ShipToAddr_5_SalesHeader;
+               SourceExpr=ShipToAddr[5] }
+
+    { 1000000013;3;Column;ShipToAddr_6_SalesHeader;
+               SourceExpr=ShipToAddr[6] }
+
+    { 1000000014;3;Column;ShipToAddr_7_SalesHeader;
+               SourceExpr=ShipToAddr[7] }
+
+    { 1000000015;3;Column;ShipToAddr_8_SalesHeader;
+               SourceExpr=ShipToAddr[8] }
+
+  }
+  REQUESTPAGE
+  {
+    PROPERTIES
+    {
+      SaveValues=Yes;
+      OnInit=BEGIN
+               LogInteractionEnable := TRUE;
+             END;
+
+      OnOpenPage=BEGIN
+                   ArchiveDocument := SalesSetup."Archive Quotes and Orders";
+                   LogInteraction := SegManagement.FindInteractTmplCode(3) <> '';
+
+                   LogInteractionEnable := LogInteraction;
+                 END;
+
+    }
+    CONTROLS
+    {
+      { 1900000001;0;Container;
+                  ContainerType=ContentArea }
+
+      { 1900000002;1;Group  ;
+                  CaptionML=[ENU=Options;
+                             FRA=Options] }
+
+      { 1   ;2   ;Field     ;
+                  Name=NoOfCopies;
+                  CaptionML=[ENU=No. of Copies;
+                             FRA=Nombre de copies];
+                  SourceExpr=NoOfCopies }
+
+      { 2   ;2   ;Field     ;
+                  Name=ShowInternalInfo;
+                  CaptionML=[ENU=Show Internal Information;
+                             FRA=Afficher info. internes];
+                  SourceExpr=ShowInternalInfo }
+
+      { 6   ;2   ;Field     ;
+                  Name=ArchiveDocument;
+                  CaptionML=[ENU=Archive Document;
+                             FRA=Archiver document];
+                  SourceExpr=ArchiveDocument;
+                  OnValidate=BEGIN
+                               IF NOT ArchiveDocument THEN
+                                 LogInteraction := FALSE;
+                             END;
+                              }
+
+      { 5   ;2   ;Field     ;
+                  Name=LogInteraction;
+                  CaptionML=[ENU=Log Interaction;
+                             FRA=Journal interaction];
+                  SourceExpr=LogInteraction;
+                  Enabled=LogInteractionEnable;
+                  OnValidate=BEGIN
+                               IF LogInteraction THEN
+                                 ArchiveDocument := ArchiveDocumentEnable;
+                             END;
+                              }
+
+      { 3   ;2   ;Field     ;
+                  Name=ShowAssemblyComponents;
+                  CaptionML=[ENU=Show Assembly Components;
+                             FRA=Afficher composants d'assemblage];
+                  SourceExpr=DisplayAssemblyInformation }
+
+    }
+  }
+  LABELS
+  {
+  }
+  CODE
+  {
+    VAR
+      Text000@1000 : TextConst 'ENU=Salesperson;FRA=Vendeur';
+      Text001@1001 : TextConst 'ENU=Total %1;FRA=Total %1';
+      Text002@1002 : TextConst 'ENU=Total %1 Incl. VAT;FRA=Total %1 TTC';
+      Text003@1003 : TextConst 'ENU=COPY;FRA=COPIE';
+      Text004@1004 : TextConst 'ENU=Order Confirmation %1;FRA=Confirmation de commande %1';
+      PageCaptionCap@1005 : TextConst 'ENU=Page %1 of %2;FRA=Page %1 de %2';
+      Text006@1006 : TextConst 'ENU=Total %1 Excl. VAT;FRA=Total %1 HT';
+      GLSetup@1007 : Record 98;
+      ShipmentMethod@1008 : Record 10;
+      PaymentTerms@1009 : Record 3;
+      PrepmtPaymentTerms@1068 : Record 3;
+      SalesPurchPerson@1010 : Record 13;
+      CompanyInfo@1011 : Record 79;
+      CompanyInfo1@1047 : Record 79;
+      CompanyInfo2@1048 : Record 79;
+      CompanyInfo3@1086 : Record 79;
+      SalesSetup@1050 : Record 311;
+      VATAmountLine@1012 : TEMPORARY Record 290;
+      PrepmtVATAmountLine@1058 : TEMPORARY Record 290;
+      PrepmtVATAmountLineDeduct@1069 : TEMPORARY Record 290;
+      SalesLine@1013 : TEMPORARY Record 37;
+      DimSetEntry1@1014 : Record 480;
+      DimSetEntry2@1015 : Record 480;
+      TempPrepmtDimSetEntry@1060 : TEMPORARY Record 480;
+      PrepmtInvBuf@1059 : TEMPORARY Record 461;
+      RespCenter@1016 : Record 5714;
+      Language@1017 : Record 8;
+      CurrExchRate@1056 : Record 330;
+      AsmHeader@1085 : Record 900;
+      AsmLine@1083 : Record 901;
+      SalesCountPrinted@1018 : Codeunit 313;
+      FormatAddr@1019 : Codeunit 365;
+      SegManagement@1020 : Codeunit 5051;
+      ArchiveManagement@1044 : Codeunit 5063;
+      SalesPostPrepmt@1061 : Codeunit 442;
+      DimMgt@1071 : Codeunit 408;
+      CustAddr@1021 : ARRAY [8] OF Text[50];
+      ShipToAddr@1022 : ARRAY [8] OF Text[50];
+      CompanyAddr@1023 : ARRAY [8] OF Text[50];
+      SalesPersonText@1024 : Text[30];
+      VATNoText@1025 : Text[80];
+      ReferenceText@1026 : Text[80];
+      TotalText@1027 : Text[50];
+      TotalExclVATText@1028 : Text[50];
+      TotalInclVATText@1029 : Text[50];
+      MoreLines@1030 : Boolean;
+      NoOfCopies@1031 : Integer;
+      NoOfLoops@1032 : Integer;
+      CopyText@1033 : Text[30];
+      ShowShippingAddr@1034 : Boolean;
+      i@1035 : Integer;
+      DimText@1036 : Text[120];
+      OldDimText@1037 : Text[75];
+      ShowInternalInfo@1038 : Boolean;
+      Continue@1039 : Boolean;
+      ArchiveDocument@1045 : Boolean;
+      LogInteraction@1046 : Boolean;
+      VATAmount@1040 : Decimal;
+      VATBaseAmount@1043 : Decimal;
+      VATDiscountAmount@1042 : Decimal;
+      TotalAmountInclVAT@1041 : Decimal;
+      VALVATBaseLCY@1049 : Decimal;
+      VALVATAmountLCY@1051 : Decimal;
+      VALSpecLCYHeader@1052 : Text[80];
+      Text007@1055 : TextConst 'ENU="VAT Amount Specification in ";FRA="D‚tail TVA dans "';
+      Text008@1054 : TextConst 'ENU=Local Currency;FRA=Devise soci‚t‚';
+      Text009@1053 : TextConst 'ENU=Exchange rate: %1/%2;FRA=Taux de change : %1/%2';
+      VALExchRate@1057 : Text[50];
+      PrepmtVATAmount@1066 : Decimal;
+      PrepmtVATBaseAmount@1065 : Decimal;
+      PrepmtTotalAmountInclVAT@1063 : Decimal;
+      PrepmtLineAmount@1062 : Decimal;
+      OutputNo@1067 : Integer;
+      NNCTotalLCY@1072 : Decimal;
+      NNCTotalExclVAT@1073 : Decimal;
+      NNCVATAmt@1074 : Decimal;
+      NNCTotalInclVAT@1075 : Decimal;
+      NNCPmtDiscOnVAT@1076 : Decimal;
+      NNCTotalInclVAT2@1077 : Decimal;
+      NNCVATAmt2@1078 : Decimal;
+      NNCTotalExclVAT2@1079 : Decimal;
+      NNCSalesLineLineAmt@1080 : Decimal;
+      NNCSalesLineInvDiscAmt@1081 : Decimal;
+      Print@1070 : Boolean;
+      ArchiveDocumentEnable@19005281 : Boolean INDATASET;
+      LogInteractionEnable@19003940 : Boolean INDATASET;
+      DisplayAssemblyInformation@1082 : Boolean;
+      AsmInfoExistsForLine@1084 : Boolean;
+      InvDiscAmtCaptionLbl@4720 : TextConst 'ENU=Invoice Discount Amount;FRA=Montant remise facture';
+      VATRegNoCaptionLbl@2224 : TextConst 'ENU=VAT Registration No.;FRA=Nø identif. intracomm.';
+      GiroNoCaptionLbl@7839 : TextConst 'ENU=Giro No.;FRA=Nø CCP';
+      BankCaptionLbl@1791 : TextConst 'ENU=Bank;FRA=Banque';
+      AccountNoCaptionLbl@6228 : TextConst 'ENU=Account No.;FRA=Nø compte';
+      ShipmentDateCaptionLbl@3615 : TextConst 'ENU=Shipment Date;FRA=Date d''exp‚dition';
+      OrderNoCaptionLbl@5963 : TextConst 'ENU=Order No.;FRA=Nø commande';
+      HomePageCaptionCap@1436 : TextConst 'ENU=Home Page;FRA=Page d''accueil';
+      EmailCaptionLbl@7682 : TextConst 'ENU=E-Mail;FRA=E-mail';
+      HeaderDimCaptionLbl@2848 : TextConst 'ENU=Header Dimensions;FRA=Analytique en-tˆte';
+      DiscountPercentCaptionLbl@5604 : TextConst 'ENU=Discount %;FRA=% remise';
+      SubtotalCaptionLbl@1782 : TextConst 'ENU=Subtotal;FRA=Sous-total';
+      PaymentDiscountVATCaptionLbl@8168 : TextConst 'ENU=Payment Discount on VAT;FRA=Escompte sur TVA';
+      LineDimCaptionLbl@2096 : TextConst 'ENU=Line Dimensions;FRA=Analytique ligne';
+      InvDiscBaseAmtCaptionLbl@2407 : TextConst 'ENU=Invoice Discount Base Amount;FRA=Montant base remise facture';
+      VATIdentifierCaptionLbl@6906 : TextConst 'ENU=VAT Identifier;FRA=Identifiant TVA';
+      ShiptoAddrCaptionLbl@9454 : TextConst 'ENU=Ship-to Address;FRA=Adresse destinataire';
+      DescriptionCaptionLbl@3701 : TextConst 'ENU=Description;FRA=D‚signation';
+      GLAccountNoCaptionLbl@5526 : TextConst 'ENU=G/L Account No.;FRA=Nø compte g‚n‚ral';
+      PrepaymentSpecCaptionLbl@4480 : TextConst 'ENU=Prepayment Specification;FRA=Sp‚cification acompte';
+      PrepaymentVATAmtSpecCapLbl@8725 : TextConst 'ENU=Prepayment VAT Amount Specification;FRA=Sp‚cification montant TVA acompte';
+      PrepmtPmtTermsDescCaptionLbl@8412 : TextConst 'ENU=Prepmt. Payment Terms;FRA=Conditions paiement acompte';
+      PhoneNoCaptionLbl@6169 : TextConst 'ENU=Phone No.;FRA=Nø t‚l‚phone';
+      AmountCaptionLbl@7794 : TextConst 'ENU=Amount;FRA=Montant';
+      VATPercentageCaptionLbl@7196 : TextConst 'ENU=VAT %;FRA=% TVA';
+      VATBaseCaptionLbl@5098 : TextConst 'ENU=VAT Base;FRA=Base TVA';
+      VATAmtCaptionLbl@8387 : TextConst 'ENU=VAT Amount;FRA=Montant TVA';
+      VATAmtSpecCaptionLbl@3447 : TextConst 'ENU=VAT Amount Specification;FRA=D‚tail montant TVA';
+      LineAmtCaptionLbl@3126 : TextConst 'ENU=Line Amount;FRA=Montant ligne';
+      TotalCaptionLbl@1909 : TextConst 'ENU=Total;FRA=Total';
+      UnitPriceCaptionLbl@9823 : TextConst 'ENU=Unit Price;FRA=Prix unitaire';
+      PaymentTermsCaptionLbl@8455 : TextConst 'ENU=Payment Terms;FRA=Conditions de paiement';
+      ShipmentMethodCaptionLbl@9854 : TextConst 'ENU=Shipment Method;FRA=Conditions de livraison';
+      DocumentDateCaptionLbl@7509 : TextConst 'ENU=Document Date;FRA=Date document';
+      AllowInvDiscCaptionLbl@2645 : TextConst 'ENU=Allow Invoice Discount;FRA=Autoriser remise facture';
+      ALDA___VAR_____@1000000017 : Integer;
+      NbMaxLine@1000000016 : Integer;
+      NbLine@1000000015 : Integer;
+      BankAcc_Gr@1000000014 : Record 270;
+      G_Client@1000000013 : Record 18;
+      _Montant@1000000012 : Decimal;
+      _MontantTTC@1000000011 : Decimal;
+      _MontantTTC2@1000000010 : Decimal;
+      _MontantRem@1000000009 : Decimal;
+      _LigTVA@1000000008 : ARRAY [10] OF Decimal;
+      _BaseTVA@1000000007 : ARRAY [10] OF Decimal;
+      _PctTVA@1000000006 : ARRAY [10] OF Decimal;
+      LigneMontantTVA@1000000005 : TEMPORARY Record 290;
+      j@1000000004 : Integer;
+      _Prixbrut@1000000003 : Decimal;
+      _PrixNet@1000000002 : Decimal;
+      G_NbEtiquette@1000000001 : Integer;
+      G_Compteur@1000000000 : Integer;
+      BC6____@1000000034 : TextConst 'FRA=BC6____';
+      CustOrderNoCaptionLbl@1000000033 : TextConst 'ENU=Customer Order No. :;FRA="Nø commande client : "';
+      CustOrderRefCaptionLbl@1000000031 : TextConst 'ENU="Customer Order Reference : ";FRA=R‚f‚rence commande client :';
+      CustNoCaptionLbl@1000000023 : TextConst 'ENU="Customer No. : ";FRA="Nø client : "';
+      ShipToAddressCaptionLbl@1000000018 : TextConst 'ENU=Ship To Address;FRA="Adresse de livraison "';
+
+    PROCEDURE InitializeRequest@1(NoOfCopiesFrom@1000 : Integer;ShowInternalInfoFrom@1001 : Boolean;ArchiveDocumentFrom@1002 : Boolean;LogInteractionFrom@1003 : Boolean;PrintFrom@1004 : Boolean;DisplayAsmInfo@1005 : Boolean);
+    BEGIN
+      NoOfCopies := NoOfCopiesFrom;
+      ShowInternalInfo := ShowInternalInfoFrom;
+      ArchiveDocument := ArchiveDocumentFrom;
+      LogInteraction := LogInteractionFrom;
+      Print := PrintFrom;
+      DisplayAssemblyInformation := DisplayAsmInfo;
+    END;
+
+    LOCAL PROCEDURE GetUnitOfMeasureDescr@2(UOMCode@1000 : Code[10]) : Text[10];
+    VAR
+      UnitOfMeasure@1001 : Record 204;
+    BEGIN
+      IF NOT UnitOfMeasure.GET(UOMCode) THEN
+        EXIT(UOMCode);
+      EXIT(UnitOfMeasure.Description);
+    END;
+
+    PROCEDURE BlanksForIndent@3() : Text[10];
+    BEGIN
+      EXIT(PADSTR('',2,' '));
+    END;
+
+    BEGIN
+    {
+
+      //AB6.JME.001  05/10/12   Cr‚ation de l'‚tat
+                                Ajout d'un compteur d'etiquette par rapport au nombre de palettes
+    }
+    END.
+  }
+  RDLDATA
+  {
+    <?xml version="1.0" encoding="utf-8"?>
+<Report xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns:cl="http://schemas.microsoft.com/sqlserver/reporting/2010/01/componentdefinition" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/reportdefinition">
+  <AutoRefresh>0</AutoRefresh>
+  <DataSources>
+    <DataSource Name="DataSource">
+      <ConnectionProperties>
+        <DataProvider>SQL</DataProvider>
+        <ConnectString />
+      </ConnectionProperties>
+      <rd:DataSourceID>4465c6a7-2b0e-4668-ba38-a5cf10dcfef8</rd:DataSourceID>
+    </DataSource>
+  </DataSources>
+  <DataSets>
+    <DataSet Name="DataSet_Result">
+      <Query>
+        <DataSourceName>DataSource</DataSourceName>
+        <CommandText />
+      </Query>
+      <Fields>
+        <Field Name="DocType_SalesHeader">
+          <DataField>DocType_SalesHeader</DataField>
+        </Field>
+        <Field Name="No_SalesHeader">
+          <DataField>No_SalesHeader</DataField>
+        </Field>
+        <Field Name="ALDA___VAR_____SalesHeader">
+          <DataField>ALDA___VAR_____SalesHeader</DataField>
+        </Field>
+        <Field Name="CustOrderNoCaption">
+          <DataField>CustOrderNoCaption</DataField>
+        </Field>
+        <Field Name="CustOrderRefCaption">
+          <DataField>CustOrderRefCaption</DataField>
+        </Field>
+        <Field Name="CustNoCaption">
+          <DataField>CustNoCaption</DataField>
+        </Field>
+        <Field Name="ShipToAddressCaption">
+          <DataField>ShipToAddressCaption</DataField>
+        </Field>
+        <Field Name="CompanyInfoPicture">
+          <DataField>CompanyInfoPicture</DataField>
+        </Field>
+        <Field Name="NUM_SUBSEQUENT_SalesHeader">
+          <DataField>NUM_SUBSEQUENT_SalesHeader</DataField>
+        </Field>
+        <Field Name="REF_ENGAGEMENT_SalesHeader">
+          <DataField>REF_ENGAGEMENT_SalesHeader</DataField>
+        </Field>
+        <Field Name="NUM_EJ_SalesHeader">
+          <DataField>NUM_EJ_SalesHeader</DataField>
+        </Field>
+        <Field Name="TRS_ID_SalesHeader">
+          <DataField>TRS_ID_SalesHeader</DataField>
+        </Field>
+        <Field Name="TRS_ID_AUTORISATION_SalesHeader">
+          <DataField>TRS_ID_AUTORISATION_SalesHeader</DataField>
+        </Field>
+        <Field Name="TRS_ID_AUTORISATION_SalesHeaderFormat">
+          <DataField>TRS_ID_AUTORISATION_SalesHeaderFormat</DataField>
+        </Field>
+        <Field Name="NUM_MARKET_SalesHeader">
+          <DataField>NUM_MARKET_SalesHeader</DataField>
+        </Field>
+        <Field Name="G_Compteur">
+          <DataField>G_Compteur</DataField>
+        </Field>
+        <Field Name="PalletCounter">
+          <DataField>PalletCounter</DataField>
+        </Field>
+        <Field Name="ExtDocNo_SalesHeader">
+          <DataField>ExtDocNo_SalesHeader</DataField>
+        </Field>
+        <Field Name="SellToCustNo_SalesHeader">
+          <DataField>SellToCustNo_SalesHeader</DataField>
+        </Field>
+        <Field Name="OrderRefCust_SalesHeader">
+          <DataField>OrderRefCust_SalesHeader</DataField>
+        </Field>
+        <Field Name="ShipToAddr_1_SalesHeader">
+          <DataField>ShipToAddr_1_SalesHeader</DataField>
+        </Field>
+        <Field Name="ShipToAddr_2_SalesHeader">
+          <DataField>ShipToAddr_2_SalesHeader</DataField>
+        </Field>
+        <Field Name="ShipToAddr_3_SalesHeader">
+          <DataField>ShipToAddr_3_SalesHeader</DataField>
+        </Field>
+        <Field Name="ShipToAddr_4_SalesHeader">
+          <DataField>ShipToAddr_4_SalesHeader</DataField>
+        </Field>
+        <Field Name="ShipToAddr_5_SalesHeader">
+          <DataField>ShipToAddr_5_SalesHeader</DataField>
+        </Field>
+        <Field Name="ShipToAddr_6_SalesHeader">
+          <DataField>ShipToAddr_6_SalesHeader</DataField>
+        </Field>
+        <Field Name="ShipToAddr_7_SalesHeader">
+          <DataField>ShipToAddr_7_SalesHeader</DataField>
+        </Field>
+        <Field Name="ShipToAddr_8_SalesHeader">
+          <DataField>ShipToAddr_8_SalesHeader</DataField>
+        </Field>
+      </Fields>
+      <rd:DataSetInfo>
+        <rd:DataSetName>DataSet</rd:DataSetName>
+        <rd:SchemaPath>Report.xsd</rd:SchemaPath>
+        <rd:TableName>Result</rd:TableName>
+      </rd:DataSetInfo>
+    </DataSet>
+  </DataSets>
+  <ReportSections>
+    <ReportSection>
+      <Body>
+        <ReportItems>
+          <Tablix Name="list1">
+            <TablixBody>
+              <TablixColumns>
+                <TablixColumn>
+                  <Width>9.96706cm</Width>
+                </TablixColumn>
+              </TablixColumns>
+              <TablixRows>
+                <TablixRow>
+                  <Height>8.54761cm</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Rectangle Name="list1_Contents">
+                          <ReportItems>
+                            <Textbox Name="ExtDocNo_SalesHeader">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value EvaluationMode="Auto">=First(Fields!ExtDocNo_SalesHeader.Value)</Value>
+                                      <Style>
+                                        <FontFamily>Segoe UI</FontFamily>
+                                        <FontWeight>Bold</FontWeight>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style />
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>ExtDocNo_SalesHeader</rd:DefaultName>
+                              <Top>2.39034cm</Top>
+                              <Left>4.07141cm</Left>
+                              <Height>0.6cm</Height>
+                              <Width>4.16687cm</Width>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                              </Style>
+                            </Textbox>
+                            <Textbox Name="Textbox2">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value EvaluationMode="Auto">=First(Fields!CustOrderNoCaption.Value)</Value>
+                                      <Style>
+                                        <FontFamily>Segoe UI</FontFamily>
+                                        <FontWeight>Bold</FontWeight>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style />
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox1</rd:DefaultName>
+                              <Top>2.39034cm</Top>
+                              <Height>0.6cm</Height>
+                              <Width>4.04495cm</Width>
+                              <ZIndex>1</ZIndex>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                              </Style>
+                            </Textbox>
+                            <Textbox Name="Textbox3">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value EvaluationMode="Auto">=First(Fields!SellToCustNo_SalesHeader.Value)</Value>
+                                      <Style>
+                                        <FontFamily>Segoe UI</FontFamily>
+                                        <FontWeight>Bold</FontWeight>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style />
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox1</rd:DefaultName>
+                              <Top>3.384cm</Top>
+                              <Left>2.44422cm</Left>
+                              <Height>0.38833cm</Height>
+                              <Width>2.5cm</Width>
+                              <ZIndex>2</ZIndex>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                              </Style>
+                            </Textbox>
+                            <Textbox Name="Textbox4">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value EvaluationMode="Auto">=First(Fields!CustNoCaption.Value)</Value>
+                                      <Style>
+                                        <FontFamily>Segoe UI</FontFamily>
+                                        <FontWeight>Bold</FontWeight>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style />
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox1</rd:DefaultName>
+                              <Top>3.384cm</Top>
+                              <Left>0.0913cm</Left>
+                              <Height>0.38833cm</Height>
+                              <Width>2.35292cm</Width>
+                              <ZIndex>3</ZIndex>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                              </Style>
+                            </Textbox>
+                            <Textbox Name="Textbox5">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value EvaluationMode="Auto" />
+                                      <Style>
+                                        <FontFamily>Segoe UI</FontFamily>
+                                        <FontWeight>Bold</FontWeight>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style />
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox1</rd:DefaultName>
+                              <Top>2.70784cm</Top>
+                              <Left>6.04117cm</Left>
+                              <Height>0.38833cm</Height>
+                              <Width>2.5cm</Width>
+                              <ZIndex>4</ZIndex>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                              </Style>
+                            </Textbox>
+                            <Textbox Name="Textbox6">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value EvaluationMode="Auto">=First(Fields!CustOrderRefCaption.Value)</Value>
+                                      <Style>
+                                        <FontFamily>Segoe UI</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style />
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox1</rd:DefaultName>
+                              <Top>3.77233cm</Top>
+                              <Left>0.0913cm</Left>
+                              <Height>0.38833cm</Height>
+                              <Width>5.02521cm</Width>
+                              <ZIndex>5</ZIndex>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                              </Style>
+                            </Textbox>
+                            <Textbox Name="Textbox8">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value EvaluationMode="Auto">=First(Fields!OrderRefCust_SalesHeader.Value)</Value>
+                                      <Style>
+                                        <FontFamily>Segoe UI</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style />
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox1</rd:DefaultName>
+                              <Top>4.16066cm</Top>
+                              <Left>0.0913cm</Left>
+                              <Height>0.38833cm</Height>
+                              <Width>3.57cm</Width>
+                              <ZIndex>6</ZIndex>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                              </Style>
+                            </Textbox>
+                            <Textbox Name="Textbox9">
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value EvaluationMode="Auto">=First(Fields!ShipToAddr_1_SalesHeader.Value)</Value>
+                                      <Style>
+                                        <FontFamily>Segoe UI</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style />
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox1</rd:DefaultName>
+                              <Top>5.44097cm</Top>
+                              <Left>0.0913cm</Left>
+                              <Height>0.38833cm</Height>
+                              <Width>5.43401cm</Width>
+                              <ZIndex>7</ZIndex>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                              </Style>
+                            </Textbox>
+                            <Textbox Name="Textbox10">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value EvaluationMode="Auto">=First(Fields!ShipToAddressCaption.Value)</Value>
+                                      <Style>
+                                        <FontFamily>Segoe UI</FontFamily>
+                                        <FontSize>15pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <TextDecoration>Underline</TextDecoration>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style />
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox1</rd:DefaultName>
+                              <Top>4.82333cm</Top>
+                              <Left>0.0913cm</Left>
+                              <Height>0.61764cm</Height>
+                              <Width>7.07442cm</Width>
+                              <ZIndex>8</ZIndex>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                              </Style>
+                            </Textbox>
+                            <Textbox Name="Textbox11">
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value EvaluationMode="Auto">=First(Fields!ShipToAddr_3_SalesHeader.Value)</Value>
+                                      <Style>
+                                        <FontFamily>Segoe UI</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style />
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox1</rd:DefaultName>
+                              <Top>6.21763cm</Top>
+                              <Left>0.0913cm</Left>
+                              <Height>0.38833cm</Height>
+                              <Width>5.43401cm</Width>
+                              <ZIndex>9</ZIndex>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                              </Style>
+                            </Textbox>
+                            <Textbox Name="Textbox12">
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value EvaluationMode="Auto">=First(Fields!ShipToAddr_2_SalesHeader.Value)</Value>
+                                      <Style>
+                                        <FontFamily>Segoe UI</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style />
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox1</rd:DefaultName>
+                              <Top>5.8293cm</Top>
+                              <Left>0.0913cm</Left>
+                              <Height>0.38833cm</Height>
+                              <Width>5.43401cm</Width>
+                              <ZIndex>10</ZIndex>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                              </Style>
+                            </Textbox>
+                            <Textbox Name="Textbox13">
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value EvaluationMode="Auto">=First(Fields!ShipToAddr_5_SalesHeader.Value)</Value>
+                                      <Style>
+                                        <FontFamily>Segoe UI</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style />
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox1</rd:DefaultName>
+                              <Top>6.99429cm</Top>
+                              <Left>0.0913cm</Left>
+                              <Height>0.38833cm</Height>
+                              <Width>5.43401cm</Width>
+                              <ZIndex>11</ZIndex>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                              </Style>
+                            </Textbox>
+                            <Textbox Name="Textbox14">
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value EvaluationMode="Auto">=First(Fields!ShipToAddr_4_SalesHeader.Value)</Value>
+                                      <Style>
+                                        <FontFamily>Segoe UI</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style />
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox1</rd:DefaultName>
+                              <Top>6.60596cm</Top>
+                              <Left>0.0913cm</Left>
+                              <Height>0.38833cm</Height>
+                              <Width>5.43401cm</Width>
+                              <ZIndex>12</ZIndex>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                              </Style>
+                            </Textbox>
+                            <Textbox Name="Textbox15">
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value EvaluationMode="Auto">=First(Fields!ShipToAddr_7_SalesHeader.Value)</Value>
+                                      <Style>
+                                        <FontFamily>Segoe UI</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style />
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox1</rd:DefaultName>
+                              <Top>7.77095cm</Top>
+                              <Left>0.0913cm</Left>
+                              <Height>0.38833cm</Height>
+                              <Width>5.43401cm</Width>
+                              <ZIndex>13</ZIndex>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                              </Style>
+                            </Textbox>
+                            <Textbox Name="Textbox16">
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value EvaluationMode="Auto">=First(Fields!ShipToAddr_6_SalesHeader.Value)</Value>
+                                      <Style>
+                                        <FontFamily>Segoe UI</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style />
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox1</rd:DefaultName>
+                              <Top>7.38262cm</Top>
+                              <Left>0.0913cm</Left>
+                              <Height>0.38833cm</Height>
+                              <Width>5.43401cm</Width>
+                              <ZIndex>14</ZIndex>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                              </Style>
+                            </Textbox>
+                            <Textbox Name="Textbox17">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value EvaluationMode="Auto" />
+                                      <Style>
+                                        <FontFamily>Segoe UI</FontFamily>
+                                        <FontWeight>Bold</FontWeight>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style />
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox1</rd:DefaultName>
+                              <Top>3.56318cm</Top>
+                              <Left>6.04117cm</Left>
+                              <Height>0.38833cm</Height>
+                              <Width>3.6613cm</Width>
+                              <ZIndex>15</ZIndex>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                              </Style>
+                            </Textbox>
+                            <Textbox Name="Textbox18">
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value EvaluationMode="Auto">=First(Fields!ShipToAddr_8_SalesHeader.Value)</Value>
+                                      <Style>
+                                        <FontFamily>Segoe UI</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style />
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox1</rd:DefaultName>
+                              <Top>8.15928cm</Top>
+                              <Left>0.0913cm</Left>
+                              <Height>0.38833cm</Height>
+                              <Width>5.43401cm</Width>
+                              <ZIndex>16</ZIndex>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                              </Style>
+                            </Textbox>
+                            <Textbox Name="Textbox19">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value EvaluationMode="Auto">=fields!PalletCounter.Value</Value>
+                                      <Style>
+                                        <FontFamily>Segoe UI</FontFamily>
+                                        <FontWeight>Bold</FontWeight>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style />
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox1</rd:DefaultName>
+                              <Top>0.24684cm</Top>
+                              <Left>4.11102cm</Left>
+                              <Height>0.38833cm</Height>
+                              <Width>2.3913cm</Width>
+                              <ZIndex>17</ZIndex>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                              </Style>
+                            </Textbox>
+                            <Image Name="CompanyInfoPicture1">
+                              <Source>Database</Source>
+                              <Value>=Convert.ToBase64String(Fields!CompanyInfoPicture.Value)</Value>
+                              <MIMEType>image/bmp</MIMEType>
+                              <Sizing>FitProportional</Sizing>
+                              <Top>0pt</Top>
+                              <Left>2.58803pt</Left>
+                              <Height>2.115cm</Height>
+                              <Width>3.507cm</Width>
+                              <ZIndex>18</ZIndex>
+                              <DataElementOutput>NoOutput</DataElementOutput>
+                              <Style>
+                                <Border />
+                                <FontFamily>Segoe UI</FontFamily>
+                                <FontSize>8pt</FontSize>
+                              </Style>
+                            </Image>
+                            <Textbox Name="Textbox20">
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value EvaluationMode="Auto">=first(Fields!NUM_SUBSEQUENT_SalesHeader.Value)</Value>
+                                      <Style>
+                                        <FontFamily>Segoe UI</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Left</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox1</rd:DefaultName>
+                              <Top>5.47625cm</Top>
+                              <Left>6.04117cm</Left>
+                              <Height>0.35305cm</Height>
+                              <Width>3.92589cm</Width>
+                              <ZIndex>19</ZIndex>
+                              <Visibility>
+                                <Hidden>=iif(Fields!NUM_SUBSEQUENT_SalesHeader.Value="",TRUE,FALSE)</Hidden>
+                              </Visibility>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                              </Style>
+                            </Textbox>
+                            <Textbox Name="Textbox25">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value EvaluationMode="Auto" />
+                                      <Style>
+                                        <FontFamily>Segoe UI</FontFamily>
+                                        <FontWeight>Bold</FontWeight>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style />
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox1</rd:DefaultName>
+                              <Top>4.07964cm</Top>
+                              <Left>3.15288cm</Left>
+                              <Height>0.38833cm</Height>
+                              <Width>3.6613cm</Width>
+                              <ZIndex>20</ZIndex>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                              </Style>
+                            </Textbox>
+                            <Textbox Name="Textbox21">
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value EvaluationMode="Auto">=first(Fields!REF_ENGAGEMENT_SalesHeader.Value)</Value>
+                                      <Style>
+                                        <FontFamily>Segoe UI</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Left</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox1</rd:DefaultName>
+                              <Top>5.86458cm</Top>
+                              <Left>6.04117cm</Left>
+                              <Height>0.35305cm</Height>
+                              <Width>3.92589cm</Width>
+                              <ZIndex>21</ZIndex>
+                              <Visibility>
+                                <Hidden>=iif(Fields!REF_ENGAGEMENT_SalesHeader.Value="",TRUE,FALSE)</Hidden>
+                              </Visibility>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                              </Style>
+                            </Textbox>
+                            <Textbox Name="Textbox22">
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value EvaluationMode="Auto">=first(Fields!NUM_EJ_SalesHeader.Value)</Value>
+                                      <Style>
+                                        <FontFamily>Segoe UI</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Left</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox1</rd:DefaultName>
+                              <Top>6.21763cm</Top>
+                              <Left>6.04117cm</Left>
+                              <Height>0.38833cm</Height>
+                              <Width>3.92589cm</Width>
+                              <ZIndex>22</ZIndex>
+                              <Visibility>
+                                <Hidden>=iif(Fields!NUM_EJ_SalesHeader.Value="",true,false)</Hidden>
+                              </Visibility>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                              </Style>
+                            </Textbox>
+                            <Textbox Name="Textbox23">
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value EvaluationMode="Auto">=first(Fields!TRS_ID_SalesHeader.Value)</Value>
+                                      <Style>
+                                        <FontFamily>Segoe UI</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Left</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox1</rd:DefaultName>
+                              <Top>6.60596cm</Top>
+                              <Left>6.04117cm</Left>
+                              <Height>0.38833cm</Height>
+                              <Width>3.92589cm</Width>
+                              <ZIndex>23</ZIndex>
+                              <Visibility>
+                                <Hidden>=iif(Fields!TRS_ID_SalesHeader.Value="",true,false)</Hidden>
+                              </Visibility>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                              </Style>
+                            </Textbox>
+                            <Textbox Name="Textbox24">
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value EvaluationMode="Auto">=first(Fields!TRS_ID_AUTORISATION_SalesHeader.Value)</Value>
+                                      <Style>
+                                        <FontFamily>Segoe UI</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Left</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox1</rd:DefaultName>
+                              <Top>6.99429cm</Top>
+                              <Left>6.04117cm</Left>
+                              <Height>0.38833cm</Height>
+                              <Width>3.92589cm</Width>
+                              <ZIndex>24</ZIndex>
+                              <Visibility>
+                                <Hidden>=iif(Fields!TRS_ID_AUTORISATION_SalesHeader.Value="0",true,false)</Hidden>
+                              </Visibility>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                              </Style>
+                            </Textbox>
+                            <Textbox Name="Textbox26">
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value EvaluationMode="Auto">=first(Fields!NUM_MARKET_SalesHeader.Value)</Value>
+                                      <Style>
+                                        <FontFamily>Segoe UI</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style />
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox1</rd:DefaultName>
+                              <Top>7.38262cm</Top>
+                              <Left>6.04117cm</Left>
+                              <Height>0.38833cm</Height>
+                              <Width>3.92589cm</Width>
+                              <ZIndex>25</ZIndex>
+                              <Visibility>
+                                <Hidden>=iif(Fields!NUM_MARKET_SalesHeader.Value="",true,false)</Hidden>
+                              </Visibility>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                              </Style>
+                            </Textbox>
+                            <Textbox Name="Textbox27">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value EvaluationMode="Auto" />
+                                      <Style>
+                                        <FontFamily>Segoe UI</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style />
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox1</rd:DefaultName>
+                              <Top>8.15928cm</Top>
+                              <Left>6.04117cm</Left>
+                              <Height>0.31777cm</Height>
+                              <Width>3.92589cm</Width>
+                              <ZIndex>26</ZIndex>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                              </Style>
+                            </Textbox>
+                          </ReportItems>
+                          <KeepTogether>true</KeepTogether>
+                          <Style>
+                            <FontFamily>Segoe UI</FontFamily>
+                            <FontSize>8pt</FontSize>
+                          </Style>
+                        </Rectangle>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+              </TablixRows>
+            </TablixBody>
+            <TablixColumnHierarchy>
+              <TablixMembers>
+                <TablixMember />
+              </TablixMembers>
+            </TablixColumnHierarchy>
+            <TablixRowHierarchy>
+              <TablixMembers>
+                <TablixMember>
+                  <Group Name="list1_Details_Group">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!DocType_SalesHeader.Value</GroupExpression>
+                      <GroupExpression>=Fields!No_SalesHeader.Value</GroupExpression>
+                      <GroupExpression>=Fields!G_Compteur.Value</GroupExpression>
+                    </GroupExpressions>
+                    <PageBreak>
+                      <BreakLocation>Between</BreakLocation>
+                      <ResetPageNumber>true</ResetPageNumber>
+                    </PageBreak>
+                  </Group>
+                  <SortExpressions>
+                    <SortExpression>
+                      <Value>=Fields!No_SalesHeader.Value</Value>
+                    </SortExpression>
+                    <SortExpression>
+                      <Value>=Fields!DocType_SalesHeader.Value</Value>
+                    </SortExpression>
+                    <SortExpression>
+                      <Value>=Fields!G_Compteur.Value</Value>
+                    </SortExpression>
+                  </SortExpressions>
+                  <DataElementOutput>Output</DataElementOutput>
+                  <KeepTogether>true</KeepTogether>
+                </TablixMember>
+              </TablixMembers>
+            </TablixRowHierarchy>
+            <DataSetName>DataSet_Result</DataSetName>
+            <PageBreak>
+              <BreakLocation>End</BreakLocation>
+            </PageBreak>
+            <Top>0.02778in</Top>
+            <Height>8.54761cm</Height>
+            <Width>9.96706cm</Width>
+            <Style>
+              <FontFamily>Segoe UI</FontFamily>
+              <FontSize>8pt</FontSize>
+            </Style>
+          </Tablix>
+        </ReportItems>
+        <Height>8.61817cm</Height>
+        <Style>
+          <FontFamily>Segoe UI</FontFamily>
+          <FontSize>8pt</FontSize>
+        </Style>
+      </Body>
+      <Width>9.96706cm</Width>
+      <Page>
+        <PageHeight>27.94cm</PageHeight>
+        <PageWidth>21.59cm</PageWidth>
+        <InteractiveHeight>11in</InteractiveHeight>
+        <InteractiveWidth>8.5in</InteractiveWidth>
+        <LeftMargin>0.7cm</LeftMargin>
+        <RightMargin>0.5cm</RightMargin>
+        <TopMargin>0.5cm</TopMargin>
+        <BottomMargin>0.5cm</BottomMargin>
+        <ColumnSpacing>1.27cm</ColumnSpacing>
+        <Style>
+          <FontFamily>Segoe UI</FontFamily>
+          <FontSize>8pt</FontSize>
+        </Style>
+      </Page>
+    </ReportSection>
+  </ReportSections>
+  <Code>Public Function BlankZero(ByVal Value As Decimal)
+    if Value = 0 then
+        Return ""
+    end if
+    Return Value
+End Function
+
+Public Function BlankPos(ByVal Value As Decimal)
+    if Value &gt; 0 then
+        Return ""
+    end if
+    Return Value
+End Function
+
+Public Function BlankZeroAndPos(ByVal Value As Decimal)
+    if Value &gt;= 0 then
+        Return ""
+    end if
+    Return Value
+End Function
+
+Public Function BlankNeg(ByVal Value As Decimal)
+    if Value &lt; 0 then
+        Return ""
+    end if
+    Return Value
+End Function
+
+Public Function BlankNegAndZero(ByVal Value As Decimal)
+    if Value &lt;= 0 then
+        Return ""
+    end if
+    Return Value
+End Function
+
+Shared Data1 as Object
+
+Public Function GetData(Num as Integer, Group as integer) as Object
+if Group = 1 then
+   Return Cstr(Choose(Num, Split(Cstr(Data1),Chr(177))))
+End If
+
+End Function
+
+Public Function SetData(NewData as Object,Group as integer)
+  If Group = 1 and NewData &lt;&gt; "" Then
+      Data1 = NewData
+  End If
+  Return True
+
+End Function
+
+
+</Code>
+  <Language>=User!Language</Language>
+  <ConsumeContainerWhitespace>true</ConsumeContainerWhitespace>
+  <rd:ReportUnitType>Cm</rd:ReportUnitType>
+  <rd:ReportID>1c018c53-9485-45b8-86c3-49eb2763c85f</rd:ReportID>
+</Report>
+    END_OF_RDLDATA
+  }
+}
+

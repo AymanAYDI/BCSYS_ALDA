@@ -1,0 +1,42 @@
+OBJECT Table 50019 Data Flow Status
+{
+  OBJECT-PROPERTIES
+  {
+    Date=11/05/16;
+    Time=09:35:21;
+    Modified=Yes;
+    Version List=BC6AUTOINV;
+  }
+  PROPERTIES
+  {
+    CaptionML=[ENU=Data Flow Status;
+               FRA=Statut flux de donn‚es];
+    LookupPageID=Page50031;
+    DrillDownPageID=Page50031;
+  }
+  FIELDS
+  {
+    { 1   ;   ;Data Flow Code      ;Code20        ;TableRelation="Data Flow";
+                                                   CaptionML=[ENU=Data Flow Code;
+                                                              FRA=Code flux de donn‚es];
+                                                   NotBlank=Yes }
+    { 2   ;   ;No.                 ;Integer       ;CaptionML=[ENU=No.;
+                                                              FRA=Nø] }
+    { 3   ;   ;Name                ;Text30        ;CaptionML=[ENU=Name;
+                                                              FRA=Nom] }
+  }
+  KEYS
+  {
+    {    ;Data Flow Code,No.                      ;Clustered=Yes }
+  }
+  FIELDGROUPS
+  {
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

@@ -2,8 +2,9 @@ OBJECT Table 339 Item Application Entry
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
+    Date=13/05/20;
+    Time=16:23:49;
+    Modified=Yes;
     Version List=NAVW19.00;
   }
   PROPERTIES
@@ -206,7 +207,14 @@ OBJECT Table 339 Item Application Entry
     END;
 
     PROCEDURE CheckIsCyclicalLoop@9(CheckItemLedgEntry@1004 : Record 32;FromItemLedgEntry@1005 : Record 32) : Boolean;
+    VAR
+      Item@1000000000 : Record 27;
     BEGIN
+      //BCSYS 13052020 error memory
+      IF NOT Item.GET(CheckItemLedgEntry."Item No.") THEN EXIT(TRUE);
+      IF Item.SkipCycleLoop THEN EXIT(TRUE);
+      //FIN BCSYS 13052020
+
       IF CheckItemLedgEntry."Entry No." = FromItemLedgEntry."Entry No." THEN
         EXIT(TRUE);
       VisitedItemApplnEntry.DELETEALL;

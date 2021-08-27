@@ -1,0 +1,180 @@
+OBJECT XMLport 50030 Import ecr comptables csv
+{
+  OBJECT-PROPERTIES
+  {
+    Date=23/02/16;
+    Time=14:21:13;
+    Modified=Yes;
+    Version List=AB6.IDF.ECR;
+  }
+  PROPERTIES
+  {
+    CaptionML=ENU=Import ecr comptables csv;
+    Direction=Import;
+    Format=Variable Text;
+    FieldDelimiter=<None>;
+    FieldSeparator=[;];
+  }
+  ELEMENTS
+  {
+    { [{4AACF3E0-833B-4820-B792-3F7C67DBCDB6}];  ;GenJnlLines         ;Element ;Text     }
+
+    { [{E95C3F2B-8CAF-4DE2-9727-4308277D90D3}];1 ;GenJnlLine          ;Element ;Table   ;
+                                                  SourceTable=Table81;
+                                                  Import::OnBeforeInsertRecord=BEGIN
+
+                                                                                 {IF Debit = 0 THEN
+                                                                                   VALIDATE("Gen. Journal Line".Amount,-Credit)
+                                                                                 ELSE
+                                                                                   VALIDATE("Gen. Journal Line".Amount,Debit);
+                                                                                 "Gen. Journal Line"."Journal Batch Name" := 'REPRISE';
+                                                                                 CLEAR(Champ);
+                                                                                 }
+                                                                                    Champ := FORMAT(DateCompta);
+
+                                                                                    IF DELCHR(Champ) <> '' THEN BEGIN
+                                                                                    {
+                                                                                       Year   := COPYSTR(Champ,1,4);
+                                                                                       //Year   := COPYSTR(Champ,3,2);
+                                                                                       Month := COPYSTR(Champ,6,2);
+                                                                                       Day := COPYSTR(Champ,9,2);
+                                                                                       Champ := Day+Month+Year;
+                                                                                     }
+                                                                                      //EVALUATE("Gen. Journal Line"."Posting Date", Champ);
+                                                                                    END;
+
+                                                                                      //Champ := '01/01/2009';
+                                                                                      //EVALUATE("Gen. Journal Line"."Posting Date", Champ);
+                                                                                    Champ := FORMAT(DatDocument);
+
+                                                                                    IF DELCHR(Champ) <> '' THEN BEGIN
+                                                                                    {
+                                                                                       Year   := COPYSTR(Champ,1,4);
+                                                                                       //Year   := COPYSTR(Champ,3,2);
+                                                                                       Month := COPYSTR(Champ,6,2);
+                                                                                       Day := COPYSTR(Champ,9,2);
+                                                                                       Champ := Day+Month+Year;
+                                                                                       }
+                                                                                      EVALUATE("Gen. Journal Line"."Document Date", Champ);
+                                                                                    END;
+
+                                                                                    //   Champ := '01/01/2009';
+                                                                                      EVALUATE("Gen. Journal Line"."Document Date", Champ);
+
+                                                                                    Champ := FORMAT(DateEcheance);
+                                                                                    IF DELCHR(Champ) <> '' THEN BEGIN
+                                                                                    {
+                                                                                       Year   := COPYSTR(Champ,1,4);
+                                                                                       Month := COPYSTR(Champ,6,2);
+                                                                                       Day := COPYSTR(Champ,9,2);
+                                                                                       Champ := Day+Month+Year;
+                                                                                       }
+                                                                                      EVALUATE("Gen. Journal Line"."Due Date",Champ);
+                                                                                    END;
+                                                                               END;
+                                                                                }
+
+    { [{CC542D9D-9756-49C6-91C5-35CC600D8325}];2 ;LineNo              ;Element ;Field   ;
+                                                  DataType=Integer;
+                                                  SourceField=Gen. Journal Line::Line No. }
+
+    { [{B482C442-B535-43EE-B510-CF36E3F71B1D}];2 ;SourceCode          ;Element ;Field   ;
+                                                  DataType=Code;
+                                                  SourceField=Gen. Journal Line::Source Code }
+
+    { [{591696C7-660E-4198-8FCD-32930FBD5C4A}];2 ;PostingDate         ;Element ;Field   ;
+                                                  DataType=Date;
+                                                  SourceField=Gen. Journal Line::Posting Date }
+
+    { [{2B250D39-0FE7-44BC-A5FD-803C91E322EA}];2 ;DateEcheance        ;Element ;Text     }
+
+    { [{C683BA49-490D-424A-A1F1-074F9399CC1B}];2 ;DocumentNo          ;Element ;Field   ;
+                                                  DataType=Code;
+                                                  SourceField=Gen. Journal Line::Document No. }
+
+    { [{26C77F27-589E-43F4-B358-AB4DA5021E6F}];2 ;JnlTemplateName     ;Element ;Field   ;
+                                                  DataType=Code;
+                                                  SourceField=Gen. Journal Line::Journal Template Name }
+
+    { [{EE4649AE-369D-48C0-8AED-F8E0B00C51BB}];2 ;JnlBatch            ;Element ;Field   ;
+                                                  DataType=Code;
+                                                  SourceField=Gen. Journal Line::Journal Batch Name }
+
+    { [{1DAC16D7-F7A8-47EE-9C6B-4603AC159999}];2 ;AccType             ;Element ;Field   ;
+                                                  DataType=Option;
+                                                  SourceField=Gen. Journal Line::Account Type }
+
+    { [{E62775F5-954C-4460-BD0F-6FA938DFA022}];2 ;AccNo               ;Element ;Field   ;
+                                                  DataType=Code;
+                                                  SourceField=Gen. Journal Line::Account No. }
+
+    { [{0911586A-50B3-450B-932B-58BADA900A7F}];2 ;OrderRef            ;Element ;Field   ;
+                                                  DataType=Text;
+                                                  SourceField=Gen. Journal Line::Order Reference Customer }
+
+    { [{F5673779-7573-4840-94CB-653F1E490C33}];2 ;Description         ;Element ;Field   ;
+                                                  DataType=Text;
+                                                  SourceField=Gen. Journal Line::Description }
+
+    { [{BCF7DB93-87F1-455C-81DB-C17ED9E228B8}];2 ;Amount              ;Element ;Field   ;
+                                                  DataType=Decimal;
+                                                  SourceField=Gen. Journal Line::Amount }
+
+    { [{B21A1AF9-F08A-4420-8F6F-68624CB3A39B}];2 ;BalAccType          ;Element ;Field   ;
+                                                  DataType=Option;
+                                                  SourceField=Gen. Journal Line::Bal. Account Type }
+
+    { [{FEF107EC-5088-44F4-9EA9-A83DDFA17E21}];2 ;BalAccNo            ;Element ;Field   ;
+                                                  DataType=Code;
+                                                  SourceField=Gen. Journal Line::Bal. Account No. }
+
+  }
+  EVENTS
+  {
+  }
+  REQUESTPAGE
+  {
+    PROPERTIES
+    {
+    }
+    CONTROLS
+    {
+    }
+  }
+  CODE
+  {
+    VAR
+      DateCompta@1000000029 : Text[30];
+      Champ@1000000027 : Text[50];
+      Day@1000000026 : Text[30];
+      Month@1000000025 : Text[30];
+      Year@1000000024 : Text[30];
+      Debit@1000000023 : Decimal;
+      Credit@1000000022 : Decimal;
+      Axe1@1000000021 : Code[20];
+      Axe2@1000000020 : Code[20];
+      Axe3@1000000019 : Code[20];
+      Axe4@1000000018 : Code[20];
+      Axe5@1000000017 : Code[20];
+      Axe6@1000000016 : Code[20];
+      Axe7@1000000015 : Code[20];
+      Axe8@1000000014 : Code[20];
+      Axe9@1000000013 : Code[20];
+      Axe10@1000000012 : Code[20];
+      Axe11@1000000011 : Code[20];
+      Axe12@1000000010 : Code[20];
+      Axe13@1000000009 : Code[20];
+      Axe14@1000000008 : Code[20];
+      Axe15@1000000007 : Code[20];
+      Axe16@1000000006 : Code[20];
+      NomFeuille@1000000005 : Code[20];
+      Rec_ParamComp@1000000003 : Record 98;
+      MontTVA@1000000002 : Decimal;
+      TypeLettrage@1000000001 : Text[30];
+      DatDocument@1000000000 : Text[30];
+
+    BEGIN
+    END.
+  }
+}
+

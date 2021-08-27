@@ -2,9 +2,10 @@ OBJECT Page 9304 Sales Return Order List
 {
   OBJECT-PROPERTIES
   {
-    Date=15/09/15;
-    Time=12:00:00;
-    Version List=NAVW19.00;
+    Date=15/12/16;
+    Time=19:43:53;
+    Modified=Yes;
+    Version List=NAVW19.00,AB6.JME.001;
   }
   PROPERTIES
   {
@@ -64,6 +65,7 @@ OBJECT Page 9304 Sales Return Order List
                       CaptionML=[ENU=Approvals;
                                  FRA=Approbations];
                       Promoted=No;
+                      Visible=FALSE;
                       PromotedIsBig=No;
                       Image=Approvals;
                       OnAction=VAR
@@ -112,6 +114,7 @@ OBJECT Page 9304 Sales Return Order List
                       RunPageView=SORTING(Source Document,Source No.,Location Code);
                       RunPageLink=Source Document=CONST(Sales Return Order),
                                   Source No.=FIELD(No.);
+                      Visible=FALSE;
                       Image=PickLines }
       { 1102601036;2 ;Action    ;
                       CaptionML=[ENU=Whse. Receipt Lines;
@@ -121,6 +124,7 @@ OBJECT Page 9304 Sales Return Order List
                       RunPageLink=Source Type=CONST(37),
                                   Source Subtype=FIELD(Document Type),
                                   Source No.=FIELD(No.);
+                      Visible=FALSE;
                       Image=ReceiptLines }
       { 1900000004;0 ;ActionContainer;
                       ActionContainerType=ActionItems }
@@ -170,6 +174,7 @@ OBJECT Page 9304 Sales Return Order List
                       Ellipsis=Yes;
                       CaptionML=[ENU=Get Posted Doc&ument Lines to Reverse;
                                  FRA=Extraire lignes doc&ument enreg. … contrepasser];
+                      Visible=FALSE;
                       Image=ReverseLines;
                       OnAction=BEGIN
                                  GetPstdDocLinesToRevere;
@@ -180,6 +185,7 @@ OBJECT Page 9304 Sales Return Order List
                       AccessByPermission=TableData 410=R;
                       CaptionML=[ENU=Send IC Return Order Cnfmn.;
                                  FRA=Confirmation envoi retour IC];
+                      Visible=FALSE;
                       Image=IntercompanyOrder;
                       OnAction=VAR
                                  ICInboxOutboxMgt@1000 : Codeunit 427;
@@ -196,6 +202,7 @@ OBJECT Page 9304 Sales Return Order List
                       Name=SendApprovalRequest;
                       CaptionML=[ENU=Send A&pproval Request;
                                  FRA=Envoyer demande d'a&pprobation];
+                      Visible=FALSE;
                       Enabled=NOT OpenApprovalEntriesExist;
                       Image=SendApprovalRequest;
                       OnAction=VAR
@@ -209,6 +216,7 @@ OBJECT Page 9304 Sales Return Order List
                       Name=CancelApprovalRequest;
                       CaptionML=[ENU=Cancel Approval Re&quest;
                                  FRA=Annuler demande d'appro&bation];
+                      Visible=FALSE;
                       Enabled=OpenApprovalEntriesExist;
                       Image=Cancel;
                       OnAction=VAR
@@ -226,6 +234,7 @@ OBJECT Page 9304 Sales Return Order List
                       Ellipsis=Yes;
                       CaptionML=[ENU=Create Inventor&y Put-away/Pick;
                                  FRA=Cr‚er pr‚lŠv./rangement stoc&k];
+                      Visible=FALSE;
                       Image=CreatePutawayPick;
                       OnAction=BEGIN
                                  CreateInvtPutAwayPick;
@@ -235,6 +244,7 @@ OBJECT Page 9304 Sales Return Order List
                       AccessByPermission=TableData 7316=R;
                       CaptionML=[ENU=Create &Whse. Receipt;
                                  FRA=Cr‚er &r‚ception entrep“t];
+                      Visible=FALSE;
                       Image=NewReceipt;
                       OnAction=VAR
                                  GetSourceDocInbound@1000 : Codeunit 5751;
@@ -402,6 +412,9 @@ OBJECT Page 9304 Sales Return Order List
                 SourceExpr="Posting Date";
                 Visible=FALSE }
 
+    { 1000000002;2;Field  ;
+                SourceExpr="Order Date" }
+
     { 121 ;2   ;Field     ;
                 SourceExpr="Shortcut Dimension 1 Code";
                 Visible=FALSE }
@@ -419,7 +432,8 @@ OBJECT Page 9304 Sales Return Order List
                 Visible=FALSE }
 
     { 21  ;2   ;Field     ;
-                SourceExpr="Assigned User ID" }
+                SourceExpr="Assigned User ID";
+                Visible=FALSE }
 
     { 11  ;2   ;Field     ;
                 SourceExpr="Currency Code";
@@ -444,6 +458,12 @@ OBJECT Page 9304 Sales Return Order List
     { 5   ;2   ;Field     ;
                 SourceExpr="Job Queue Status";
                 Visible=JobQueueActive }
+
+    { 1000000000;2;Field  ;
+                SourceExpr=Amount }
+
+    { 1000000001;2;Field  ;
+                SourceExpr="Amount Including VAT" }
 
     { 1900000007;0;Container;
                 ContainerType=FactBoxArea }

@@ -1,0 +1,38 @@
+OBJECT Codeunit 60000 Delete_PermissionsSets
+{
+  OBJECT-PROPERTIES
+  {
+    Date=09/03/16;
+    Time=11:38:01;
+    Modified=Yes;
+    Version List=;
+  }
+  PROPERTIES
+  {
+    OnRun=BEGIN
+            //PermissionSet.SETFILTER(PermissionSet."Role ID",'<>%1','SUPER');
+            //PermissionSet.DELETEALL;
+            //Permission.SETFILTER(Permission."Object Type",'2|4');
+            //Permission.SETFILTER("Role ID",'<>%1','SUPER');
+            //MyFilter:='';
+            //Permission.SETFILTER("Security Filter",'<>%1',MyFilter);
+            Permission.MODIFYALL("Security Filter",Permission2."Security Filter");
+            //MESSAGE('%1',Permission.COUNT);
+            //Permission.DELETEALL;
+            MESSAGE('Permissions supprim‚es');
+          END;
+
+  }
+  CODE
+  {
+    VAR
+      PermissionSet@1000000000 : Record 2000000004;
+      Permission@1000000001 : Record 2000000005;
+      MyFilter@1000000002 : Text;
+      Permission2@1000000003 : Record 2000000005;
+
+    BEGIN
+    END.
+  }
+}
+

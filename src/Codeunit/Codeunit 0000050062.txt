@@ -1,0 +1,74 @@
+OBJECT Codeunit 50062 Modif BaseUnit
+{
+  OBJECT-PROPERTIES
+  {
+    Date=08/07/15;
+    Time=11:59:59;
+    Modified=Yes;
+    Version List=;
+  }
+  PROPERTIES
+  {
+    OnRun=VAR
+            ITemUOM@1000000000 : Record 5404;
+            BaseUnitOfMeasure@1000000001 : Code[10];
+          BEGIN
+            //IF MyFile.CREATE('C:\item_buom.txt') THEN
+            //BEGIN
+            //   MyFile.TEXTMODE(TRUE);
+            //   ItemUnitofMeasure.SETRANGE(Code,'');
+            //   //ItemUnitofMeasure.SETRANGE("Item No.",'VD388');
+            //   WHILE ItemUnitofMeasure.NEXT <> 0 DO
+            //   BEGIN
+            //     item.GET(ItemUnitofMeasure."Item No.");
+            //     IF NOT BOUM.RUN(item) THEN
+            //       MyFile.WRITE(item."No."+','+GETLASTERRORTEXT);
+            //   END;
+            //END;
+            //MyFile.CLOSE;
+            //HYPERLINK( 'C:\item_buom.txt');
+
+            Item_salesuom;
+            MESSAGE('Termin‚');
+          END;
+
+  }
+  CODE
+  {
+    VAR
+      item@1000000000 : Record 27;
+      ItemUnitofMeasure@1000000001 : Record 5404;
+      BOUM@1000000002 : Codeunit 50063;
+      MyArray@1000000003 : ARRAY [150,2] OF Text;
+      i@1000000004 : Integer;
+      MyFile@1000000005 : File;
+
+    LOCAL PROCEDURE Item_salesuom@1000000000();
+    VAR
+      ItemUnitofMeasure@1000000000 : Record 5404;
+    BEGIN
+      item.RESET;
+      item.SETFILTER("Base Unit of Measure",'<>%1','');
+      item.SETRANGE("Sales Unit of Measure",'');
+      WHILE item.NEXT <> 0 DO
+      BEGIN
+        item.FINDFIRST;
+
+        IF ItemUnitofMeasure.GET(item."No.",item."Base Unit of Measure") THEN
+           item."Sales Unit of Measure" := ItemUnitofMeasure.Code
+        ELSE
+        BEGIN
+          ItemUnitofMeasure."Item No." := item."No.";
+          ItemUnitofMeasure.Code := item."Base Unit of Measure";
+          ItemUnitofMeasure.INSERT(TRUE);
+          item."Sales Unit of Measure" :=ItemUnitofMeasure.Code ;
+        END;
+        item.MODIFY(TRUE);
+      END;
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

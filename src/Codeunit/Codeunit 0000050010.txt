@@ -1,0 +1,48 @@
+OBJECT Codeunit 50010 Delete E.D.I. Log entry
+{
+  OBJECT-PROPERTIES
+  {
+    Date=25/09/12;
+    Time=14:52:16;
+    Modified=Yes;
+    Version List=AC1.00;
+  }
+  PROPERTIES
+  {
+    TableNo=472;
+    OnRun=VAR
+            DateFilter@1180250001 : Date;
+          BEGIN
+            DateFilter := CALCDATE("Parameter String",TODAY);
+
+            Window.OPEN(Text000);
+            DeleteEDILog('','..' + FORMAT(CREATEDATETIME(DateFilter,TIME)));
+            Window.CLOSE;
+          END;
+
+  }
+  CODE
+  {
+    VAR
+      Text000@1003 : TextConst 'ENU=Batch in process...;FRA=Traitement en cours...';
+      Window@1006 : Dialog;
+
+    LOCAL PROCEDURE DeleteEDILog@1180250004(EDICodeFilter@1180250001 : Text[250];EDILogDTFilter@1180250003 : Text[250]);
+    VAR
+      EDILog@1180250002 : Record 50001;
+    BEGIN
+      EDILog.RESET;
+      IF EDICodeFilter <> '' THEN
+        EDILog.SETFILTER("EDI Code",EDICodeFilter);
+      IF EDILogDTFilter <> '' THEN
+        EDILog.SETFILTER("Treatment Date",EDILogDTFilter);
+      EDILog.SETRANGE(Corrected,TRUE);
+      IF EDILog.FINDSET THEN
+        EDILog.DELETEALL(TRUE);
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

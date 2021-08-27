@@ -2,8 +2,9 @@ OBJECT Codeunit 260 Document-Mailing
 {
   OBJECT-PROPERTIES
   {
-    Date=26/11/15;
-    Time=12:00:00;
+    Date=25/04/16;
+    Time=12:19:15;
+    Modified=Yes;
     Version List=NAVW19.00.00.43897;
   }
   PROPERTIES
@@ -20,6 +21,8 @@ OBJECT Codeunit 260 Document-Mailing
       InvoiceTxt@1003 : TextConst 'ENU=Invoice;FRA=Facturer';
       ShipmentTxt@1004 : TextConst 'ENU=Shipment;FRA=Exp‚dition';
       CrMemoTxt@1002 : TextConst 'ENU=Credit Memos;FRA=Avoirs';
+      ContactEmail@1000000000 : Text;
+      ReportAsPdfFileNameMsgPurch@1000000001 : TextConst '@@@="%1 = Document Type %2 = Invoice No.";ENU=purchase %1 %2.pdf;FRA=%1 achat %2.pdf';
 
     PROCEDURE EmailFileFromIssuedFinChrgMemo@1(IssuedFinChargeMemoHeader@1000 : Record 304;AttachmentFilePath@1001 : Text[250];HideDialog@1004 : Boolean);
     VAR
@@ -43,6 +46,12 @@ OBJECT Codeunit 260 Document-Mailing
 
     PROCEDURE EmailFileFromSalesHeader@12(SalesHeader@1000 : Record 36;AttachmentFilePath@1001 : Text[250];CustomReportSelection@1003 : Record 9657);
     BEGIN
+      //BC6>>
+      IF SalesHeader."Document Type" IN
+        [SalesHeader."Document Type"::Quote, SalesHeader."Document Type"::Order,
+        SalesHeader."Document Type"::"Return Order", SalesHeader."Document Type"::"Blanket Order"] THEN
+          ContactEmail := GetToAddressFromContact(SalesHeader."Sell-to Contact No.");
+      //BC6<<
       WITH SalesHeader DO
         EmailFile(
           AttachmentFilePath,'',"No.","Bill-to Customer No.",FORMAT("Document Type"),FALSE,CustomReportSelection);
@@ -104,6 +113,10 @@ OBJECT Codeunit 260 Document-Mailing
           "Send to" := CustomReportSelection."Send To Email"
         ELSE
           "Send to" := GetToAddressFromCustomer(SendEmaillToCustNo);
+        //BC6>>
+        IF ContactEmail <> '' THEN
+          "Send to" := ContactEmail;
+        //BC6<<
         Subject := COPYSTR(
             STRSUBSTNO(
               EmailSubjectCapTxt,CompanyInformation.Name,EmailDocName,PostedDocNo),1,
@@ -123,6 +136,53 @@ OBJECT Codeunit 260 Document-Mailing
         ToAddress := Customer."E-Mail";
 
       EXIT(ToAddress);
+    END;
+
+    LOCAL PROCEDURE GetToAddressFromContact@1000000000(BillToContactNo@1000 : Code[20]) : Text[250];
+    VAR
+      Cont@1002 : Record 5050;
+      ToAddress@1001 : Text;
+    BEGIN
+      //BC6>>
+      IF Cont.GET(BillToContactNo) THEN
+        ToAddress := Cont."E-Mail";
+
+      EXIT(ToAddress);
+    END;
+
+    PROCEDURE EmailFileFromPurchHeader@1000000001(PurchHeader@1000 : Record 38;AttachmentFilePath@1001 : Text[250];CustomReportSelection@1003 : Record 9657);
+    BEGIN
+      //BC6>>
+      WITH PurchHeader DO
+        EmailFilePurchase(
+          AttachmentFilePath,'',"No.","Buy-from Vendor No.",FORMAT("Document Type"),FALSE,CustomReportSelection);
+    END;
+
+    PROCEDURE EmailFilePurchase@1000000002(AttachmentFilePath@1001 : Text[250];AttachmentFileName@1005 : Text[250];PostedDocNo@1000 : Code[20];SendEmaillToCustNo@1006 : Code[20];EmailDocName@1008 : Text[150];HideDialog@1003 : Boolean;CustomReportSelection@1009 : Record 9657);
+    VAR
+      TempEmailItem@1002 : TEMPORARY Record 9500;
+      CompanyInformation@1004 : Record 79;
+    BEGIN
+      IF AttachmentFileName = '' THEN
+        AttachmentFileName := STRSUBSTNO(ReportAsPdfFileNameMsgPurch,EmailDocName,PostedDocNo);
+      CompanyInformation.GET;
+      WITH TempEmailItem DO BEGIN
+        IF CustomReportSelection."Send To Email" <> '' THEN
+          "Send to" := CustomReportSelection."Send To Email"
+        ELSE
+          "Send to" := GetToAddressFromCustomer(SendEmaillToCustNo);
+        //BC6>>
+        IF ContactEmail <> '' THEN
+          "Send to" := ContactEmail;
+        //BC6<<
+        Subject := COPYSTR(
+            STRSUBSTNO(
+              EmailSubjectCapTxt,CompanyInformation.Name,EmailDocName,PostedDocNo),1,
+            MAXSTRLEN(Subject));
+        "Attachment File Path" := AttachmentFilePath;
+        "Attachment Name" := AttachmentFileName;
+        Send(HideDialog);
+      END;
     END;
 
     BEGIN

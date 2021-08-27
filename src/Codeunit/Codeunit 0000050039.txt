@@ -1,0 +1,77 @@
+OBJECT Codeunit 50039 Update CHORUS invoice status
+{
+  OBJECT-PROPERTIES
+  {
+    Date=07/02/20;
+    Time=10:15:25;
+    Modified=Yes;
+    Version List=;
+  }
+  PROPERTIES
+  {
+    TableNo=21;
+    Permissions=TableData 112=rm,
+                TableData 114=rm;
+    OnRun=VAR
+            SalesInvoiceHeader@1000000001 : Record 112;
+            SalesCrMemoHeader@1000000000 : Record 114;
+            SalesCommentLine@1000000002 : Record 44;
+          BEGIN
+          END;
+
+  }
+  CODE
+  {
+
+    PROCEDURE UpdateStatusOntDocument@1000000000(CustLedgerEntry@1000000000 : Record 21;Status@1000000007 : Text[80]);
+    VAR
+      SalesCommentLine@1000000003 : Record 44;
+      RecRef@1000000001 : RecordRef;
+      FRefDocNo@1000000002 : FieldRef;
+      FRefStatus@1000000004 : FieldRef;
+      SalesInvoiceHeader@1000000005 : Record 112;
+      SalesCrMemoHeader@1000000006 : Record 114;
+    BEGIN
+      CASE CustLedgerEntry."Document Type" OF
+        CustLedgerEntry."Document Type"::Invoice : BEGIN
+          SalesInvoiceHeader.GET(CustLedgerEntry."Document No.");
+          SalesInvoiceHeader."Acquitted by EDI" := TRUE;
+          SalesInvoiceHeader.MODIFY(TRUE);
+          UpdateSalesCommentLine(SalesCommentLine."Document Type"::"Posted Invoice",SalesInvoiceHeader."No.",Status);
+          END;
+        CustLedgerEntry."Document Type"::"Credit Memo" : BEGIN
+          SalesCrMemoHeader.GET(CustLedgerEntry."Document No.");
+          SalesCrMemoHeader."Acquitted by EDI" := TRUE;
+          SalesCrMemoHeader.MODIFY(TRUE);
+          UpdateSalesCommentLine(SalesCommentLine."Document Type"::"Posted Credit Memo",SalesCrMemoHeader."No.",Status);
+          END;
+      END;
+    END;
+
+    LOCAL PROCEDURE UpdateSalesCommentLine@1000000002(DocumentType@1000000001 : Option;DocumentNo@1000000002 : Code[20];Status@1000000003 : Text[80]);
+    VAR
+      CommentLine@1000000000 : Record 44;
+      LineNo@1000000004 : Integer;
+    BEGIN
+      CommentLine.SETRANGE("Document Type",DocumentType);
+      CommentLine.SETRANGE("No.",DocumentNo);
+      //CommentLine.SETRANGE(Date,WORKDATE);
+      IF CommentLine.FINDLAST THEN
+        LineNo := CommentLine."Line No."
+      ELSE
+        LineNo := 0;
+
+      CommentLine.INIT;
+      CommentLine."Document Type" := DocumentType;
+      CommentLine."No." := DocumentNo;
+      CommentLine.Date := WORKDATE;
+      CommentLine."Line No." := LineNo + 10000;
+      CommentLine.Comment := Status;
+      CommentLine.INSERT(TRUE);
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

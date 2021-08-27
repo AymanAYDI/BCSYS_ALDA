@@ -1,0 +1,89 @@
+OBJECT Page 50000 E.D.I. Setup List
+{
+  OBJECT-PROPERTIES
+  {
+    Date=28/09/12;
+    Time=12:13:02;
+    Modified=Yes;
+    Version List=AC1.00;
+  }
+  PROPERTIES
+  {
+    CaptionML=[ENU=Electronic Data Interchange Setup List;
+               FRA=Liste des paramŠtres d'‚change de Donn‚es Informatis‚];
+    SourceTable=Table50000;
+    PageType=List;
+    CardPageID=E.D.I. Setup Card;
+    ActionList=ACTIONS
+    {
+      { 1900000003;0 ;ActionContainer;
+                      ActionContainerType=RelatedInformation }
+      { 1180250029;1 ;ActionGroup;
+                      CaptionML=[ENU=&E.D.I.;
+                                 FRA=&E.D.I.] }
+      { 1180250030;2 ;Action    ;
+                      ShortCutKey=Shift+F5;
+                      CaptionML=FRA=Fiche;
+                      RunObject=Page 50004;
+                      RunPageLink=Code=FIELD(Code);
+                      Enabled=FALSE }
+      { 1180250031;2 ;Action    ;
+                      ShortCutKey=F7;
+                      CaptionML=[ENU=Statistics;
+                                 FRA=Statistiques];
+                      RunObject=Page 50001;
+                      RunPageLink=Table No.=FIELD(Code);
+                      Promoted=Yes;
+                      Image=Statistics;
+                      PromotedCategory=Process }
+      { 1180250052;2 ;Action    ;
+                      Ellipsis=Yes;
+                      CaptionML=FRA=Traces;
+                      RunObject=Page 50002;
+                      RunPageLink=EDI Code=FIELD(Code);
+                      Promoted=Yes;
+                      PromotedIsBig=Yes;
+                      Image=ListPage;
+                      PromotedCategory=Process }
+    }
+  }
+  CONTROLS
+  {
+    { 1900000001;0;Container;
+                ContainerType=ContentArea }
+
+    { 1180250001;1;Group  ;
+                Editable=FALSE;
+                GroupType=Repeater }
+
+    { 1180250002;2;Field  ;
+                SourceExpr=Code }
+
+    { 1180250004;2;Field  ;
+                SourceExpr=Direction }
+
+    { 1180250008;2;Field  ;
+                SourceExpr="Source Type" }
+
+    { 1180250010;2;Field  ;
+                SourceExpr="Source No." }
+
+    { 1180250020;2;Field  ;
+                SourceExpr="Object Type to Run" }
+
+    { 1180250022;2;Field  ;
+                SourceExpr="Object ID to Run";
+                Visible=FALSE }
+
+    { 1180250024;2;Field  ;
+                SourceExpr="Object Name to Run" }
+
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

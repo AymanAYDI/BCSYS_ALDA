@@ -1,0 +1,38 @@
+OBJECT Query 50002 ShipmentsOfInvoice
+{
+  OBJECT-PROPERTIES
+  {
+    Date=17/05/18;
+    Time=19:10:26;
+    Modified=Yes;
+    Version List=;
+  }
+  PROPERTIES
+  {
+    CaptionML=[ENU=Shipments for Invoice;
+               FRA=Livraisons de facture];
+  }
+  ELEMENTS
+  {
+    { 1000000000;;DataItem;                  ;
+               DataItemTable=Table10825 }
+
+    { 1000000001;1;Filter;                   ;
+               DataSource=Invoice No. }
+
+    { 1000000002;1;Column;                   ;
+               MethodType=Totals;
+               Method=Count }
+
+    { 1000000004;1;Column;                   ;
+               DataSource=Shipment No. }
+
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

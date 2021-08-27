@@ -1,0 +1,36 @@
+OBJECT Table 80108 Field Buffer Table
+{
+  OBJECT-PROPERTIES
+  {
+    Date=12/08/06;
+    Time=12:00:00;
+    Version List=Data Transfer Wizard;
+  }
+  PROPERTIES
+  {
+  }
+  FIELDS
+  {
+    { 1   ;   ;No                  ;Integer        }
+    { 2   ;   ;Type                ;Text30         }
+    { 3   ;   ;Len.                ;Integer        }
+    { 4   ;   ;Skipped             ;Boolean        }
+  }
+  KEYS
+  {
+    {    ;No                                      ;Clustered=Yes }
+  }
+  FIELDGROUPS
+  {
+  }
+  CODE
+  {
+
+    BEGIN
+    {
+      Data Transfer Wizard 4.0 (Navision) Eduard Sanosian, The Netherlands, 08-2006
+    }
+    END.
+  }
+}
+

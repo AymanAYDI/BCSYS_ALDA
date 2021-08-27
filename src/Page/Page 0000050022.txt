@@ -1,0 +1,131 @@
+OBJECT Page 50022 GIM Purchase List
+{
+  OBJECT-PROPERTIES
+  {
+    Date=21/03/16;
+    Time=12:31:33;
+    Modified=Yes;
+    Version List=GIM;
+  }
+  PROPERTIES
+  {
+    Editable=No;
+    CaptionML=[ENU=Purchase List;
+               FRA=Liste des achats];
+    InsertAllowed=No;
+    ModifyAllowed=No;
+    SourceTable=Table50008;
+    DataCaptionFields=Document Type;
+    PageType=List;
+    CardPageID=GIM Purchase Invoice;
+    ActionList=ACTIONS
+    {
+      { 1900000003;0 ;ActionContainer;
+                      ActionContainerType=RelatedInformation }
+      { 19      ;1   ;ActionGroup;
+                      CaptionML=[ENU=&Line;
+                                 FRA=&Ligne] }
+      { 25      ;2   ;Action    ;
+                      ShortCutKey=Shift+F7;
+                      CaptionML=[ENU=Card;
+                                 FRA=Fiche];
+                      Image=EditLines;
+                      OnAction=BEGIN
+                                 CASE "Document Type" OF
+                                   "Document Type"::Invoice,
+                                   "Document Type"::"Credit Memo":
+                                     PAGE.RUN(PAGE::"GIM Purchase Invoice",Rec);
+                                 END;
+                               END;
+                                }
+      { 1000000000;2 ;Action    ;
+                      CaptionML=[ENU=Import;
+                                 FRA=Import];
+                      Promoted=Yes;
+                      PromotedIsBig=Yes;
+                      Image=Import;
+                      OnAction=VAR
+                                 JobQueueEntry@1000000001 : Record 472;
+                                 FileMgt@1000000000 : Codeunit 419;
+                                 ImportMajuscule@1000000002 : Codeunit 50021;
+                                 TempServerFile@1180250002 : Text[250];
+                                 ClientFileName@1180250003 : Text[250];
+                               BEGIN
+                                 //JobQueueEntry."Parameter String" := UploadFile;
+                                 TempServerFile := FileMgt.ServerTempFileName('ubl');
+                                 IF NOT UPLOAD(Text006, '',Text003,ClientFileName,TempServerFile ) THEN
+                                 BEGIN
+                                    IF EXISTS(TempServerFile) THEN
+                                     ERASE(TempServerFile);
+                                    ERROR(GETLASTERRORTEXT);
+                                 END;
+                                 JobQueueEntry."Parameter String" := TempServerFile;
+
+                                 IF JobQueueEntry."Parameter String" <> '' THEN
+                                 BEGIN
+                                   ImportMajuscule.RUN(JobQueueEntry);
+                                 END;
+                               END;
+                                }
+      { 1000000006;2 ;Action    ;
+                      CaptionML=[ENU=XML Mapping;
+                                 FRA=Mappage XML];
+                      PromotedIsBig=Yes;
+                      Image=XMLSetup;
+                      PromotedCategory=Process;
+                      OnAction=VAR
+                                 XmlMapping@1000000000 : Record 50011;
+                               BEGIN
+                                 XmlMapping.SETFILTER("Flow Setup No.",'MAJUSCULE|%1','');
+                                 PAGE.RUN(50025,XmlMapping);
+                               END;
+                                }
+    }
+  }
+  CONTROLS
+  {
+    { 1900000001;0;Container;
+                ContainerType=ContentArea }
+
+    { 1   ;1   ;Group     ;
+                GroupType=Repeater }
+
+    { 1000000001;2;Field  ;
+                SourceExpr="Document Type" }
+
+    { 2   ;2   ;Field     ;
+                SourceExpr="No." }
+
+    { 4   ;2   ;Field     ;
+                SourceExpr="Buy-from Vendor No." }
+
+    { 1000000002;2;Field  ;
+                SourceExpr="Total VAT Amount" }
+
+    { 1000000004;2;Field  ;
+                SourceExpr="Total Amt Inc VAT" }
+
+    { 1000000005;2;Field  ;
+                SourceExpr="Total Amt Exc VAT" }
+
+  }
+  CODE
+  {
+    VAR
+      DimMgt@1000 : Codeunit 408;
+      Text006@1000000000 : TextConst 'ENU=Import Excel File;FRA=Importer fichier Excel';
+      Text003@1000000001 : TextConst 'ENU=Ubl Files (*.ubl)|*.ubl|All Files (*.*)|*.*;FRA=Fichiers UBL (*.ubl)|*.ubl|Tous les fichiers (*.*)|*.*';
+      FileMgt@1180250001 : Codeunit 419;
+
+    PROCEDURE UploadFile@6() : Text[250];
+    VAR
+      CommonDialogMgt@1000 : Codeunit 412;
+    BEGIN
+      EXIT(FileMgt.OpenFileDialog(Text006,'',Text003));
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

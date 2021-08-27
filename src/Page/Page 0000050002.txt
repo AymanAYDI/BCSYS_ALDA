@@ -1,0 +1,144 @@
+OBJECT Page 50002 E.D.I. Log List
+{
+  OBJECT-PROPERTIES
+  {
+    Date=28/09/12;
+    Time=12:21:36;
+    Modified=Yes;
+    Version List=AC1.00;
+  }
+  PROPERTIES
+  {
+    CaptionML=[ENU=Electronic Data Interchange Logs;
+               FRA=Traces d'Çchange de DonnÇes InformatisÇ];
+    SourceTable=Table50001;
+    SourceTableView=SORTING(EDI Code,Treatment Date)
+                    ORDER(Ascending);
+    PageType=List;
+    ActionList=ACTIONS
+    {
+      { 1900000004;0 ;ActionContainer;
+                      ActionContainerType=ActionItems }
+      { 1180250023;1 ;ActionGroup;
+                      CaptionML=[ENU=F&unctions;
+                                 FRA=Fonction&s] }
+      { 1180250005;2 ;Action    ;
+                      Name=<Action1180250005>;
+                      Ellipsis=Yes;
+                      CaptionML=FRA=RÇcupÇrer;
+                      Promoted=Yes;
+                      PromotedIsBig=Yes;
+                      Image=ChangeStatus;
+                      PromotedCategory=Process;
+                      OnAction=BEGIN
+                                 RescueOnPush();
+                               END;
+                                }
+      { 1180250003;2 ;Separator  }
+      { 1180250007;2 ;Action    ;
+                      Name=<Action1180250007>;
+                      Ellipsis=Yes;
+                      CaptionML=[ENU=Delete;
+                                 FRA=Supprimer];
+                      Promoted=Yes;
+                      Image=Delete;
+                      PromotedCategory=Process;
+                      OnAction=BEGIN
+                                 DeleteOnPush();
+                               END;
+                                }
+      { 1180250009;1 ;ActionGroup;
+                      Name=<Action1180250009>;
+                      CaptionML=FRA=Ligne;
+                      ActionContainerType=NewDocumentItems }
+      { 1180250011;2 ;Action    ;
+                      Name=<Action1180250011>;
+                      Ellipsis=Yes;
+                      CaptionML=[ENU=E&ntries;
+                                 FRA=&Ecritures];
+                      Image=ListPage;
+                      PromotedCategory=Process;
+                      OnAction=BEGIN
+                                 DeleteOnPush();
+                               END;
+                                }
+      { 1180250013;2 ;Action    ;
+                      CaptionML=[ENU=Log Entries;
+                                 FRA=êcritures Trace];
+                      RunObject=Page 50006;
+                      RunPageView=SORTING(EDI Code,Treatment Date,Ligne No.);
+                      RunPageLink=EDI Code=FIELD(EDI Code),
+                                  Treatment Date=FIELD(Treatment Date);
+                      Promoted=Yes;
+                      PromotedIsBig=Yes;
+                      Image=ListPage;
+                      PromotedCategory=Process }
+    }
+  }
+  CONTROLS
+  {
+    { 1900000001;0;Container;
+                ContainerType=ContentArea }
+
+    { 1180250001;1;Group  ;
+                Editable=FALSE;
+                GroupType=Repeater }
+
+    { 1180250014;2;Field  ;
+                SourceExpr=Mode;
+                Visible=FALSE }
+
+    { 1180250002;2;Field  ;
+                SourceExpr="EDI Code" }
+
+    { 1180250004;2;Field  ;
+                SourceExpr=Direction }
+
+    { 1180250006;2;Field  ;
+                SourceExpr=Filename }
+
+    { 1180250008;2;Field  ;
+                SourceExpr="Treatment Date" }
+
+    { 1180250010;2;Field  ;
+                SourceExpr=Status }
+
+    { 1180250018;2;Field  ;
+                SourceExpr="Data Error";
+                Visible=FALSE }
+
+    { 1180250012;2;Field  ;
+                SourceExpr="Error Text" }
+
+    { 1180250016;2;Field  ;
+                SourceExpr=Corrected }
+
+  }
+  CODE
+  {
+
+    PROCEDURE RescueOnPush@1180250003();
+    VAR
+      EDILog@1180250001 : Record 50001;
+    BEGIN
+      EDILog.COPY(Rec);
+      CurrPage.SETSELECTIONFILTER(EDILog);
+
+      EDILog.Rescue();
+    END;
+
+    PROCEDURE DeleteOnPush@1180250001();
+    VAR
+      EDILog@1180250001 : Record 50001;
+    BEGIN
+      EDILog.COPY(Rec);
+      CurrPage.SETSELECTIONFILTER(EDILog);
+
+      EDILog.DeleteLog();
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

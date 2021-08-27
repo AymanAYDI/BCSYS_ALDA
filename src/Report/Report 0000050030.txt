@@ -1,0 +1,228 @@
+OBJECT Report 50030 Batch Create EDI Sales Ship.
+{
+  OBJECT-PROPERTIES
+  {
+    Date=22/04/16;
+    Time=11:27:30;
+    Modified=Yes;
+    Version List=ALDA1.00,2016;
+  }
+  PROPERTIES
+  {
+    Permissions=TableData 110=rm;
+    CaptionML=[ENU=Batch Create EDI Sales Ship.;
+               FRA=TPL cr�er BL vente EDI];
+    ShowPrintStatus=No;
+    ProcessingOnly=Yes;
+    OnInitReport=BEGIN
+                   CompanyInfo.GET;
+                 END;
+
+    OnPreReport=BEGIN
+                  IF GUIALLOWED THEN
+                    Window.OPEN(Text000);
+                END;
+
+    OnPostReport=BEGIN
+                   IF GUIALLOWED THEN
+                     Window.CLOSE;
+                 END;
+
+    UseRequestPage=No;
+  }
+  DATASET
+  {
+    { 5290;    ;DataItem;                    ;
+               DataItemTable=Table50001;
+               DataItemTableView=SORTING(EDI Code,Treatment Date);
+               MaxIteration=1;
+               OnPreDataItem=BEGIN
+                               EDIEntry.RESET;
+                               IF EDIEntry.FINDLAST THEN
+                                 EntryNo := EDIEntry."Entry No."
+                               ELSE
+                                 EntryNo := 1;
+                             END;
+
+               OnAfterGetRecord=BEGIN
+                                  EDISetup.GET("E.D.I. Log"."EDI Code");
+                                END;
+                                 }
+
+    { 5291;    ;DataItem;                    ;
+               DataItemTable=Table110;
+               DataItemTableView=SORTING(No.)
+                                 WHERE(Exported=CONST(No),
+                                       Your Reference=FILTER(<>''));
+               OnAfterGetRecord=BEGIN
+                                  IF NOT Country.GET("Sell-to Country/Region Code") THEN
+                                    Country.INIT;
+
+                                  Amount := 0;
+                                  AmtInclVAT := 0;
+                                  BaseAmtVAT := 0;
+
+                                  CLEAR(ColValue);
+
+                                  ColValue[2] := '';
+
+                                  ColValue[3] := FORMAT("No."); // NUMERO_BL  (Num‚ro du bon de livraison )
+                                  ColValue[4] := FORMAT("Your Reference"); // NUMERO_COMMANDE_WEB  (Num‚ro de la commande Alloris )
+                                  ColValue[5] := FORMAT("External Document No."); // NUMERO_COMMANDE_CLIENT  (Num‚ro de la commande du client )
+                                  ColValue[6] := FORMAT("Sell-to Customer No."); // NUMERO_CLIENT  (Num‚ro du client )
+                                  ColValue[7] := FORMAT("Posting Date"); // DATE_LIVRAISON  (Date de la livraison )
+                                  ColValue[8] := FORMAT("Order Date"); // DATE_COMMANDE  (Date de la commande )
+                                  ColValue[9] := FORMAT("Order Reference Customer"); // REFERENCE  (R‚f‚rence )
+                                  ColValue[10] := FORMAT("Net Weight"); // POIDS  (Poids )
+                                  ColValue[11] := FORMAT("Nbr. of Package"); // NOMBRE_COLIS  (Nombre de colis )
+                                  ColValue[12] := "Sell-to Customer Name"; // NOM_CLIENT  (Nom du client )
+                                  ColValue[13] := "Sell-to Address"; // ADRESSE1  (Adresse 1 du client )
+                                  ColValue[14] := "Sell-to Address 2"; // ADRESSE2  (Adresse 2 du client )
+                                  ColValue[15] := ''; // ADRESSE3  (Adresse 3 du client )
+                                  ColValue[16] := FORMAT("Sell-to Post Code"); // CODE_POSTAL  (Code postal du client )
+                                  ColValue[17] := FORMAT("Sell-to City"); // VILLE  (Ville du client )
+                                  ColValue[18] := Country.Name; // PAYS  (Pays du client )
+                                  ColValue[19] := FORMAT(Amount); // MONTANT_HT  (Montant total HT )
+                                  ColValue[20] := FORMAT(AmtInclVAT); // MONTANT_TTC  (Montant total TTC )
+                                  ColValue[21] := FORMAT(BaseAmtVAT); // MONTANT_TVA  (Montant de la TVA )
+                                  ColValue[22] := CompanyInfo.Name; // NOM_ENTREPRISE  (Nom de lÉentreprise )
+                                  ColValue[23] := CompanyInfo."Name 2"; // AGENCE  (Nom de lÉagence )
+                                  ColValue[24] := CompanyInfo.Address; // ADRESSE1_ENTREPRISE  (Adresse 1 de lÉentreprise )
+                                  ColValue[25] := CompanyInfo."Address 2"; // ADRESSE2_ENTREPRISE  (Adresse 1 de lÉentreprise )
+                                  ColValue[26] := FORMAT(CompanyInfo."Post Code"); // CODE_POSTAL_ENTREPRISE  (Code postal de lÉentreprise )
+                                  ColValue[27] := CompanyInfo.City; // VILLE_ENTREPRISE  (Ville de lÉentreprise )
+                                  ColValue[28] := ''; // CONTACT_ENTREPRISE  (Contact de lÉentreprise )
+                                  ColValue[29] := FORMAT(CompanyInfo."Fax No."); // FAX_ENTREPRISE  (Fax de lÉentreprise )
+                                  ColValue[30] := FORMAT(CompanyInfo."Phone No."); // TELEPHONE_ENTREPRISE  (T‚l‚phone de lÉentreprise )
+
+                                  CreateEDIEntry(TABLENAME);
+                                END;
+                                 }
+
+    { 5292;1   ;DataItem;                    ;
+               DataItemTable=Table111;
+               DataItemTableView=SORTING(Document No.,Line No.)
+                                 WHERE(Type=CONST(Item),
+                                       Quantity=FILTER(<>0));
+               OnAfterGetRecord=BEGIN
+                                  Amount := 0;
+                                  AmtInclVAT := 0;
+                                  BaseAmtVAT := 0;
+                                  OutStandingQty := 0;
+                                  UnitPrice := 0;
+                                  VATRate := 0;
+                                  QuantityOrdered := 0;
+
+                                  CLEAR(ColValue);
+
+                                  ColValue[2] := FORMAT("Line No.");
+
+                                  ColValue[3] := FORMAT("Document No."); // NUMERO_BL  (Num‚ro du Bon de livraison )
+                                  ColValue[4] := FORMAT("No."); // CODE_ARTICLE  (Code de lÉarticle )
+                                  ColValue[5] := Description; // DESIGNATION  (D‚signation de lÉarticle )
+                                  ColValue[6] := FORMAT(QuantityOrdered); // QUANTITE_COMMANDEE  (Quantit‚ command‚e )
+                                  ColValue[7] := FORMAT(Quantity); // QUANTITE_LIVREE  (Quantit‚ livr‚e )
+                                  ColValue[8] := FORMAT(OutStandingQty); // QUANTITE_A_LIVRER  (Quantit‚ restante … livrer )
+                                  ColValue[9] := FORMAT(UnitPrice); // PRIX_UNITAIRE  (Prix unitaire )
+                                  ColValue[10] := FORMAT(Amount); // MONTANT_LIGNE_HT  (Montant total HT )
+                                  ColValue[11] := FORMAT(AmtInclVAT); // MONTANT_LIGNE_TTC  (Montant total TTC )
+                                  ColValue[12] := FORMAT(VATRate); // TAUX_TVA  (Taux de la TVA )
+
+                                  CreateEDIEntry(TABLENAME);
+                                END;
+
+               DataItemLink=Document No.=FIELD(No.) }
+
+  }
+  REQUESTPAGE
+  {
+    PROPERTIES
+    {
+    }
+    CONTROLS
+    {
+    }
+  }
+  LABELS
+  {
+  }
+  CODE
+  {
+    VAR
+      CompanyInfo@1180250011 : Record 79;
+      SalesShipHeader@1180250016 : Record 110;
+      SalesHeader@1180250017 : Record 36;
+      SalesHdrArchive@1180250018 : Record 5107;
+      SalesLine@1180250019 : Record 37;
+      SalesLineArchive@1180250020 : Record 5108;
+      EDISetup@1180250005 : Record 50000;
+      EDIEntry@1180250004 : Record 50002;
+      Country@1180250007 : Record 9;
+      Window@1180250003 : Dialog;
+      ColValue@1180250002 : ARRAY [30] OF Text[250];
+      EntryNo@1180250001 : Integer;
+      Text000@1180250006 : TextConst 'ENU=Counting records...;FRA=Comptage des enregistrements...';
+      Amount@1180250008 : Decimal;
+      AmtInclVAT@1180250009 : Decimal;
+      BaseAmtVAT@1180250010 : Decimal;
+      OutStandingQty@1180250012 : Decimal;
+      UnitPrice@1180250013 : Decimal;
+      VATRate@1180250014 : Decimal;
+      QuantityOrdered@1180250015 : Decimal;
+
+    PROCEDURE CreateEDIEntry@1180250002(FromTableName@1180250001 : Text[50]);
+    BEGIN
+      EntryNo += 1;
+      EDIEntry.INIT;
+      EDIEntry."Entry No." := EntryNo;
+      EDIEntry."User ID" := USERID;
+      EDIEntry."Imp./Exp. Date" := "E.D.I. Log"."Treatment Date";
+      EDIEntry."EDI Code" := "E.D.I. Log"."EDI Code";
+      EDIEntry.Error := TRUE;
+      EDIEntry.Handled := FALSE;
+      EDIEntry.INSERT;
+
+      ColValue[1] :=  FromTableName;
+
+      EDIEntry."Field 1" := ColValue[1];
+      EDIEntry."Field 2" := ColValue[2];
+      EDIEntry."Field 3" := ColValue[3];
+      EDIEntry."Field 4" := ColValue[4];
+      EDIEntry."Field 5" := ColValue[5];
+      EDIEntry."Field 6" := ColValue[6];
+      EDIEntry."Field 7" := ColValue[7];
+      EDIEntry."Field 8" := ColValue[8];
+      EDIEntry."Field 9" := ColValue[9];
+      EDIEntry."Field 10" := ColValue[10];
+      EDIEntry."Field 11" := ColValue[11];
+      EDIEntry."Field 12" := ColValue[12];
+      EDIEntry."Field 13" := ColValue[13];
+      EDIEntry."Field 14" := ColValue[14];
+      EDIEntry."Field 15" := ColValue[15];
+      EDIEntry."Field 16" := ColValue[16];
+      EDIEntry."Field 17" := ColValue[17];
+      EDIEntry."Field 18" := ColValue[18];
+      EDIEntry."Field 19" := ColValue[19];
+      EDIEntry."Field 20" := ColValue[20];
+      EDIEntry."Field 21" := ColValue[21];
+      EDIEntry."Field 22" := ColValue[22];
+      EDIEntry."Field 23" := ColValue[23];
+      EDIEntry."Field 24" := ColValue[24];
+      EDIEntry."Field 25" := ColValue[25];
+      EDIEntry."Field 26" := ColValue[26];
+      EDIEntry."Field 27" := ColValue[27];
+      EDIEntry."Field 28" := ColValue[28];
+      EDIEntry."Field 29" := ColValue[29];
+      EDIEntry."Field 30" := ColValue[30];
+
+      EDIEntry.MODIFY;
+    END;
+
+    BEGIN
+    END.
+  }
+  RDLDATA
+  {
+  }
+}
+
